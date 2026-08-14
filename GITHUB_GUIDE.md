@@ -32,16 +32,25 @@ git clone https://github.com/hucaidab/-ai.git
 cd -ai
 ```
 
-### 第 2 步：安装技能包（让 WorkBuddy 学会画流程图）
+### 第 2 步：安装技能包（让 WorkBuddy 学会画流程图，一键自动）
 
-把 `dist-team-edition/flowchart-agent` 整个文件夹复制到：
+进入 clone 下来的 `-ai/dist-team-edition/` 目录，运行安装脚本——自动把技能包复制到 WorkBuddy 技能目录：
 
+**Windows**：双击 `install-skill.bat`
+**macOS/Linux**：终端执行 `sh install-skill.sh`
+
+脚本自动完成：
 ```
-Windows:  C:\Users\<你的用户名>\.workbuddy\skills\
-macOS:    ~/.workbuddy/skills/
+1. 创建技能目录 ~/.workbuddy/skills/（如不存在）
+2. 把 flowchart-agent 复制到 ~/.workbuddy/skills/flowchart-agent
+3. 提示重启 WorkBuddy 生效
 ```
 
-> 复制后重启 WorkBuddy。路径不确定时找团队管理员确认。
+> 等价手动操作（脚本做的就是这个）：
+> 把 `dist-team-edition/flowchart-agent` 复制到 `~/.workbuddy/skills/`
+> （Windows 为 `C:\Users\<用户名>\.workbuddy\skills\`）
+
+> 安装后**重启 WorkBuddy** 再使用。
 
 ### 第 3 步：生成流程图（二选一）
 
@@ -105,7 +114,7 @@ http://localhost:8080/editor?file=purchase-approval.req.json
 
 ```bash
 git pull origin main          # 拉到最新代码
-# 重新把 dist-team-edition/flowchart-agent 复制到 ~/.workbuddy/skills/（覆盖旧版）
+# 重新运行 dist-team-edition/ 下的安装脚本（install-skill.bat / install-skill.sh）覆盖旧版
 ```
 
 ## 七、仓库结构

@@ -7,18 +7,18 @@
 
 ---
 
-## 一、装什么（一次性，约 2 分钟）
+## 一、装什么（一次性，约 1 分钟）
 
-### 1. 装技能包（让 WorkBuddy 学会画流程图）
+### 1. 一键安装技能包（自动装进 WorkBuddy，无需手动复制）
 
-把 `flowchart-agent` 文件夹复制到：
+在本目录运行安装脚本，自动把技能包复制到 `~/.workbuddy/skills/`：
 
 ```
-Windows:  C:\Users\<你的用户名>\.workbuddy\skills\
-macOS:    ~/.workbuddy/skills/
+Windows:  双击 install-skill.bat
+macOS/Linux:  终端执行  sh install-skill.sh
 ```
 
-> 路径可能因版本不同，找不到就问团队管理员。
+> 装完**重启 WorkBuddy** 生效。脚本等价于手动把 `flowchart-agent` 文件夹复制到 `~/.workbuddy/skills/`（Windows 为 `C:\Users\<用户名>\.workbuddy\skills\`），只是全自动。
 
 ### 2. 确认 Node.js 已装
 
