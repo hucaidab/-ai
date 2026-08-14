@@ -85,23 +85,26 @@ export function render() {
   out.querySelectorAll('path').forEach(p => {
     if (p.getAttribute('fill') === 'none') { p.setAttribute('data-edge', '1'); p.setAttribute('data-eidx', ei); ei++ }
   })
-  _bindInteractions()
+  bindInteractions()
   _updateStatus()
 }
 
-// ---------- 交互绑定 ----------
-let _drag = null
-function _bindInteractions() {
+// ---------- 交互绑定（事件委托：svg 根一次绑定，不受 innerHTML 重建影响） ----------
+export function bindInteractions() {
   const cv = document.getElementById('cv')
-  if (!cv) return
-  cv.querySelectorAll('g[data-id]').forEach(g => {
-    g.style.cursor = 'move'
-    g.addEventListener('pointerdown', e => _onNodeDown(e, g))
-    g.addEventListener('dblclick', e => _onDblClick(e, g))
+  if (!cv || cv._bound) return
+  cv._bound = true
+  // 节点：pointerdown 拖动 / dblclick 改文字（通过 closest 定位，点文字/形状都命中）
+  cv.addEventListener('pointerdown', e => {
+    const g = e.target.closest ? e.target.closest('g[data-id]') : null
+    if (g) { _onNodeDown(e, g); return }
+    // 边
+    const p = e.target.closest ? e.target.closest('path[data-edge]') : null
+    if (p) { e.stopPropagation(); _selectEdge(p) }
   })
-  cv.querySelectorAll('path[data-edge]').forEach(p => {
-    p.style.cursor = 'pointer'
-    p.addEventListener('click', e => { e.stopPropagation(); _selectEdge(p) })
+  cv.addEventListener('dblclick', e => {
+    const g = e.target.closest ? e.target.closest('g[data-id]') : null
+    if (g) _onDblClick(e, g)
   })
 }
 
@@ -219,7 +222,6 @@ function _updatePanel() {
     document.getElementById('pDept').oninput = e => { n.dept = e.target.value; S.dirty = true }
     document.getElementById('pRole').oninput = e => { n.role = e.target.value; S.dirty = true }
     document.getElementById('pFill').oninput = e => { n.fill = e.target.value; S.dirty = true }
-    window.__editor.applyProps = () => { pushHistory(); render() }
   } else if (S.selected.kind === 'edge') {
     const e = S.req.edges[S.selected.idx]
     if (!e) return
@@ -231,9 +233,47 @@ function _updatePanel() {
       <button class="danger" onclick="window.__editor.delEdge()">删除此连线</button>`
     document.getElementById('eLabel').oninput = ev => { e.label = ev.target.value; S.dirty = true }
     document.getElementById('eType').onchange = ev => { e.reverse = ev.target.value === '虚线(逆向)'; S.dirty = true }
-    window.__editor.applyEdge = () => { pushHistory(); render() }
-    window.__editor.delEdge = () => { S.req.edges.splice(S.selected.idx, 1); S.selected = null; S.dirty = true; pushHistory(); render() }
   }
+}
+
+// 属性面板应用（导出函数——模块命名空间对象冻结，不能动态加属性）
+export function applyProps() {
+  if (!S.selected || S.selected.kind !== 'node') return
+  const n = S.req.nodes.find(x => x.id === S.selected.id)
+  if (!n) return
+  const v = id => { const el = document.getElementById(id); return el ? el.value.trim() : null }
+  const text = v('pText'), shape = v('pShape'), dept = v('pDept'), role = v('pRole'), fill = v('pFill')
+  if (text !== null && text !== n.action) n.action = text
+  if (shape && shape !== n.shape) n.shape = shape
+  if (dept !== null && dept !== n.dept) n.dept = dept
+  if (role !== null && role !== n.role) n.role = role
+  if (fill && fill !== n.fill) n.fill = fill
+  S.dirty = true
+  pushHistory()
+  render()
+}
+export function applyEdge() {
+  if (!S.selected || S.selected.kind !== 'edge') return
+  const e = S.req.edges[S.selected.idx]
+  if (!e) return
+  const l = document.getElementById('eLabel'), t = document.getElementById('eType')
+  if (l) e.label = l.value.trim()
+  if (t) e.reverse = t.value === '虚线(逆向)'
+  S.dirty = true
+  pushHistory()
+  render()
+}
+export function delEdge() {
+  if (!S.selected || S.selected.kind !== 'edge') return
+  S.req.edges.splice(S.selected.idx, 1)
+  S.selected = null
+  S.dirty = true
+  pushHistory()
+  render()
+}
+export function setTheme(t) {
+  S.theme = t || 'github-light'
+  render()
 }
 
 // ---------- 增删节点 ----------
@@ -311,6 +351,7 @@ export async function init(file) {
   host.style.transform = 'scale(' + S.scale + ')'
   host.style.transformOrigin = '0 0'
   render()
+  bindInteractions()
   pushHistory() // 初始快照（撤销回到初始态）
   // 画布空白事件
   document.getElementById('canvasWrap').addEventListener('pointerdown', e => {

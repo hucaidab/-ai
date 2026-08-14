@@ -222,7 +222,6 @@ function _updatePanel() {
     document.getElementById('pDept').oninput = e => { n.dept = e.target.value; S.dirty = true }
     document.getElementById('pRole').oninput = e => { n.role = e.target.value; S.dirty = true }
     document.getElementById('pFill').oninput = e => { n.fill = e.target.value; S.dirty = true }
-    window.__editor.applyProps = () => { pushHistory(); render() }
   } else if (S.selected.kind === 'edge') {
     const e = S.req.edges[S.selected.idx]
     if (!e) return
@@ -234,9 +233,47 @@ function _updatePanel() {
       <button class="danger" onclick="window.__editor.delEdge()">删除此连线</button>`
     document.getElementById('eLabel').oninput = ev => { e.label = ev.target.value; S.dirty = true }
     document.getElementById('eType').onchange = ev => { e.reverse = ev.target.value === '虚线(逆向)'; S.dirty = true }
-    window.__editor.applyEdge = () => { pushHistory(); render() }
-    window.__editor.delEdge = () => { S.req.edges.splice(S.selected.idx, 1); S.selected = null; S.dirty = true; pushHistory(); render() }
   }
+}
+
+// 属性面板应用（导出函数——模块命名空间对象冻结，不能动态加属性）
+export function applyProps() {
+  if (!S.selected || S.selected.kind !== 'node') return
+  const n = S.req.nodes.find(x => x.id === S.selected.id)
+  if (!n) return
+  const v = id => { const el = document.getElementById(id); return el ? el.value.trim() : null }
+  const text = v('pText'), shape = v('pShape'), dept = v('pDept'), role = v('pRole'), fill = v('pFill')
+  if (text !== null && text !== n.action) n.action = text
+  if (shape && shape !== n.shape) n.shape = shape
+  if (dept !== null && dept !== n.dept) n.dept = dept
+  if (role !== null && role !== n.role) n.role = role
+  if (fill && fill !== n.fill) n.fill = fill
+  S.dirty = true
+  pushHistory()
+  render()
+}
+export function applyEdge() {
+  if (!S.selected || S.selected.kind !== 'edge') return
+  const e = S.req.edges[S.selected.idx]
+  if (!e) return
+  const l = document.getElementById('eLabel'), t = document.getElementById('eType')
+  if (l) e.label = l.value.trim()
+  if (t) e.reverse = t.value === '虚线(逆向)'
+  S.dirty = true
+  pushHistory()
+  render()
+}
+export function delEdge() {
+  if (!S.selected || S.selected.kind !== 'edge') return
+  S.req.edges.splice(S.selected.idx, 1)
+  S.selected = null
+  S.dirty = true
+  pushHistory()
+  render()
+}
+export function setTheme(t) {
+  S.theme = t || 'github-light'
+  render()
 }
 
 // ---------- 增删节点 ----------

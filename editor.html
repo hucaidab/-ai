@@ -81,15 +81,13 @@
     document.body.appendChild(box)
     setTimeout(() => box.remove(), 8000)
   })
-  import * as editor from '/lib/editor-core.mjs?v=3'
+  import * as editor from '/lib/editor-core.mjs?v=4'
   window.__editor = editor
   const q = new URLSearchParams(location.search)
   const file = q.get('file')
   if (!file) { document.body.innerHTML = '<div style="padding:40px;font-size:14px">用法：/editor?file=xxx.req.json</div>'; }
   else {
     document.getElementById('fileLabel').textContent = file
-    document.getElementById('themeSel').addEventListener('change', e => { editor.S.theme = e.target.value; editor.render() })
-    editor.S.theme = document.getElementById('themeSel').value
     await editor.init(file)
   }
 </script>
