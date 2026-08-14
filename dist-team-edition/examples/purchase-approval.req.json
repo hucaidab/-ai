@@ -1,0 +1,87 @@
+{
+  "title": "采购审批流程",
+  "lanes": [
+    {
+      "dept": "采购部",
+      "roles": [
+        "采购员",
+        "采购经理"
+      ]
+    },
+    {
+      "dept": "财务部",
+      "roles": [
+        "财务审核"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "START",
+      "dept": "采购部",
+      "role": "采购员",
+      "action": "发起采购申请",
+      "shape": "stadium"
+    },
+    {
+      "id": "N1",
+      "dept": "采购部",
+      "role": "采购员",
+      "action": "填写采购单",
+      "shape": "rect"
+    },
+    {
+      "id": "N2",
+      "dept": "采购部",
+      "role": "采购经理",
+      "action": "审批采购单",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "财务部",
+      "role": "财务审核",
+      "action": "审核付款",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "财务部",
+      "role": "财务审核",
+      "action": "完成采购",
+      "shape": "stadium"
+    }
+  ],
+  "edges": [
+    {
+      "from": "START",
+      "to": "N1",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "提交",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N1",
+      "label": "驳回",
+      "reverse": true
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    }
+  ]
+}

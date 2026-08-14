@@ -1,0 +1,120 @@
+{
+  "title": "员工报销流程",
+  "lanes": [
+    {
+      "dept": "员工中心",
+      "roles": [
+        "申请人",
+        "部门主管"
+      ]
+    },
+    {
+      "dept": "财务部",
+      "roles": [
+        "财务审核",
+        "出纳"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "START",
+      "dept": "员工中心",
+      "role": "申请人",
+      "action": "填写报销单",
+      "shape": "stadium"
+    },
+    {
+      "id": "N1",
+      "dept": "员工中心",
+      "role": "申请人",
+      "action": "上传发票附件",
+      "shape": "rect"
+    },
+    {
+      "id": "N2",
+      "dept": "员工中心",
+      "role": "部门主管",
+      "action": "主管审批",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "财务部",
+      "role": "财务审核",
+      "action": "财务审核",
+      "shape": "diamond"
+    },
+    {
+      "id": "N4",
+      "dept": "财务部",
+      "role": "出纳",
+      "action": "打款",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "财务部",
+      "role": "财务审核",
+      "action": "发票归档",
+      "shape": "cylinder"
+    },
+    {
+      "id": "END",
+      "dept": "财务部",
+      "role": "出纳",
+      "action": "报销完成",
+      "shape": "stadium"
+    }
+  ],
+  "edges": [
+    {
+      "from": "START",
+      "to": "N1",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "提交",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N1",
+      "label": "驳回",
+      "reverse": true
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N1",
+      "label": "退回",
+      "reverse": true
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "END",
+      "label": "",
+      "reverse": false
+    }
+  ]
+}
