@@ -1,35 +1,108 @@
 // ============================================================
-// render-svg.mjs — 自研 SVG 渲染器（零依赖）
+// render-svg.mjs — 自研 SVG 渲染器（零依赖，支持多主题）
 // 输入：layout-grid 输出结构 + 主题/classDef
 // 形状：rectangle/rounded/diamond/stadium/cylinder/subroutine/
 //       circle/doublecircle/hexagon/asymmetric/trapezoid/default
-// 颜色：语义默认色（起止绿/判断黄/数据绿/子流程紫/备注灰）+ classDef 覆盖
+// 主题：github-light（默认）/ github-dark / enterprise-blue / bpmn
 // ============================================================
 
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-// 语义默认色（github-light 系）
-function defaultStyle(shape) {
-  if (shape === 'stadium' || shape === 'ellipse') return { fill: '#1f883d', stroke: '#1a7f37', color: '#ffffff', sw: 2 }
-  if (shape === 'diamond') return { fill: '#fff8c5', stroke: '#9a6700', color: '#633c01', sw: 1.5 }
-  if (shape === 'cylinder') return { fill: '#dafbe1', stroke: '#1a7f37', color: '#0a3d1e', sw: 1.5 }
-  if (shape === 'subroutine') return { fill: '#fbefff', stroke: '#8250df', color: '#3e1f6f', sw: 1.5 }
-  return { fill: '#ddf4ff', stroke: '#0969da', color: '#0a3069', sw: 1.5 }
+// ---------- 主题定义（语义色 + 部门色板 + 画布） ----------
+const THEMES = {
+  'github-light': {
+    bg: '#ffffff', text: '#1f2328', edge: '#59636e', laneHeader: '#24292f', laneHeaderText: '#ffffff',
+    shapes: {
+      stadium: { fill: '#1f883d', stroke: '#1a7f37', color: '#ffffff', sw: 2 },
+      diamond: { fill: '#fff8c5', stroke: '#9a6700', color: '#633c01', sw: 1.5 },
+      cylinder: { fill: '#dafbe1', stroke: '#1a7f37', color: '#0a3d1e', sw: 1.5 },
+      subroutine: { fill: '#fbefff', stroke: '#8250df', color: '#3e1f6f', sw: 1.5 },
+      default: { fill: '#ddf4ff', stroke: '#0969da', color: '#0a3069', sw: 1.5 },
+    },
+    palette: [
+      { color: '#0969da', tint: '#ddf4ff', label: '#0a3069' },
+      { color: '#bc4c00', tint: '#fff1e5', label: '#571f00' },
+      { color: '#1a7f37', tint: '#dafbe1', label: '#0a3d1e' },
+      { color: '#8250df', tint: '#fbefff', label: '#3e1f6f' },
+      { color: '#0e7490', tint: '#e6f6f6', label: '#155e75' },
+      { color: '#cf222e', tint: '#ffebe9', label: '#82071e' },
+      { color: '#6e7781', tint: '#f6f8fa', label: '#424a53' },
+    ],
+  },
+  'github-dark': {
+    bg: '#0d1117', text: '#e6edf3', edge: '#7d8590', laneHeader: '#161b22', laneHeaderText: '#e6edf3',
+    shapes: {
+      stadium: { fill: '#238636', stroke: '#3fb950', color: '#ffffff', sw: 2 },
+      diamond: { fill: '#3d2c00', stroke: '#d29922', color: '#f0d28a', sw: 1.5 },
+      cylinder: { fill: '#12261e', stroke: '#3fb950', color: '#7ee787', sw: 1.5 },
+      subroutine: { fill: '#2a1e3f', stroke: '#a371f7', color: '#d2a8ff', sw: 1.5 },
+      default: { fill: '#0c2d6b', stroke: '#58a6ff', color: '#c8e1ff', sw: 1.5 },
+    },
+    palette: [
+      { color: '#58a6ff', tint: '#0c2d6b', label: '#c8e1ff' },
+      { color: '#f0883e', tint: '#3d1f00', label: '#ffc9a3' },
+      { color: '#3fb950', tint: '#12261e', label: '#7ee787' },
+      { color: '#a371f7', tint: '#2a1e3f', label: '#d2a8ff' },
+      { color: '#39c5cf', tint: '#003c40', label: '#a7f0f5' },
+      { color: '#f85149', tint: '#3d0d10', label: '#ffb3ac' },
+      { color: '#8b949e', tint: '#1c2128', label: '#c9d1d9' },
+    ],
+  },
+  'enterprise-blue': {
+    bg: '#f5f8fc', text: '#1a2b4a', edge: '#5b7db1', laneHeader: '#1e4e8c', laneHeaderText: '#ffffff',
+    shapes: {
+      stadium: { fill: '#2e7d32', stroke: '#1b5e20', color: '#ffffff', sw: 2 },
+      diamond: { fill: '#fff8e1', stroke: '#b8860b', color: '#6d4c00', sw: 1.5 },
+      cylinder: { fill: '#e3f2fd', stroke: '#1976d2', color: '#0d47a1', sw: 1.5 },
+      subroutine: { fill: '#f3e5f5', stroke: '#7b1fa2', color: '#4a148c', sw: 1.5 },
+      default: { fill: '#e8f0fe', stroke: '#1e4e8c', color: '#0d2b5e', sw: 1.5 },
+    },
+    palette: [
+      { color: '#1e4e8c', tint: '#e8f0fe', label: '#0d2b5e' },
+      { color: '#b34700', tint: '#fff3e6', label: '#6b2c00' },
+      { color: '#1e7f4f', tint: '#e6f7ee', label: '#0b3d24' },
+      { color: '#6a3fb5', tint: '#f3edfc', label: '#341a63' },
+      { color: '#00796b', tint: '#e0f2f1', label: '#004d40' },
+      { color: '#c62828', tint: '#ffebee', label: '#7f1010' },
+      { color: '#546e7a', tint: '#eceff1', label: '#2c3e4f' },
+    ],
+  },
+  'bpmn': {
+    bg: '#fafbfc', text: '#24292e', edge: '#57606a', laneHeader: '#444d56', laneHeaderText: '#ffffff',
+    shapes: {
+      stadium: { fill: '#f6c945', stroke: '#b08800', color: '#4d3800', sw: 2 },      // 事件-开始（浅黄圆）
+      diamond: { fill: '#ffffff', stroke: '#6f42c1', color: '#4b2a8a', sw: 2 },       // 网关-菱形
+      cylinder: { fill: '#fff4d6', stroke: '#b08800', color: '#4d3800', sw: 1.5 },    // 数据对象
+      subroutine: { fill: '#e6e6fa', stroke: '#6f42c1', color: '#3b1f7a', sw: 1.5 },  // 子流程
+      default: { fill: '#e8f4fd', stroke: '#2188ff', color: '#044289', sw: 1.5 },     // 活动-圆角矩形
+    },
+    palette: [
+      { color: '#2188ff', tint: '#e8f4fd', label: '#044289' },
+      { color: '#f66a0a', tint: '#fff3e8', label: '#7a3200' },
+      { color: '#2da44e', tint: '#e8f8ee', label: '#0f4a22' },
+      { color: '#bf3989', tint: '#fbeaf4', label: '#641f48' },
+      { color: '#00b8a9', tint: '#e0faf7', label: '#005c54' },
+      { color: '#d73a49', tint: '#ffebee', label: '#7a0f1a' },
+      { color: '#6e7781', tint: '#f0f2f4', label: '#3a4148' },
+    ],
+  },
 }
 
-// 部门/角色色板（泳道模式自动分配：蓝 橙 绿 紫 青 红 灰）
-const PALETTE = [
-  { color: '#0969da', tint: '#ddf4ff', label: '#0a3069' },
-  { color: '#bc4c00', tint: '#fff1e5', label: '#571f00' },
-  { color: '#1a7f37', tint: '#dafbe1', label: '#0a3d1e' },
-  { color: '#8250df', tint: '#fbefff', label: '#3e1f6f' },
-  { color: '#0e7490', tint: '#e6f6f6', label: '#155e75' },
-  { color: '#cf222e', tint: '#ffebe9', label: '#82071e' },
-  { color: '#6e7781', tint: '#f6f8fa', label: '#424a53' },
-]
+export function listThemes() { return Object.keys(THEMES) }
 
-function resolveStyle(node, classDefs, nodeCol, paletteActive) {
-  const base = defaultStyle(node.shape)
+function getTheme(name) { return THEMES[name] || THEMES['github-light'] }
+
+// 语义默认色（按主题）
+function defaultStyle(shape, theme) {
+  const t = theme.shapes[shape] || theme.shapes.default
+  return { ...t }
+}
+
+// 部门/角色色板（泳道模式自动分配）
+function getPalette(theme) { return theme.palette }
+
+function resolveStyle(node, classDefs, nodeCol, paletteActive, theme) {
+  const base = defaultStyle(node.shape, theme)
   const cd = classDefs && node.cls ? classDefs[node.cls] : null
   if (cd) {
     return {
@@ -41,7 +114,7 @@ function resolveStyle(node, classDefs, nodeCol, paletteActive) {
     }
   }
   if (paletteActive && nodeCol.has(node.id)) {
-    const p = PALETTE[nodeCol.get(node.id) % PALETTE.length]
+    const p = getPalette(theme)[nodeCol.get(node.id) % getPalette(theme).length]
     // 起止/判断保留语义色（绿/黄）
     if (node.shape === 'stadium' || node.shape === 'ellipse' || node.shape === 'diamond') return base
     return { fill: p.tint, stroke: p.color, color: p.label, sw: 1.5, dash: '' }
@@ -108,13 +181,15 @@ function orthoPath(pts) {
 }
 
 // ---------- 主渲染 ----------
-export function renderSVG(layout, { classDefs = {}, title = '', subtitle = '' } = {}) {
+export function renderSVG(layout, { classDefs = {}, title = '', subtitle = '', theme: themeName = 'github-light' } = {}) {
+  const theme = getTheme(themeName)
   const { nodes, edges, width, height, mode, cols } = layout
   const nodeCol = new Map()
   const W = Math.max(width, 200), H = Math.max(height, 150)
+  const P = getPalette(theme)
   let s = ''
-  s += `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="background:#ffffff;font-family:'Microsoft YaHei',system-ui,sans-serif">`
-  s += `<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#57606a"/></marker></defs>`
+  s += `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="background:${theme.bg};font-family:'Microsoft YaHei',system-ui,sans-serif">`
+  s += `<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${theme.edge}"/></marker></defs>`
 
   // 泳道模式：组列背景 + 组头（按部门色板着色）
   if (mode === 'swimlane' && cols) {
@@ -125,10 +200,10 @@ export function renderSVG(layout, { classDefs = {}, title = '', subtitle = '' } 
     cols.forEach((c, i) => { colXMap[i] = acc; acc += 260 + 84 })
     cols.forEach((c, i) => {
       const x = colXMap[i]
-      const pc = PALETTE[i % PALETTE.length]
-      s += `<rect x="${x}" y="50" width="${260}" height="${laneH}" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1"/>`
+      const pc = P[i % P.length]
+      s += `<rect x="${x}" y="50" width="${260}" height="${laneH}" fill="${theme.bg}" stroke="${theme.edge}" stroke-width="1" opacity="0.55"/>`
       s += `<rect x="${x}" y="50" width="${260}" height="${44}" fill="${pc.color}"/>`
-      s += `<text x="${x + 130}" y="${78}" text-anchor="middle" font-size="13.5" font-weight="700" fill="#ffffff">${esc(c.label)}</text>`
+      s += `<text x="${x + 130}" y="${78}" text-anchor="middle" font-size="13.5" font-weight="700" fill="${theme.laneHeaderText}">${esc(c.label)}</text>`
     })
   }
 
@@ -137,16 +212,16 @@ export function renderSVG(layout, { classDefs = {}, title = '', subtitle = '' } 
     if (!e.points.length) return
     const dash = e.style === 'dotted' || e.back ? ' stroke-dasharray="6 4"' : ''
     const sw = e.style === 'thick' ? 2.6 : 1.4
-    s += `<path d="${orthoPath(e.points)}" fill="none" stroke="#57606a" stroke-width="${sw}"${dash} marker-end="url(#arr)"/>`
+    s += `<path d="${orthoPath(e.points)}" fill="none" stroke="${theme.edge}" stroke-width="${sw}"${dash} marker-end="url(#arr)"/>`
     if (e.label) {
       const mid = e.points[Math.floor(e.points.length / 2)]
-      s += `<text x="${mid[0]}" y="${mid[1] - 7}" text-anchor="middle" font-size="10.5" fill="#57606a" paint-order="stroke" stroke="#ffffff" stroke-width="3">${esc(e.label)}</text>`
+      s += `<text x="${mid[0]}" y="${mid[1] - 7}" text-anchor="middle" font-size="10.5" fill="${theme.edge}" paint-order="stroke" stroke="${theme.bg}" stroke-width="3">${esc(e.label)}</text>`
     }
   })
 
   // 节点
   nodes.forEach(n => {
-    const st = resolveStyle(n, classDefs, nodeCol, mode === 'swimlane')
+    const st = resolveStyle(n, classDefs, nodeCol, mode === 'swimlane', theme)
     const dashAttr = st.dash ? ` stroke-dasharray="${st.dash}"` : ''
     s += `<g transform="translate(0,0)">`
     s += `<g fill="${st.fill}" stroke="${st.stroke}" stroke-width="${st.sw}"${dashAttr}>${shapeBody(n)}</g>`
@@ -156,8 +231,8 @@ export function renderSVG(layout, { classDefs = {}, title = '', subtitle = '' } 
 
   // 标题
   if (title) {
-    s += `<text x="${50}" y="24" font-size="15" font-weight="700" fill="#24292f">${esc(title)}</text>`
-    if (subtitle) s += `<text x="${50 + 320}" y="24" font-size="10.5" fill="#57606a">${esc(subtitle)}</text>`
+    s += `<text x="${50}" y="24" font-size="15" font-weight="700" fill="${theme.text}">${esc(title)}</text>`
+    if (subtitle) s += `<text x="${50 + 320}" y="24" font-size="10.5" fill="${theme.edge}">${esc(subtitle)}</text>`
   }
 
   s += '</svg>'

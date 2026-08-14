@@ -100,7 +100,7 @@ function buildSubReq(req, entry, ids) {
 }
 
 // ---------- 单图渲染 + 验收（P0-3：失败自动修复循环 ≤3 轮） ----------
-export function renderOne(req, outBase, autoOnly = false, maxFixRounds = 3) {
+export function renderOne(req, outBase, autoOnly = false, maxFixRounds = 3, theme = 'github-light') {
   let curReq = req
   let fixLog = []
   for (let round = 0; round <= maxFixRounds; round++) {
@@ -110,7 +110,7 @@ export function renderOne(req, outBase, autoOnly = false, maxFixRounds = 3) {
     const lay = autoOnly
       ? layoutAuto(graph.nodes, graph.edges)
       : layout(graph.nodes, graph.edges, graph.groups, graph.declaredOrder, 'auto')
-    const svg = renderSVG(lay, { classDefs: graph.classDefs, title: curReq.title || '' })
+    const svg = renderSVG(lay, { classDefs: graph.classDefs, title: curReq.title || '', theme })
     const expectText = autoOnly
       ? curReq.nodes.filter(n => n.shape === 'start' || n.shape === 'end').map(n => n.action)
       : (curReq.lanes || []).map(l => l.dept).concat(curReq.nodes.filter(n => n.shape === 'start' || n.shape === 'end').map(n => n.action))
@@ -146,7 +146,7 @@ export function renderOne(req, outBase, autoOnly = false, maxFixRounds = 3) {
   const src = reqToMermaid(curReq)
   const graph = parseFlow(src)
   const lay = layout(graph.nodes, graph.edges, graph.groups, graph.declaredOrder, 'auto')
-  const svg = renderSVG(lay, { classDefs: graph.classDefs, title: curReq.title || '' })
+  const svg = renderSVG(lay, { classDefs: graph.classDefs, title: curReq.title || '', theme })
   const report = validateSVG(svg, { nodeCount: graph.nodes.length, edgeCount: graph.edges.length })
   fs.writeFileSync(outBase + '.svg', svg, 'utf-8')
   fs.writeFileSync(outBase + '.req.json', JSON.stringify(curReq, null, 2), 'utf-8')
@@ -170,12 +170,12 @@ function applyReportFix(req, failedNames) {
 }
 
 // ---------- 拆分主流程（可复用：agent-flow 调用） ----------
-export function splitAndRender(req, outBase, MAX = 30) {
+export function splitAndRender(req, outBase, MAX = 30, theme = 'github-light') {
   const total = req.nodes.length
   console.log(`输入: ${req.title || outBase}（${total} 节点，阈值 ${MAX}）`)
 
   if (total <= MAX) {
-    const r = renderOne(req, outBase)
+    const r = renderOne(req, outBase, false, 3, theme)
     console.log(`${r.pass ? '✅' : '❌'} 未超阈值，直接渲染 — ${r.summary}`)
     return { main: r, subs: [], indexFile: null, pass: r.pass }
   }

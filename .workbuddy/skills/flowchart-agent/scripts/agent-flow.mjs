@@ -30,6 +30,7 @@ const args = process.argv.slice(2)
 const getOpt = (name, def) => { const i = args.indexOf(name); return i >= 0 && args[i + 1] ? args[i + 1] : def }
 const outBase = getOpt('--out', 'flow')
 const maxNodes = parseInt(getOpt('--max', '30'), 10)
+const theme = getOpt('--theme', 'github-light')
 const reqFile = getOpt('--req', '')
 const editIdx = args.indexOf('--edit')
 const editNext = editIdx >= 0 ? args[editIdx + 1] : ''
@@ -87,7 +88,7 @@ if (reqFile) {
 console.log(`📋 需求建模完成（${source}）：${req.title || '(未命名)'}，${req.nodes.length} 节点，${(req.edges || []).length} 边，${(req.lanes || []).length} 泳道`)
 
 // ---------- 2. 渲染 / 自动拆图 ----------
-const result = splitAndRender(req, outBase, maxNodes)
+const result = splitAndRender(req, outBase, maxNodes, theme)
 
 // ---------- 2.5 多格式导出（M5） ----------
 if (wantMmd) {
