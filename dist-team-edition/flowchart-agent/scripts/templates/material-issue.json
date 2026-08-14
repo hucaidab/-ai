@@ -1,0 +1,36 @@
+{
+  "type": "flowchart",
+  "title": "生产领料流程",
+  "meta": { "triggers": ["领料", "生产", "制造", "领用", "material"], "tags": ["生产", "库存"] },
+  "lanes": [
+    { "dept": "生产计划", "roles": ["计划员"] },
+    { "dept": "车间", "roles": ["领料员"] },
+    { "dept": "仓储部", "roles": ["仓管员"] },
+    { "dept": "质检", "roles": ["质检员"] }
+  ],
+  "nodes": [
+    { "id": "N1", "dept": "生产计划", "role": "计划员", "action": "开始：下达生产计划", "shape": "start" },
+    { "id": "N2", "dept": "生产计划", "role": "计划员", "action": "生成领料单", "shape": "rect" },
+    { "id": "N3", "dept": "车间", "role": "领料员", "action": "提交领料申请", "shape": "rect" },
+    { "id": "N4", "dept": "仓储部", "role": "仓管员", "action": "核对领料单与库存", "shape": "rect" },
+    { "id": "N5", "dept": "仓储部", "role": "仓管员", "action": "库存充足?", "shape": "diamond" },
+    { "id": "N6", "dept": "仓储部", "role": "仓管员", "action": "拣货出库", "shape": "rect" },
+    { "id": "N7", "dept": "车间", "role": "领料员", "action": "车间领用并签字", "shape": "rect" },
+    { "id": "N8", "dept": "质检", "role": "质检员", "action": "领料检验合格?", "shape": "diamond" },
+    { "id": "N9", "dept": "车间", "role": "领料员", "action": "投入生产", "shape": "rect" },
+    { "id": "N10", "dept": "生产计划", "role": "计划员", "action": "结束：领料完成", "shape": "end" }
+  ],
+  "edges": [
+    { "from": "N1", "to": "N2", "label": "", "reverse": false },
+    { "from": "N2", "to": "N3", "label": "下发", "reverse": false },
+    { "from": "N3", "to": "N4", "label": "提交", "reverse": false },
+    { "from": "N4", "to": "N5", "label": "", "reverse": false },
+    { "from": "N5", "to": "N6", "label": "充足", "reverse": false },
+    { "from": "N5", "to": "N2", "label": "缺料·重新排产", "reverse": true },
+    { "from": "N6", "to": "N7", "label": "出库", "reverse": false },
+    { "from": "N7", "to": "N8", "label": "", "reverse": false },
+    { "from": "N8", "to": "N9", "label": "合格", "reverse": false },
+    { "from": "N8", "to": "N6", "label": "不合格·退料", "reverse": true },
+    { "from": "N9", "to": "N10", "label": "", "reverse": false }
+  ]
+}

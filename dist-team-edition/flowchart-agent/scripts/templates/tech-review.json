@@ -1,0 +1,105 @@
+{
+  "type": "flowchart",
+  "title": "技术方案评审流程",
+  "lanes": [
+    {
+      "dept": "研发部",
+      "roles": [
+        "工程师",
+        "评审组",
+        "技术负责人"
+      ]
+    },
+    {
+      "dept": "架构组",
+      "roles": [
+        "架构师"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "研发部",
+      "role": "工程师",
+      "action": "编写技术方案",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "架构组",
+      "role": "架构师",
+      "action": "架构合理性评估?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "研发部",
+      "role": "评审组",
+      "action": "方案评审通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N4",
+      "dept": "研发部",
+      "role": "工程师",
+      "action": "方案修订",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "研发部",
+      "role": "技术负责人",
+      "action": "方案定稿归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "合理",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N4",
+      "label": "需调整",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N1",
+      "label": "",
+      "reverse": true
+    },
+    {
+      "from": "N3",
+      "to": "N5",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "退回",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "技术方案",
+      "方案评审",
+      "架构评审"
+    ],
+    "tags": [
+      "研发"
+    ]
+  }
+}

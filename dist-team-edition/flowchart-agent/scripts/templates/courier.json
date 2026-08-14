@@ -1,0 +1,150 @@
+{
+  "type": "flowchart",
+  "title": "快递揽收派送流程",
+  "lanes": [
+    {
+      "dept": "客户",
+      "roles": [
+        "寄件人"
+      ]
+    },
+    {
+      "dept": "快递网点",
+      "roles": [
+        "揽收员",
+        "派送员"
+      ]
+    },
+    {
+      "dept": "分拨中心",
+      "roles": [
+        "分拣员"
+      ]
+    },
+    {
+      "dept": "收件人",
+      "roles": [
+        "收件人"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "客户",
+      "role": "寄件人",
+      "action": "下单寄件",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "快递网点",
+      "role": "揽收员",
+      "action": "上门揽收",
+      "shape": "rect"
+    },
+    {
+      "id": "N3",
+      "dept": "快递网点",
+      "role": "揽收员",
+      "action": "扫描建包",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "分拨中心",
+      "role": "分拣员",
+      "action": "干线运输分拣",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "快递网点",
+      "role": "派送员",
+      "action": "末端派送",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "收件人",
+      "role": "收件人",
+      "action": "签收或拒收?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N7",
+      "dept": "快递网点",
+      "role": "派送员",
+      "action": "问题件处理",
+      "shape": "rect"
+    },
+    {
+      "id": "N8",
+      "dept": "快递网点",
+      "role": "派送员",
+      "action": "签收归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N8",
+      "label": "签收",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "拒收",
+      "reverse": false
+    },
+    {
+      "from": "N7",
+      "to": "N8",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "快递",
+      "揽收",
+      "派送",
+      "courier"
+    ],
+    "tags": [
+      "物流"
+    ]
+  }
+}

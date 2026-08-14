@@ -1,0 +1,34 @@
+{
+  "type": "flowchart",
+  "title": "退货退款流程",
+  "meta": { "triggers": ["退货", "退款", "售后", "return", "refund"], "tags": ["售后", "应收"] },
+  "lanes": [
+    { "dept": "客户", "roles": ["客户"] },
+    { "dept": "客服", "roles": ["客服专员"] },
+    { "dept": "质检", "roles": ["质检员"] },
+    { "dept": "财务部", "roles": ["财务专员"] }
+  ],
+  "nodes": [
+    { "id": "N1", "dept": "客户", "role": "客户", "action": "开始：申请退货退款", "shape": "start" },
+    { "id": "N2", "dept": "客服", "role": "客服专员", "action": "受理并登记申请", "shape": "rect" },
+    { "id": "N3", "dept": "质检", "role": "质检员", "action": "退货原因审核通过?", "shape": "diamond" },
+    { "id": "N4", "dept": "客户", "role": "客户", "action": "寄回商品", "shape": "rect" },
+    { "id": "N5", "dept": "质检", "role": "质检员", "action": "收货并验货", "shape": "rect" },
+    { "id": "N6", "dept": "质检", "role": "质检员", "action": "验货合格?", "shape": "diamond" },
+    { "id": "N7", "dept": "财务部", "role": "财务专员", "action": "办理退款", "shape": "rect" },
+    { "id": "N8", "dept": "客户", "role": "客户", "action": "收到退款", "shape": "rect" },
+    { "id": "N9", "dept": "客服", "role": "客服专员", "action": "结束：售后完结", "shape": "end" }
+  ],
+  "edges": [
+    { "from": "N1", "to": "N2", "label": "申请", "reverse": false },
+    { "from": "N2", "to": "N3", "label": "", "reverse": false },
+    { "from": "N3", "to": "N4", "label": "通过", "reverse": false },
+    { "from": "N3", "to": "N1", "label": "拒绝·告知原因", "reverse": true },
+    { "from": "N4", "to": "N5", "label": "寄回", "reverse": false },
+    { "from": "N5", "to": "N6", "label": "", "reverse": false },
+    { "from": "N6", "to": "N7", "label": "合格", "reverse": false },
+    { "from": "N6", "to": "N4", "label": "不合格·退回", "reverse": true },
+    { "from": "N7", "to": "N8", "label": "退款", "reverse": false },
+    { "from": "N8", "to": "N9", "label": "", "reverse": false }
+  ]
+}

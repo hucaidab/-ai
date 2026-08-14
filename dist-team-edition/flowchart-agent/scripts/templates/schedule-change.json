@@ -1,0 +1,128 @@
+{
+  "type": "flowchart",
+  "title": "排产变更流程",
+  "lanes": [
+    {
+      "dept": "计划部",
+      "roles": [
+        "计划员"
+      ]
+    },
+    {
+      "dept": "生产部",
+      "roles": [
+        "车间主管"
+      ]
+    },
+    {
+      "dept": "销售部",
+      "roles": [
+        "销售员"
+      ]
+    },
+    {
+      "dept": "仓储部",
+      "roles": [
+        "仓管员"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "销售部",
+      "role": "销售员",
+      "action": "提出插单或变更需求",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "计划部",
+      "role": "计划员",
+      "action": "产能可行性评估?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "计划部",
+      "role": "计划员",
+      "action": "调整排产计划",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "生产部",
+      "role": "车间主管",
+      "action": "变更执行确认?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N5",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "物料调整准备",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "计划部",
+      "role": "计划员",
+      "action": "新排产发布",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "可行",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N1",
+      "label": "不可行",
+      "reverse": true
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "确认",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N3",
+      "label": "冲突",
+      "reverse": true
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "排产变更",
+      "生产计划变更",
+      "插单"
+    ],
+    "tags": [
+      "制造"
+    ]
+  }
+}

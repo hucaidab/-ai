@@ -1,0 +1,123 @@
+{
+  "type": "flowchart",
+  "title": "培训申请流程",
+  "lanes": [
+    {
+      "dept": "员工",
+      "roles": [
+        "员工"
+      ]
+    },
+    {
+      "dept": "部门",
+      "roles": [
+        "部门经理"
+      ]
+    },
+    {
+      "dept": "HR",
+      "roles": [
+        "培训专员"
+      ]
+    },
+    {
+      "dept": "HR 培训专员",
+      "roles": [
+        "HR 培训专员"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "员工",
+      "role": "员工",
+      "action": "提交培训申请",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "部门",
+      "role": "部门经理",
+      "action": "培训审批通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "HR 培训专员",
+      "role": "HR 培训专员",
+      "action": "安排培训",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "员工",
+      "role": "员工",
+      "action": "参加培训并签到",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "HR 培训专员",
+      "role": "HR 培训专员",
+      "action": "培训评估归档",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "HR 培训专员",
+      "role": "HR 培训专员",
+      "action": "培训完成",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N1",
+      "label": "驳回",
+      "reverse": true
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "培训",
+      "学习",
+      "training"
+    ],
+    "tags": [
+      "HR",
+      "培训"
+    ]
+  }
+}

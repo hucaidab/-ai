@@ -1,0 +1,112 @@
+{
+  "type": "flowchart",
+  "title": "发票管理流程",
+  "lanes": [
+    {
+      "dept": "业务部门",
+      "roles": [
+        "经办人"
+      ]
+    },
+    {
+      "dept": "财务部",
+      "roles": [
+        "税务会计"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "业务部门",
+      "role": "经办人",
+      "action": "提交开票申请",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "财务部",
+      "role": "税务会计",
+      "action": "开票审核通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "财务部",
+      "role": "税务会计",
+      "action": "开具发票",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "财务部",
+      "role": "税务会计",
+      "action": "发票交付与归档",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "财务部",
+      "role": "税务会计",
+      "action": "进项发票认证",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "财务部",
+      "role": "税务会计",
+      "action": "发票台账更新",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N1",
+      "label": "退回",
+      "reverse": true
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "发票",
+      "开票",
+      "进项认证",
+      "invoice"
+    ],
+    "tags": [
+      "财务",
+      "税务"
+    ]
+  }
+}

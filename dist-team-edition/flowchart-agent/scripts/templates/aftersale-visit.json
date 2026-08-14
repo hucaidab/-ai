@@ -1,0 +1,151 @@
+{
+  "type": "flowchart",
+  "title": "售后现场服务流程",
+  "lanes": [
+    {
+      "dept": "客户",
+      "roles": [
+        "客户"
+      ]
+    },
+    {
+      "dept": "客服部",
+      "roles": [
+        "客服专员",
+        "客服经理"
+      ]
+    },
+    {
+      "dept": "服务部",
+      "roles": [
+        "服务工程师"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "客户",
+      "role": "客户",
+      "action": "申请售后服务",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "客服部",
+      "role": "客服专员",
+      "action": "受理并派单",
+      "shape": "rect"
+    },
+    {
+      "id": "N3",
+      "dept": "服务部",
+      "role": "服务工程师",
+      "action": "上门服务",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "服务部",
+      "role": "服务工程师",
+      "action": "现场修复完成?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N5",
+      "dept": "服务部",
+      "role": "服务工程师",
+      "action": "问题升级处理",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "客服部",
+      "role": "客服经理",
+      "action": "服务确认?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N7",
+      "dept": "客服部",
+      "role": "客服专员",
+      "action": "客户回访",
+      "shape": "rect"
+    },
+    {
+      "id": "N8",
+      "dept": "客服部",
+      "role": "客服专员",
+      "action": "服务工单关闭",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N6",
+      "label": "完成",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "未完成",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "确认",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N3",
+      "label": "有异议",
+      "reverse": true
+    },
+    {
+      "from": "N7",
+      "to": "N8",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "售后",
+      "上门",
+      "现场服务",
+      "aftersale"
+    ],
+    "tags": [
+      "客服",
+      "服务"
+    ]
+  }
+}

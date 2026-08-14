@@ -1,0 +1,164 @@
+{
+  "type": "flowchart",
+  "title": "生产计划编制流程",
+  "lanes": [
+    {
+      "dept": "销售部",
+      "roles": [
+        "销售员"
+      ]
+    },
+    {
+      "dept": "生产计划",
+      "roles": [
+        "计划员",
+        "计划经理"
+      ]
+    },
+    {
+      "dept": "仓储部",
+      "roles": [
+        "仓管员"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "销售部",
+      "role": "销售员",
+      "action": "提交销售预测与订单",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "生产计划",
+      "role": "计划员",
+      "action": "需求汇总",
+      "shape": "rect"
+    },
+    {
+      "id": "N3",
+      "dept": "生产计划",
+      "role": "计划员",
+      "action": "MPS 主生产计划编制",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "生产计划",
+      "role": "计划员",
+      "action": "产能与物料平衡?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N5",
+      "dept": "生产计划",
+      "role": "计划员",
+      "action": "MRP 物料需求计划",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "库存核减",
+      "shape": "rect"
+    },
+    {
+      "id": "N7",
+      "dept": "生产计划",
+      "role": "计划经理",
+      "action": "计划审批通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N8",
+      "dept": "生产计划",
+      "role": "计划员",
+      "action": "计划下达",
+      "shape": "rect"
+    },
+    {
+      "id": "N9",
+      "dept": "生产计划",
+      "role": "计划员",
+      "action": "计划发布",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "平衡",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N3",
+      "label": "不平衡",
+      "reverse": true
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N7",
+      "to": "N8",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N7",
+      "to": "N3",
+      "label": "驳回",
+      "reverse": true
+    },
+    {
+      "from": "N8",
+      "to": "N9",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "生产计划",
+      "mps",
+      "mrp",
+      "排产"
+    ],
+    "tags": [
+      "制造",
+      "计划"
+    ]
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "type": "flowchart",
+  "title": "印章借用流程",
+  "lanes": [
+    {
+      "dept": "申请人",
+      "roles": [
+        "申请人"
+      ]
+    },
+    {
+      "dept": "行政部",
+      "roles": [
+        "印章管理员"
+      ]
+    },
+    {
+      "dept": "部门",
+      "roles": [
+        "部门经理"
+      ]
+    },
+    {
+      "dept": "法务部",
+      "roles": [
+        "法务专员"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "申请人",
+      "role": "申请人",
+      "action": "提交印章借用申请",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "部门",
+      "role": "部门经理",
+      "action": "借用事由审批通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "法务部",
+      "role": "法务专员",
+      "action": "文件合规审查通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N4",
+      "dept": "行政部",
+      "role": "印章管理员",
+      "action": "登记借出",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "申请人",
+      "role": "申请人",
+      "action": "用印使用",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "行政部",
+      "role": "印章管理员",
+      "action": "归还核销",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N1",
+      "label": "驳回",
+      "reverse": true
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N1",
+      "label": "退回",
+      "reverse": true
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "印章",
+      "盖章",
+      "用印"
+    ],
+    "tags": [
+      "行政"
+    ]
+  }
+}

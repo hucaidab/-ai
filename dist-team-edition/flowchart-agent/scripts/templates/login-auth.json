@@ -1,0 +1,46 @@
+{
+  "type": "flowchart",
+  "title": "登录认证流程",
+  "meta": { "triggers": ["登录", "认证", "鉴权", "login", "账号"], "tags": ["安全", "认证"] },
+  "lanes": [
+    { "dept": "用户", "roles": ["用户"] },
+    { "dept": "前端客户端", "roles": ["前端"] },
+    { "dept": "认证服务", "roles": ["认证服务"] },
+    { "dept": "数据存储", "roles": ["数据存储"] },
+    { "dept": "MFA 服务", "roles": ["MFA 服务"] }
+  ],
+  "nodes": [
+    { "id": "N1", "dept": "用户", "role": "用户", "action": "开始：访问登录页", "shape": "start" },
+    { "id": "N2", "dept": "前端客户端", "role": "前端", "action": "显示登录表单", "shape": "rect" },
+    { "id": "N3", "dept": "用户", "role": "用户", "action": "输入账号与密码", "shape": "rect" },
+    { "id": "N4", "dept": "前端客户端", "role": "前端", "action": "格式校验通过?", "shape": "diamond" },
+    { "id": "N5", "dept": "认证服务", "role": "认证服务", "action": "接收登录请求", "shape": "rect" },
+    { "id": "N6", "dept": "认证服务", "role": "认证服务", "action": "频率超限?", "shape": "diamond" },
+    { "id": "N7", "dept": "数据存储", "role": "数据存储", "action": "用户凭据数据库", "shape": "data" },
+    { "id": "N8", "dept": "认证服务", "role": "认证服务", "action": "密码匹配?", "shape": "diamond" },
+    { "id": "N9", "dept": "认证服务", "role": "认证服务", "action": "启用 MFA?", "shape": "diamond" },
+    { "id": "N10", "dept": "MFA 服务", "role": "MFA 服务", "action": "下发并校验验证码", "shape": "rect" },
+    { "id": "N11", "dept": "认证服务", "role": "认证服务", "action": "签发 Token + 创建会话", "shape": "rect" },
+    { "id": "N12", "dept": "前端客户端", "role": "前端", "action": "跳转主页", "shape": "rect" },
+    { "id": "N13", "dept": "用户", "role": "用户", "action": "结束：登录成功", "shape": "end" }
+  ],
+  "edges": [
+    { "from": "N1", "to": "N2", "label": "访问", "reverse": false },
+    { "from": "N2", "to": "N3", "label": "", "reverse": false },
+    { "from": "N3", "to": "N4", "label": "提交", "reverse": false },
+    { "from": "N4", "to": "N5", "label": "通过", "reverse": false },
+    { "from": "N4", "to": "N3", "label": "格式错误·重填", "reverse": true },
+    { "from": "N5", "to": "N6", "label": "", "reverse": false },
+    { "from": "N6", "to": "N7", "label": "通过", "reverse": false },
+    { "from": "N6", "to": "N3", "label": "超限·冷却", "reverse": true },
+    { "from": "N7", "to": "N8", "label": "查询用户", "reverse": false },
+    { "from": "N8", "to": "N9", "label": "匹配", "reverse": false },
+    { "from": "N8", "to": "N3", "label": "不匹配·重试", "reverse": true },
+    { "from": "N9", "to": "N10", "label": "是", "reverse": false },
+    { "from": "N9", "to": "N11", "label": "否", "reverse": false },
+    { "from": "N10", "to": "N11", "label": "验证通过", "reverse": false },
+    { "from": "N10", "to": "N10", "label": "重发验证码", "reverse": true },
+    { "from": "N11", "to": "N12", "label": "Set-Cookie", "reverse": false },
+    { "from": "N12", "to": "N13", "label": "", "reverse": false }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "type": "flowchart",
+  "title": "客户建档流程",
+  "lanes": [
+    {
+      "dept": "销售部",
+      "roles": [
+        "销售员"
+      ]
+    },
+    {
+      "dept": "信用部",
+      "roles": [
+        "信用专员"
+      ]
+    },
+    {
+      "dept": "财务部",
+      "roles": [
+        "财务经理"
+      ]
+    },
+    {
+      "dept": "客服部",
+      "roles": [
+        "客服专员"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "销售部",
+      "role": "销售员",
+      "action": "提交客户建档申请",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "信用部",
+      "role": "信用专员",
+      "action": "信用评估通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "财务部",
+      "role": "财务经理",
+      "action": "账期授信审批通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N4",
+      "dept": "客服部",
+      "role": "客服专员",
+      "action": "客户主数据录入",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "客服部",
+      "role": "客服专员",
+      "action": "客户档案生效",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N1",
+      "label": "不通过",
+      "reverse": true
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N1",
+      "label": "不通过",
+      "reverse": true
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "客户建档",
+      "开户",
+      "客户主数据",
+      "customer"
+    ],
+    "tags": [
+      "销售",
+      "客户"
+    ]
+  }
+}

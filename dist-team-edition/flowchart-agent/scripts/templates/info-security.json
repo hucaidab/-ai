@@ -1,0 +1,142 @@
+{
+  "type": "flowchart",
+  "title": "信息安全事件响应流程",
+  "lanes": [
+    {
+      "dept": "员工",
+      "roles": [
+        "发现人"
+      ]
+    },
+    {
+      "dept": "IT",
+      "roles": [
+        "安全运维"
+      ]
+    },
+    {
+      "dept": "安全部",
+      "roles": [
+        "安全主管"
+      ]
+    },
+    {
+      "dept": "管理层",
+      "roles": [
+        "应急小组"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "员工",
+      "role": "发现人",
+      "action": "上报安全事件",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "IT",
+      "role": "安全运维",
+      "action": "事件定级?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "管理层",
+      "role": "应急小组",
+      "action": "启动应急预案",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "IT",
+      "role": "安全运维",
+      "action": "隔离与取证",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "安全部",
+      "role": "安全主管",
+      "action": "影响评估完成?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N6",
+      "dept": "IT",
+      "role": "安全运维",
+      "action": "修复加固",
+      "shape": "rect"
+    },
+    {
+      "id": "N7",
+      "dept": "安全部",
+      "role": "安全主管",
+      "action": "复盘报告归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "高",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N4",
+      "label": "低",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "完成",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N4",
+      "label": "进行中",
+      "reverse": true
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "信息安全",
+      "安全事件",
+      "数据泄露"
+    ],
+    "tags": [
+      "IT",
+      "安全"
+    ]
+  }
+}

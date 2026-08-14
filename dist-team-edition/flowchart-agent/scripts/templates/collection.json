@@ -1,0 +1,144 @@
+{
+  "type": "flowchart",
+  "title": "客户回款催收流程",
+  "lanes": [
+    {
+      "dept": "销售部",
+      "roles": [
+        "销售员",
+        "销售经理"
+      ]
+    },
+    {
+      "dept": "财务部",
+      "roles": [
+        "应收会计"
+      ]
+    },
+    {
+      "dept": "客户",
+      "roles": [
+        "客户"
+      ]
+    },
+    {
+      "dept": "法务部",
+      "roles": [
+        "法务专员"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "财务部",
+      "role": "应收会计",
+      "action": "到期账款预警",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "销售部",
+      "role": "销售员",
+      "action": "电话催收",
+      "shape": "rect"
+    },
+    {
+      "id": "N3",
+      "dept": "销售部",
+      "role": "销售经理",
+      "action": "逾期分级?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N4",
+      "dept": "财务部",
+      "role": "应收会计",
+      "action": "书面催收函",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "客户",
+      "role": "客户",
+      "action": "回款完成?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N6",
+      "dept": "法务部",
+      "role": "法务专员",
+      "action": "法律途径处理",
+      "shape": "rect"
+    },
+    {
+      "id": "N7",
+      "dept": "财务部",
+      "role": "应收会计",
+      "action": "回款核销归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "短期",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N6",
+      "label": "长期",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N7",
+      "label": "完成",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N2",
+      "label": "未回",
+      "reverse": true
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "回款",
+      "催收",
+      "应收账款",
+      "ar"
+    ],
+    "tags": [
+      "销售",
+      "财务"
+    ]
+  }
+}

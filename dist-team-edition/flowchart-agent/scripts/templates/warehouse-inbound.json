@@ -1,0 +1,142 @@
+{
+  "type": "flowchart",
+  "title": "仓储入库验收流程",
+  "lanes": [
+    {
+      "dept": "供应商",
+      "roles": [
+        "供应商"
+      ]
+    },
+    {
+      "dept": "仓储部",
+      "roles": [
+        "仓管员"
+      ]
+    },
+    {
+      "dept": "品质部",
+      "roles": [
+        "质检员"
+      ]
+    },
+    {
+      "dept": "财务部",
+      "roles": [
+        "应付会计"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "供应商",
+      "role": "供应商",
+      "action": "送货到库",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "单据核对通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "品质部",
+      "role": "质检员",
+      "action": "质量检验合格?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N4",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "数量清点入库",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "上架登记",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "财务部",
+      "role": "应付会计",
+      "action": "入库结算确认",
+      "shape": "rect"
+    },
+    {
+      "id": "N7",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "入库单归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N1",
+      "label": "不符",
+      "reverse": true
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "合格",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N1",
+      "label": "不合格",
+      "reverse": true
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "入库",
+      "收货验收",
+      "inbound"
+    ],
+    "tags": [
+      "物流",
+      "仓储"
+    ]
+  }
+}

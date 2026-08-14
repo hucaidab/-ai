@@ -1,0 +1,122 @@
+{
+  "type": "flowchart",
+  "title": "档案借阅管理流程",
+  "lanes": [
+    {
+      "dept": "申请人",
+      "roles": [
+        "申请人"
+      ]
+    },
+    {
+      "dept": "行政部",
+      "roles": [
+        "档案管理员"
+      ]
+    },
+    {
+      "dept": "部门",
+      "roles": [
+        "部门经理"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "申请人",
+      "role": "申请人",
+      "action": "提交档案借阅申请",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "行政部",
+      "role": "档案管理员",
+      "action": "密级与范围核查?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "行政部",
+      "role": "档案管理员",
+      "action": "登记借出",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "申请人",
+      "role": "申请人",
+      "action": "借阅使用",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "行政部",
+      "role": "档案管理员",
+      "action": "归还检查完整?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N6",
+      "dept": "行政部",
+      "role": "档案管理员",
+      "action": "归档销账",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N1",
+      "label": "越权",
+      "reverse": true
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "完整",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N3",
+      "label": "缺失",
+      "reverse": true
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "档案",
+      "借阅",
+      "归档"
+    ],
+    "tags": [
+      "行政"
+    ]
+  }
+}

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>流程图编辑器</title>
+<style>
+  :root{--bg:#f6f8fa;--fg:#1f2328;--border:#d0d7de;--accent:#0969da;--muted:#57606a}
+  *{box-sizing:border-box}
+  /* 画布应用禁用文本选择：拖动节点/锚点/框选时不选中 SVG 文字（专业编辑器标配） */
+  body{-webkit-user-select:none;user-select:none}
+  input,textarea,select{-webkit-user-select:text;user-select:text}
+  body{margin:0;font-family:'Microsoft YaHei',system-ui,sans-serif;background:var(--bg);color:var(--fg);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  header{background:#fff;border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  header .logo{font-weight:700;font-size:15px;margin-right:8px}
+  header .file{font-size:12px;color:var(--muted);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .btn{padding:6px 14px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;font-size:12.5px}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{filter:brightness(1.08)}
+  .btn.danger:hover{border-color:#cf222e;color:#cf222e}
+  .sep{width:1px;height:22px;background:var(--border)}
+  select{padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12.5px;background:#fff}
+  main{flex:1;display:flex;overflow:hidden}
+  #canvasWrap{flex:1;overflow:auto;background:
+    linear-gradient(45deg,#ececec 25%,transparent 25%,transparent 75%,#ececec 75%) 0 0/20px 20px,
+    linear-gradient(45deg,#ececec 25%,#f6f8fa 25%,#f6f8fa 75%,#ececec 75%) 10px 10px/20px 20px;position:relative}
+  #svgHost{display:inline-block;transform-origin:0 0}
+  #svgHost svg{display:block;box-shadow:0 1px 12px rgba(0,0,0,.12)}
+  #svgHost svg g{cursor:default}
+  #propPanel{width:280px;min-width:280px;background:#fff;border-left:1px solid var(--border);padding:14px 16px;overflow-y:auto;font-size:13px}
+  #propPanel label{display:block;font-size:11.5px;color:var(--muted);margin:10px 0 4px}
+  #propPanel input,#propPanel select{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;box-sizing:border-box}
+  #propPanel button{width:100%;margin-top:14px;padding:8px;border:none;border-radius:6px;background:var(--accent);color:#fff;cursor:pointer;font-size:13px}
+  #propPanel button.danger{background:#cf222e;margin-top:6px}
+  #propPanel .pt{font-weight:700;font-size:13.5px;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:4px}
+  #propPanel .ph{color:var(--muted);font-size:12.5px;padding:30px 8px;text-align:center;line-height:1.9}
+  #propPanel .ph span{font-size:11.5px}
+  footer{background:#fff;border-top:1px solid var(--border);padding:6px 16px;display:flex;align-items:center;gap:14px;font-size:12px;color:var(--muted)}
+  footer .ok{color:#1a7f37;font-weight:600}
+  footer .warn{color:#9a6700;font-weight:600}
+  footer .err{color:#cf222e;font-weight:600}
+  .hint{margin-left:auto;font-size:11px}
+  #diag{position:fixed;top:0;left:0;right:0;z-index:1000;background:#fff8c5;border-bottom:1px solid #d4a72c;color:#633c01;font-size:12px;padding:5px 16px;text-align:center;font-family:'Microsoft YaHei',system-ui,sans-serif}
+  #diag.ok{background:#dafbe1;border-color:#1a7f37;color:#0a3d1e}
+  #diag.bad{background:#ffebe9;border-color:#cf222e;color:#82071e}
+  /* 选中高亮：节点加粗描边+光晕，边红色加粗 */
+  #cv g[data-sel] > g{stroke-width:3.5}
+  #cv g[data-sel]{filter:drop-shadow(0 0 5px rgba(9,105,218,.55))}
+  #cv path[data-sel]{stroke:#cf222e!important;stroke-width:2.8!important}
+  /* 拖线建边目标提示：经过的节点高亮（draw.io：松手即连接） */
+  #cv g[data-hover] > g{stroke:#0969da;stroke-width:3.5}
+  #cv g[data-hover]{filter:drop-shadow(0 0 4px rgba(9,105,218,.5))}
+  #cv circle.target-port{fill:#fff;stroke:#0969da;stroke-width:2;cursor:crosshair;pointer-events:all}
+  /* 边命中层（常驻透明粗线，12px 命中区）：悬停半透明蓝提示可点击 */
+  #cv path.edge-hit{stroke:transparent;stroke-width:12;fill:none;pointer-events:stroke}
+  #cv path.edge-hit:hover{stroke:rgba(9,105,218,.28)}
+</style>
+</head>
+<body>
+<header>
+  <span class="logo">✏️ 流程图编辑器</span>
+  <span class="file" id="fileLabel"></span>
+  <span class="sep"></span>
+  <button class="btn" onclick="location.href='/generate'">← 生成器</button>
+  <button class="btn primary" id="btnSave" onclick="window.__editor.save()">💾 保存</button>
+  <span class="sep"></span>
+  <button class="btn" onclick="window.__editor.undo()" title="Ctrl+Z">↩ 撤销</button>
+  <button class="btn" onclick="window.__editor.redo()" title="Ctrl+Y">↪ 重做</button>
+  <span class="sep"></span>
+  <button class="btn" onclick="document.getElementById('shapeModal').style.display='flex'" title="添加节点（选择形状）">＋ 添加节点</button>
+  <button class="btn" onclick="window.__editor.addLane()" title="添加泳道容器（角色横向分栏）">▦ 添加泳道</button>
+  <button class="btn danger" onclick="window.__editor.delSelected()">🗑 删除选中</button>
+  <span class="sep"></span>
+  <select id="themeSel" onchange="window.__editor.setTheme(this.value)" title="主题">
+    <option value="github-light">主题：浅色</option>
+    <option value="github-dark">主题：深色</option>
+    <option value="enterprise-blue">主题：企业蓝</option>
+    <option value="bpmn">主题：BPMN</option>
+  </select>
+  <span class="sep"></span>
+  <button class="btn" onclick="window.__editor.exportPng()">⬇ PNG</button>
+  <button class="btn" onclick="window.__editor.exportPdf()">⬇ PDF</button>
+</header>
+<main>
+  <div id="canvasWrap"><div id="svgHost"></div></div>
+  <aside id="propPanel"><div class="ph">未选中任何元素<br><span>单击节点/连线选中 · 双击节点改文字<br>拖拽节点移动（自动吸附） · 滚轮缩放 · 空白处拖拽框选<br>Ctrl+Z 撤销 / Ctrl+Y 重做 · Delete 删除</span></div></aside>
+</main>
+<footer>
+  <span id="saveStatus">就绪</span>
+  <span id="zoomStatus">100%</span>
+  <span class="hint">编辑自动写回 req.json（单一数据源），保存时重新渲染 + 10 项验收</span>
+</footer>
+<!-- 添加节点：形状选择弹窗（对标竞品形状库） -->
+<div id="shapeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:900;align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
+  <div style="background:#fff;border-radius:10px;padding:20px 24px;min-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.18)">
+    <div style="font-weight:700;font-size:14.5px;margin-bottom:14px">添加节点 — 选择形状</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+      <button class="btn" onclick="window.__editor.addNode('rect');document.getElementById('shapeModal').style.display='none'" title="普通步骤">▭<br>矩形</button>
+      <button class="btn" onclick="window.__editor.addNode('diamond');document.getElementById('shapeModal').style.display='none'" title="判断/审批">◆<br>判断</button>
+      <button class="btn" onclick="window.__editor.addNode('stadium');document.getElementById('shapeModal').style.display='none'" title="开始/结束">◉<br>起止</button>
+      <button class="btn" onclick="window.__editor.addNode('cylinder');document.getElementById('shapeModal').style.display='none'" title="数据对象">⬭<br>数据</button>
+      <button class="btn" onclick="window.__editor.addNode('subroutine');document.getElementById('shapeModal').style.display='none'" title="子流程">⧉<br>子流程</button>
+    </div>
+    <button class="btn" style="margin-top:14px;width:100%" onclick="document.getElementById('shapeModal').style.display='none'">取消</button>
+  </div>
+</div>
+<script>
+  // 环境诊断条（普通脚本，最先执行）：模块加载失败/沙箱限制时也能看到状态
+  const diag = document.createElement('div')
+  diag.id = 'diag'
+  diag.textContent = '⏳ 编辑器加载中…'
+  document.body.appendChild(diag)
+  window.__diag = msg => { diag.textContent = msg }
+</script>
+<script type="module">
+  window.addEventListener('error', e => {
+    const box = document.createElement('div')
+    box.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);background:#cf222e;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;z-index:999;max-width:90%;box-shadow:0 4px 16px rgba(0,0,0,.25)'
+    box.textContent = '❌ 页面出错：' + (e.message || e)
+    document.body.appendChild(box)
+    setTimeout(() => box.remove(), 8000)
+    window.__diag && window.__diag('❌ 页面出错：' + (e.message || e))
+  })
+  import * as editor from '/lib/editor-core.mjs?v=21'
+  window.__editor = editor
+  const q = new URLSearchParams(location.search)
+  const file = q.get('file')
+  if (!file) { document.body.innerHTML = '<div style="padding:40px;font-size:14px">用法：/editor?file=xxx.req.json</div>'; }
+  else {
+    document.getElementById('fileLabel').textContent = file
+    await editor.init(file)
+    // 顶部就绪提示去掉：初始化完成后自动移除诊断条（加载中/出错状态仍短暂可见，供排查）
+    setTimeout(() => { if (diag.parentNode) diag.remove() }, 800)
+  }
+</script>
+</body>
+</html>

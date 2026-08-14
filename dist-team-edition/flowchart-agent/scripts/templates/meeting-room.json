@@ -1,0 +1,135 @@
+{
+  "type": "flowchart",
+  "title": "会议室预订流程",
+  "lanes": [
+    {
+      "dept": "员工",
+      "roles": [
+        "申请人"
+      ]
+    },
+    {
+      "dept": "行政部",
+      "roles": [
+        "行政专员"
+      ]
+    },
+    {
+      "dept": "参会人",
+      "roles": [
+        "参会人"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "员工",
+      "role": "申请人",
+      "action": "提交会议室预订申请",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "行政部",
+      "role": "行政专员",
+      "action": "会议室可用?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "行政部",
+      "role": "行政专员",
+      "action": "确认预订并发通知",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "参会人",
+      "role": "参会人",
+      "action": "按约参会",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "员工",
+      "role": "申请人",
+      "action": "会议结束后释放?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N6",
+      "dept": "行政部",
+      "role": "行政专员",
+      "action": "设备检查与场地复原",
+      "shape": "rect"
+    },
+    {
+      "id": "N7",
+      "dept": "行政部",
+      "role": "行政专员",
+      "action": "预订记录归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "可用",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N1",
+      "label": "冲突",
+      "reverse": true
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "释放",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N3",
+      "label": "续订",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "会议室",
+      "预订",
+      "meeting"
+    ],
+    "tags": [
+      "行政"
+    ]
+  }
+}

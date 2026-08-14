@@ -1,0 +1,148 @@
+{
+  "type": "flowchart",
+  "title": "月末结账流程",
+  "lanes": [
+    {
+      "dept": "财务部",
+      "roles": [
+        "总账会计",
+        "应收会计",
+        "应付会计",
+        "成本会计",
+        "财务经理"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "财务部",
+      "role": "总账会计",
+      "action": "启动月末结账",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "财务部",
+      "role": "应收会计",
+      "action": "应收对账与核销",
+      "shape": "rect"
+    },
+    {
+      "id": "N3",
+      "dept": "财务部",
+      "role": "应付会计",
+      "action": "应付对账与暂估",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "财务部",
+      "role": "成本会计",
+      "action": "成本结转",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "财务部",
+      "role": "财务经理",
+      "action": "结账前检查通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N6",
+      "dept": "财务部",
+      "role": "总账会计",
+      "action": "计提与调整分录",
+      "shape": "rect"
+    },
+    {
+      "id": "N7",
+      "dept": "财务部",
+      "role": "总账会计",
+      "action": "报表出具",
+      "shape": "rect"
+    },
+    {
+      "id": "N8",
+      "dept": "财务部",
+      "role": "财务经理",
+      "action": "结账完成",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N1",
+      "to": "N3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N1",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N1",
+      "label": "不通过",
+      "reverse": true
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N7",
+      "to": "N8",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "结账",
+      "月末",
+      "月结",
+      "close"
+    ],
+    "tags": [
+      "财务",
+      "核算"
+    ]
+  }
+}

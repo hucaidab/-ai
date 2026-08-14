@@ -1,0 +1,137 @@
+{
+  "type": "flowchart",
+  "title": "生产工单执行流程",
+  "lanes": [
+    {
+      "dept": "生产计划",
+      "roles": [
+        "计划员"
+      ]
+    },
+    {
+      "dept": "车间",
+      "roles": [
+        "班组长"
+      ]
+    },
+    {
+      "dept": "品质部",
+      "roles": [
+        "质检员"
+      ]
+    },
+    {
+      "dept": "仓储部",
+      "roles": [
+        "仓管员"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "生产计划",
+      "role": "计划员",
+      "action": "下达生产工单",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "车间",
+      "role": "班组长",
+      "action": "领取工单并排产",
+      "shape": "rect"
+    },
+    {
+      "id": "N3",
+      "dept": "车间",
+      "role": "班组长",
+      "action": "组织生产",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "品质部",
+      "role": "质检员",
+      "action": "过程检验合格?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N5",
+      "dept": "车间",
+      "role": "班组长",
+      "action": "完工报工",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "成品缴库",
+      "shape": "rect"
+    },
+    {
+      "id": "N7",
+      "dept": "生产计划",
+      "role": "计划员",
+      "action": "工单关闭",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "合格",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N3",
+      "label": "不合格·返工",
+      "reverse": true
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "工单",
+      "生产执行",
+      "报工",
+      "workorder"
+    ],
+    "tags": [
+      "制造",
+      "MES"
+    ]
+  }
+}

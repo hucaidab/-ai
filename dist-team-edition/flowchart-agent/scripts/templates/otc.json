@@ -1,0 +1,48 @@
+{
+  "type": "flowchart",
+  "title": "销售订单 Order-to-Cash",
+  "meta": { "triggers": ["销售", "订单", "收款", "otc", "OTC", "下单"], "tags": ["销售", "应收"] },
+  "lanes": [
+    { "dept": "客户", "roles": ["客户"] },
+    { "dept": "销售部", "roles": ["销售员", "销售经理"] },
+    { "dept": "信用部", "roles": ["信用专员"] },
+    { "dept": "仓储部", "roles": ["仓管员"] },
+    { "dept": "财务部", "roles": ["应收会计", "出纳"] }
+  ],
+  "nodes": [
+    { "id": "N1", "dept": "客户", "role": "客户", "action": "开始：发起订单需求", "shape": "start" },
+    { "id": "N2", "dept": "销售部", "role": "销售员", "action": "创建销售订单 SO", "shape": "rect" },
+    { "id": "N3", "dept": "销售部", "role": "销售经理", "action": "金额超限?", "shape": "diamond" },
+    { "id": "N4", "dept": "信用部", "role": "信用专员", "action": "信用审核", "shape": "rect" },
+    { "id": "N5", "dept": "销售部", "role": "销售员", "action": "确认订单并发送", "shape": "rect" },
+    { "id": "N6", "dept": "客户", "role": "客户", "action": "确认订单", "shape": "rect" },
+    { "id": "N7", "dept": "仓储部", "role": "仓管员", "action": "拣货出库", "shape": "rect" },
+    { "id": "N8", "dept": "仓储部", "role": "仓管员", "action": "物流发货", "shape": "rect" },
+    { "id": "N9", "dept": "客户", "role": "客户", "action": "收货并验收", "shape": "rect" },
+    { "id": "N10", "dept": "财务部", "role": "应收会计", "action": "开具发票", "shape": "rect" },
+    { "id": "N11", "dept": "财务部", "role": "应收会计", "action": "应收对账", "shape": "rect" },
+    { "id": "N12", "dept": "客户", "role": "客户", "action": "支付货款", "shape": "rect" },
+    { "id": "N13", "dept": "财务部", "role": "出纳", "action": "收款并核销", "shape": "rect" },
+    { "id": "N14", "dept": "财务部", "role": "出纳", "action": "结束：订单完成", "shape": "end" }
+  ],
+  "edges": [
+    { "from": "N1", "to": "N2", "label": "询单", "reverse": false },
+    { "from": "N2", "to": "N3", "label": "", "reverse": false },
+    { "from": "N3", "to": "N4", "label": "未超限", "reverse": false },
+    { "from": "N3", "to": "N2", "label": "驳回·修改", "reverse": true },
+    { "from": "N4", "to": "N5", "label": "信用通过", "reverse": false },
+    { "from": "N4", "to": "N2", "label": "信用不通过·补充", "reverse": true },
+    { "from": "N5", "to": "N6", "label": "发送订单", "reverse": false },
+    { "from": "N6", "to": "N7", "label": "确认", "reverse": false },
+    { "from": "N7", "to": "N8", "label": "", "reverse": false },
+    { "from": "N8", "to": "N9", "label": "发货", "reverse": false },
+    { "from": "N9", "to": "N10", "label": "验收完成", "reverse": false },
+    { "from": "N9", "to": "N8", "label": "退货", "reverse": true },
+    { "from": "N10", "to": "N11", "label": "", "reverse": false },
+    { "from": "N11", "to": "N12", "label": "对账单", "reverse": false },
+    { "from": "N11", "to": "N12", "label": "对账差异·催收", "reverse": true },
+    { "from": "N12", "to": "N13", "label": "付款", "reverse": false },
+    { "from": "N12", "to": "N13", "label": "逾期催收", "reverse": true },
+    { "from": "N13", "to": "N14", "label": "", "reverse": false }
+  ]
+}
