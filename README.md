@@ -14,6 +14,8 @@
 
 ## 🚀 快速开始
 
+> 🔗 **仓库网页版（点开即看/复制地址）**：https://github.com/hucaidab/-ai
+
 ```bash
 # 1. 克隆仓库
 git clone git@github.com:hucaidab/-ai.git

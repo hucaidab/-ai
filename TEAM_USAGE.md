@@ -14,7 +14,7 @@
 
 ### ① 分发仓库地址（一次）
 
-把仓库地址发到团队群：
+把仓库地址发到团队群（**网页版点开即看**：https://github.com/hucaidab/-ai ）：
 
 ```bash
 git clone git@github.com:hucaidab/-ai.git
@@ -35,7 +35,7 @@ git clone git@github.com:hucaidab/-ai.git
 ## 2. 成员上手（5 分钟）
 
 ```bash
-# 1. 克隆
+# 1. 克隆（网页版：https://github.com/hucaidab/-ai）
 git clone git@github.com:hucaidab/-ai.git && cd -ai
 
 # 2. 确认 Node 环境
