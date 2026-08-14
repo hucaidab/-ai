@@ -427,10 +427,12 @@ function _onEdgeDown(e, p) {
   const domIdx = eidx
   const cvRect = document.getElementById('cv').getBoundingClientRect()
   const startX = e.clientX, startY = e.clientY
-  let moved = false, origPts = null // origPts: 原始路径端点（节点锚点，拖拽中保持不变）
+  let moved = false, origPts = null, origWp = null
+  // origPts: 原始路径端点（节点锚点，拖拽中保持不变）
+  // origWp: 初始航点快照——move 里用"快照 + 总位移"而非"当前值 + 总位移"（避免二次累积漂移）
   const move = ev => {
     if (!moved) {
-      // 首次移动：给当前 DOM 边加高亮，并记录原始折点/端点
+      // 首次移动：给当前 DOM 边加高亮，并记录原始折点/端点/航点快照
       const pathEl = _svgHost.querySelector('path[data-eidx="' + domIdx + '"]')
       if (!pathEl) return
       pathEl.setAttribute('data-sel', '1')
@@ -438,12 +440,13 @@ function _onEdgeDown(e, p) {
       origPts = { p1: pts[0], p2: pts[pts.length - 1] }
       // 无 wp 先接管当前中间折点（拖动即固化形状，保存后保持）
       if (!edge.wp || !edge.wp.length) edge.wp = pts.slice(1, -1).map(p => [p[0], p[1]])
+      origWp = edge.wp.map(w => [w[0], w[1]]) // 初始快照
       moved = true
     }
     const dx = (ev.clientX - startX) / S.scale
     const dy = (ev.clientY - startY) / S.scale
-    // 平移 wp（端点锚点不动，中间折点整体偏移）
-    edge.wp.forEach((w, i) => { edge.wp[i] = [w[0] + dx, w[1] + dy] })
+    // 平移 wp：快照 + 总位移（端点锚点不动）
+    edge.wp.forEach((w, i) => { edge.wp[i] = [origWp[i][0] + dx, origWp[i][1] + dy] })
     // 重绘路径（端点保持原始锚点，中间过平移后的 wp）
     const pathEl = _svgHost.querySelector('path[data-eidx="' + domIdx + '"]')
     if (!pathEl) return
