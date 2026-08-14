@@ -240,6 +240,7 @@ function _onHandleDbl(e, handle) {
 // 拖手柄 → 移动航点（零重建实时重绘；端点不可拖）
 function _onHandleDown(e, handle) {
   e.stopPropagation()
+  e.preventDefault() // 阻断浏览器默认文本选择/拖拽
   const ei = parseInt(handle.getAttribute('data-wp-i'), 10)
   const edge = S.req.edges[S.selected && S.selected.kind === 'edge' ? S.selected.idx : -1]
   if (!edge) return
@@ -363,6 +364,7 @@ function _showNote(id) {
 
 function _onNodeDown(e, g) {
   e.stopPropagation()
+  e.preventDefault() // 阻断浏览器默认文本选择/拖拽
   const id = g.getAttribute('data-id')
   const node = S.req.nodes.find(n => n.id === id)
   if (!node) return
@@ -469,6 +471,7 @@ function _selectEdge(p) {
 }
 
 function _onCanvasDown(e) {
+  e.preventDefault() // 阻断浏览器默认文本选择/拖拽
   // 空白处：框选
   const cv = document.getElementById('cv')
   const rect = cv.getBoundingClientRect()
@@ -522,8 +525,8 @@ function _renderPorts(g) {
     const a = anchorPoint(obj, dir)
     const c = document.createElementNS(NS, 'circle')
     c.setAttribute('cx', a.x); c.setAttribute('cy', a.y)
-    c.setAttribute('r', 5 / S.scale) // 恒定屏幕尺寸：缩放后锚点视觉不变（否则缩小后难以点击——质检抓出）
-    c.setAttribute('fill', '#fff'); c.setAttribute('stroke', '#0969da'); c.setAttribute('stroke-width', 2 / S.scale)
+    c.setAttribute('r', 8 / S.scale) // 恒定屏幕尺寸 8px：锚点易点中（5px 偏小难拖——用户反馈）
+    c.setAttribute('fill', '#fff'); c.setAttribute('stroke', '#0969da'); c.setAttribute('stroke-width', 2.5 / S.scale)
     c.setAttribute('class', 'node-port'); c.setAttribute('data-node-port', id); c.setAttribute('data-port-dir', dir)
     c.setAttribute('cursor', 'crosshair')
     cv.appendChild(c)
@@ -533,6 +536,7 @@ function _renderPorts(g) {
 // 按下连接锚点 → 拖橡皮筋线到目标节点松手建边（未命中取消）
 function _onPortDown(e, port) {
   e.stopPropagation()
+  e.preventDefault() // 阻断浏览器默认文本选择/拖拽
   const fromId = port.getAttribute('data-node-port')
   const cv = document.getElementById('cv')
   const cvRect = cv.getBoundingClientRect()
@@ -582,6 +586,7 @@ function _onPortDown(e, port) {
 // 对齐 draw.io 拖线行为，避免"按下边不动、像穿透到背景"）
 function _onEdgeDown(e, p) {
   e.stopPropagation()
+  e.preventDefault() // 阻断浏览器默认文本选择/拖拽
   const eidx = parseInt(p.getAttribute('data-eidx') || '0', 10)
   const realIdx = S._edgeMap && S._edgeMap[eidx] >= 0 ? S._edgeMap[eidx] : eidx
   const edge = S.req.edges[realIdx]
