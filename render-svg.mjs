@@ -228,11 +228,14 @@ export function renderSVG(layout, { classDefs = {}, title = '', subtitle = '', t
   nodes.forEach(n => {
     const st = resolveStyle(n, classDefs, nodeCol, mode === 'swimlane', theme)
     const dashAttr = st.dash ? ` stroke-dasharray="${st.dash}"` : ''
-    const nn = n.pos ? { ...n, x: n.pos.x, y: n.pos.y, cx: n.pos.x + n.w / 2, cy: n.pos.y + n.h / 2 } : n
+    // 位置承载在 g transform，形状/文字用**本地坐标**（原点 0,0）——
+    // 拖动时编辑器只改 transform 即视觉跟随，不会与绝对坐标叠加（乱飘根因修复）
+    const real = n.pos ? { ...n, x: n.pos.x, y: n.pos.y, cx: n.pos.x + n.w / 2, cy: n.pos.y + n.h / 2 } : n
+    const loc = { ...n, x: 0, y: 0, cx: n.w / 2, cy: n.h / 2 }
     // data-id：渲染层直接输出节点 id（编辑器交互定位用，顺序天然与 DOM 一致）
-    s += `<g transform="translate(0,0)" data-id="${n.id}">`
-    s += `<g fill="${st.fill}" stroke="${st.stroke}" stroke-width="${st.sw}"${dashAttr}>${shapeBody(nn)}</g>`
-    s += shapeText(nn, st)
+    s += `<g transform="translate(${real.x},${real.y})" data-id="${n.id}">`
+    s += `<g fill="${st.fill}" stroke="${st.stroke}" stroke-width="${st.sw}"${dashAttr}>${shapeBody(loc)}</g>`
+    s += shapeText(loc, st)
     s += `</g>`
   })
 

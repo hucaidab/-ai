@@ -84,6 +84,39 @@ async function main() {
   })()`)
   console.log('④ 拖拽后节点位置:', pos)
 
+  // 4b. 视觉层断言：节点 g 的 transform 必须与 pos 一致（transform 承载位置，避免绝对坐标叠加乱飘）
+  const visual = await evalJs(`(() => {
+    const s = window.__editor ? window.__editor.S : null
+    if (!s || !s.selected || s.selected.kind !== 'node') return { err: '未选中' }
+    const n = s.req.nodes.find(x => x.id === s.selected.id)
+    const g = document.querySelector('g[data-id="' + n.id + '"]')
+    if (!g) return { err: '无 g' }
+    const tr = (g.getAttribute('transform') || '')
+    const expect = 'translate(' + n.pos.x + ',' + n.pos.y + ')'
+    return { tr, expect, visualOK: tr === expect, rect: JSON.stringify(g.getBoundingClientRect()) }
+  })()`)
+  console.log('④b 视觉层(transform):', JSON.stringify(visual))
+
+  // 4c. 边跟随断言：选中节点的相连边 path d 必须变化（拖动中实时重路由）
+  const edgeFollow = await evalJs(`(() => {
+    const s = window.__editor ? window.__editor.S : null
+    if (!s || !s.selected || s.selected.kind !== 'node') return { err: '未选中' }
+    const id = s.selected.id
+    const related = s.req.edges.filter(e => e.from === id || e.to === id)
+    const dSet = []
+    for (const e of related) {
+      const domIdx = s._edgeMap.indexOf(s.req.edges.indexOf(e))
+      if (domIdx < 0) continue
+      const p = document.querySelector('path[data-eidx="' + domIdx + '"]')
+      if (p) dSet.push(p.getAttribute('d'))
+    }
+    // 拖动后 d 应指向新位置：包含新 pos 附近的坐标
+    const n = s.req.nodes.find(x => x.id === id)
+    const nearNew = dSet.length && dSet.every(d => d.includes(String(n.pos.x)) || d.includes(String(Math.round(n.pos.x + (s._nodeSize[id]?.w || 180) / 2))))
+    return { related: related.length, paths: dSet.length, nearNew, sample: (dSet[0] || '').slice(0, 60) }
+  })()`)
+  console.log('④c 边跟随:', JSON.stringify(edgeFollow))
+
   // 5. 控制台异常
   const errs = logs.filter(l => /error|exception|failed/i.test(l))
   console.log('⑤ 控制台异常:', errs.length ? errs.join('\n') : '（无）')

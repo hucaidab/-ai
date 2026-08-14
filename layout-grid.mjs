@@ -163,3 +163,19 @@ export function layout(nodes, edges, groups, declaredOrder, mode) {
     ? layoutSwimlane(nodes, edges, groups, declaredOrder)
     : layoutAuto(nodes, edges)
 }
+
+// 基于 lay.nodes 当前坐标（已含 pos 覆盖）重算边路由（正交 L 型）——
+// 节点被拖拽/pos 覆盖后边必须跟随，否则节点在 pos 边连旧位置（视觉断线）
+export function rerouteEdges(lay) {
+  const byId = new Map(lay.nodes.map(n => [n.id, n]))
+  lay.edges.forEach(e => {
+    const a = byId.get(e.from), b = byId.get(e.to)
+    if (!a || !b) return
+    // 坐标源统一：pos（手动覆盖）优先，无 pos 用布局坐标
+    const ax = (a.pos ? a.pos.x : a.x) + a.w / 2, ay = (a.pos ? a.pos.y : a.y) + a.h / 2
+    const bx = (b.pos ? b.pos.x : b.x) + b.w / 2, by = (b.pos ? b.pos.y : b.y) + b.h / 2
+    const midX = (ax + bx) / 2
+    e.points = [[ax, ay], [midX, ay], [midX, by], [bx, by]]
+  })
+  return lay
+}

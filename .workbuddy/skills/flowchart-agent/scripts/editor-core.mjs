@@ -8,7 +8,7 @@
 // 注：锚点连边（拖出新连线）为 backlog 项，尚未实现
 // ============================================================
 import { parseFlow } from './parse-flow.mjs'
-import { layout } from './layout-grid.mjs'
+import { layout, rerouteEdges } from './layout-grid.mjs'
 import { renderSVG } from './render-svg.mjs'
 import { reqToMermaid } from './req-util.mjs'
 
@@ -80,6 +80,14 @@ export function render() {
     })
     S._firstLayout = false
   }
+  // 应用手动位置（pos）：拖动后的位置必须渲染生效（编辑器/CLI/保存三路一致；
+  // 漏这一步 = 松手 render 重建时节点回弹到自动布局位置 = 视觉乱飘根因）
+  lay.nodes.forEach(n => {
+    const rn = S.req.nodes.find(x => x.id === n.id)
+    if (rn && rn.pos) n.pos = rn.pos
+  })
+  // pos 覆盖后重算边路由（否则节点在 pos、边连旧位置 = 视觉断线）
+  rerouteEdges(lay)
   const svg = renderSVG(lay, { classDefs: graph.classDefs, title: S.req.title || '', theme: S.theme })
   // 交互标记（data-id/data-edge/data-eidx）已由 render-svg 渲染层直接输出，
   // 顺序天然与 DOM 一致——消除注入顺序依赖（案例3）；这里只做选中高亮
@@ -140,11 +148,12 @@ function _onNodeDown(e, g) {
   const startX = e.clientX, startY = e.clientY
   const origX = node.pos ? node.pos.x : 0, origY = node.pos ? node.pos.y : 0
   let moved = false // 无位移不入撤销栈（避免空快照污染 undo 历史）
-  // 拖动中：直接 transform 移动节点（零重建，绝对跟手；边随动在松手提交时统一重路由）
+  // 拖动中：直接 transform 移动节点（零重建，绝对跟手；边实时重路由跟随）
   const move = ev => {
     const dx = snap((ev.clientX - startX) / S.scale), dy = snap((ev.clientY - startY) / S.scale)
     node.pos = { x: origX + dx, y: origY + dy }
     g.setAttribute('transform', 'translate(' + node.pos.x + ',' + node.pos.y + ')')
+    _rerouteEdges(id) // 相连边实时跟随（松手后 render 用正式布局重路由）
     moved = true
   }
   const up = () => {
@@ -181,6 +190,26 @@ function _onDblClick(e, g) {
     if (ev.key === 'Escape') { cancelled = true; input.remove() }
   })
   input.addEventListener('blur', () => { if (!cancelled) commit() })
+}
+
+// 拖动中实时重路由相连边（简单正交 L 型；松手后 render 用正式布局重路由）
+function _rerouteEdges(dragId) {
+  const anchor = nid => {
+    const n = S.req.nodes.find(x => x.id === nid)
+    const sz = (S._nodeSize && S._nodeSize[nid]) || { w: 180, h: 54 }
+    const p = (n && n.pos) || { x: 0, y: 0 }
+    return { x: p.x + sz.w / 2, y: p.y + sz.h / 2 }
+  }
+  S.req.edges.forEach((e, i) => {
+    if (e.from !== dragId && e.to !== dragId) return
+    const domIdx = S._edgeMap.indexOf(i)
+    if (domIdx < 0) return
+    const p = _svgHost.querySelector('path[data-eidx="' + domIdx + '"]')
+    if (!p) return
+    const a = anchor(e.from), b = anchor(e.to)
+    const midX = (a.x + b.x) / 2
+    p.setAttribute('d', `M ${a.x} ${a.y} L ${midX} ${a.y} L ${midX} ${b.y} L ${b.x} ${b.y}`)
+  })
 }
 
 function _selectEdge(p) {

@@ -10,7 +10,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { parseFlow } from './parse-flow.mjs'
-import { layout, layoutAuto } from './layout-grid.mjs'
+import { layout, layoutAuto, rerouteEdges } from './layout-grid.mjs'
 import { renderSVG } from './render-svg.mjs'
 import { validateSVG } from './validate.mjs'
 import { reqToMermaid } from './req-util.mjs'
@@ -116,6 +116,8 @@ export function renderOne(req, outBase, autoOnly = false, maxFixRounds = 3, them
         const rn = curReq.nodes.find(x => x.id === n.id)
         if (rn && rn.pos) n.pos = rn.pos
       })
+      // pos 覆盖后重算边路由（否则边连旧位置，视觉断线）
+      rerouteEdges(lay)
     }
     const svg = renderSVG(lay, { classDefs: graph.classDefs, title: curReq.title || '', theme })
     const expectText = autoOnly
