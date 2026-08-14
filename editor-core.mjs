@@ -344,11 +344,15 @@ function _updateStatus() {
 }
 
 // ---------- 初始化 ----------
-export async function init(file) {
+export async function init(file, reqData) {
   S.file = file
-  const r = await fetch('/file/' + encodeURIComponent(file))
-  if (!r.ok) { alert('加载失败：' + file); return }
-  S.req = await r.json()
+  if (reqData) {
+    S.req = reqData
+  } else {
+    const r = await fetch('/file/' + encodeURIComponent(file))
+    if (!r.ok) { alert('加载失败：' + file); return }
+    S.req = await r.json()
+  }
   S._firstLayout = true
   const host = document.getElementById('svgHost')
   _svgHost = host

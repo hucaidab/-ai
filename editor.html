@@ -38,6 +38,9 @@
   footer .warn{color:#9a6700;font-weight:600}
   footer .err{color:#cf222e;font-weight:600}
   .hint{margin-left:auto;font-size:11px}
+  #diag{position:fixed;top:0;left:0;right:0;z-index:1000;background:#fff8c5;border-bottom:1px solid #d4a72c;color:#633c01;font-size:12px;padding:5px 16px;text-align:center;font-family:'Microsoft YaHei',system-ui,sans-serif}
+  #diag.ok{background:#dafbe1;border-color:#1a7f37;color:#0a3d1e}
+  #diag.bad{background:#ffebe9;border-color:#cf222e;color:#82071e}
 </style>
 </head>
 <body>
@@ -73,6 +76,14 @@
   <span id="zoomStatus">100%</span>
   <span class="hint">编辑自动写回 req.json（单一数据源），保存时重新渲染 + 10 项验收</span>
 </footer>
+<script>
+  // 环境诊断条（普通脚本，最先执行）：模块加载失败/沙箱限制时也能看到状态
+  const diag = document.createElement('div')
+  diag.id = 'diag'
+  diag.textContent = '⏳ 编辑器加载中…'
+  document.body.appendChild(diag)
+  window.__diag = msg => { diag.textContent = msg }
+</script>
 <script type="module">
   window.addEventListener('error', e => {
     const box = document.createElement('div')
@@ -80,8 +91,9 @@
     box.textContent = '❌ 页面出错：' + (e.message || e)
     document.body.appendChild(box)
     setTimeout(() => box.remove(), 8000)
+    window.__diag && window.__diag('❌ 页面出错：' + (e.message || e))
   })
-  import * as editor from '/lib/editor-core.mjs?v=5'
+  import * as editor from '/lib/editor-core.mjs?v=6'
   window.__editor = editor
   const q = new URLSearchParams(location.search)
   const file = q.get('file')
@@ -89,6 +101,8 @@
   else {
     document.getElementById('fileLabel').textContent = file
     await editor.init(file)
+    window.__diag('✅ 编辑器已就绪（模块+渲染+交互均正常）——可拖动节点、双击改字、保存')
+    diag.classList.add('ok')
   }
 </script>
 </body>

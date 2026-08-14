@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>编辑器自检</title></head>
+<body>
+<pre id="out">运行中…</pre>
+<div id="canvasWrap"><div id="svgHost"></div></div>
+<aside id="propPanel"></aside>
+<footer><span id="saveStatus"></span><span id="zoomStatus"></span></footer>
+<script type="module">
+import * as editor from '/lib/editor-core.mjs?v=6'
+// 全同步自检（静态 import 保证模块已加载；init 的 reqData 分支无 await，副作用同步发生）
+const out = []
+const flush = () => { document.getElementById('out').textContent = out.join('\n') }
+const log = (name, ok, detail) => { out.push((ok ? '✅' : '❌') + ' ' + name + (detail ? ' — ' + detail : '')); flush() }
+try {
+  log('① 模块加载', typeof editor.init === 'function' && editor.S && typeof editor.S.theme === 'string')
+  const TEST_REQ = { title: '自检流程', lanes: [{ dept: 'A', roles: ['r'] }],
+    nodes: [
+      { id: 'N1', dept: 'A', role: 'r', action: '开始：启动', shape: 'start' },
+      { id: 'N2', dept: 'A', role: 'r', action: '处理', shape: 'rect' },
+      { id: 'N3', dept: 'A', role: 'r', action: '结束：完成', shape: 'end' }],
+    edges: [{ from: 'N1', to: 'N2', label: '', reverse: false }, { from: 'N2', to: 'N3', label: '', reverse: false }] }
+  editor.init('selfcheck.req.json', TEST_REQ)
+  const cv = document.getElementById('cv')
+  log('② SVG 画布渲染', !!cv)
+  const ids = document.querySelectorAll('g[data-id]').length
+  log('③ data-id 注入数量', ids === editor.S.req.nodes.length, ids + ' / ' + editor.S.req.nodes.length)
+  log('④ 事件委托绑定', !!cv && cv._bound === true)
+  const g = document.querySelector('g[data-id]')
+  log('⑤ 节点元素存在', !!g, g ? g.getAttribute('data-id') : '无')
+  g.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, clientX: 10, clientY: 10 }))
+  const sel = editor.S.selected
+  log('⑥ 点击选中节点', !!sel && sel.kind === 'node', sel ? sel.id : '未选中')
+  const panel = document.getElementById('propPanel')
+  log('⑦ 属性面板渲染', !!panel && panel.innerHTML.includes('节点属性'))
+  const selNode = editor.S.req.nodes.find(n => n.id === (sel && sel.id))
+  const before = selNode ? JSON.stringify(selNode.pos) : '无'
+  window.dispatchEvent(new PointerEvent('pointermove', { clientX: 60, clientY: 40 }))
+  window.dispatchEvent(new PointerEvent('pointerup', {}))
+  const after = selNode ? JSON.stringify(selNode.pos) : '无'
+  log('⑧ 拖拽更新位置', before !== after && after !== '无', before + ' → ' + after)
+  const hBefore = editor.S.historyIdx
+  editor.undo()
+  log('⑨ 撤销可用', editor.S.historyIdx === hBefore - 1, 'idx ' + hBefore + ' → ' + editor.S.historyIdx)
+} catch (e) {
+  log('❌ 异常中断', false, (e && e.message ? e.message : e) + ' @ ' + ((e && e.stack || '').split('\n')[1] || ''))
+}
+</script>
+</body>
+</html>
