@@ -175,7 +175,7 @@ function _renderHandles(out, ei, pathEl) {
     h.setAttribute('rx', 2 / S.scale)
     h.setAttribute('class', 'wp-handle')
     h.setAttribute('data-wp-i', i)
-    h.setAttribute('fill', (i === 0 || i === pts.length - 1) ? '#6e7781' : '#0969da') // 端点灰（不可拖）
+    h.setAttribute('fill', '#0969da') // 全部蓝色可拖：中间拖折点、端点拖重连（draw.io）
     cv.appendChild(h)
   })
 }
@@ -248,7 +248,11 @@ function _onHandleDown(e, handle) {
   const pathEl = _svgHost.querySelector('path[data-eidx="' + domIdx + '"]')
   if (!pathEl) return
   const pts = parsePathPts(pathEl.getAttribute('d'))
-  if (ei === 0 || ei === pts.length - 1) return // 端点（锚点）不可拖
+  if (ei === 0 || ei === pts.length - 1) {
+    // 端点（连接节点处）→ 拖动重连（draw.io：拖线端点改连其他节点）
+    _reconnectEdge(e, edge, pathEl, ei === 0 ? 'from' : 'to', pts)
+    return
+  }
   const p1 = pts[0], p2 = pts[pts.length - 1]
   const cvRect = document.getElementById('cv').getBoundingClientRect()
   let moved = false // 无位移（单击）不重建——否则双击删除的第二次 click 落空
@@ -274,6 +278,77 @@ function _onHandleDown(e, handle) {
       pushHistory()
       render() // 全量重建（手柄/命中层统一刷新）
     }
+  }
+  window.addEventListener('pointermove', move)
+  window.addEventListener('pointerup', up)
+}
+
+// ---------- 共享：拖线/重连的目标节点 hover 提示（draw.io 松手即连接） ----------
+// 世界坐标 AABB 命中（与建边同逻辑，pad 容差抗缩放取整误差）
+function _hoverHit(wx, wy, excludeId) {
+  const PAD = 4 / S.scale
+  for (const n of S.req.nodes) {
+    if (n.id === excludeId) continue
+    const sz = (S._nodeSize && S._nodeSize[n.id]) || { w: 180, h: 50 }
+    const p = n.pos || { x: 0, y: 0 }
+    if (wx >= p.x - PAD && wx <= p.x + sz.w + PAD && wy >= p.y - PAD && wy <= p.y + sz.h + PAD) return n
+  }
+  return null
+}
+function _clearHover(cv) {
+  cv.querySelectorAll('g[data-hover]').forEach(g => g.removeAttribute('data-hover'))
+  cv.querySelectorAll('circle.target-port').forEach(c => c.remove())
+}
+function _applyHover(cv, hit) {
+  const cur = cv.querySelector('g[data-hover]')
+  if (cur && (!hit || cur.getAttribute('data-id') !== hit.id)) {
+    cur.removeAttribute('data-hover')
+    cv.querySelectorAll('circle.target-port').forEach(c => c.remove())
+  }
+  if (hit) {
+    const hg = cv.querySelector('g[data-id="' + hit.id + '"]')
+    if (hg && !hg.getAttribute('data-hover')) {
+      hg.setAttribute('data-hover', '1')
+      _renderTargetPorts(hg)
+    }
+  }
+}
+
+// 端点重连（draw.io：拖线端点改连其他节点）：
+// 橡皮筋预览 + 目标 hover 提示 + 松手命中新节点 → 更新 edge.from/to（去重 + 清无效 wp）
+function _reconnectEdge(e, edge, pathEl, side, pts) {
+  const cv = document.getElementById('cv')
+  const cvRect = cv.getBoundingClientRect()
+  const NS = 'http://www.w3.org/2000/svg'
+  const fixed = side === 'from' ? pts[pts.length - 1] : pts[0] // 另一端固定
+  const otherId = edge[side === 'from' ? 'to' : 'from']
+  const band = document.createElementNS(NS, 'path')
+  band.setAttribute('stroke', '#0969da'); band.setAttribute('stroke-width', 2)
+  band.setAttribute('stroke-dasharray', '6 4'); band.setAttribute('fill', 'none')
+  band.setAttribute('class', 'rubber-band')
+  cv.appendChild(band)
+  const move = ev => {
+    const mx = (ev.clientX - cvRect.left) / S.scale, my = (ev.clientY - cvRect.top) / S.scale
+    band.setAttribute('d', `M ${fixed[0]} ${fixed[1]} L ${mx} ${my}`)
+    _applyHover(cv, _hoverHit(mx, my, otherId))
+  }
+  const up = ev => {
+    window.removeEventListener('pointermove', move)
+    window.removeEventListener('pointerup', up)
+    band.remove()
+    _clearHover(cv)
+    const cur = cv.getBoundingClientRect()
+    const wx = (ev.clientX - cur.left) / S.scale, wy = (ev.clientY - cur.top) / S.scale
+    const hit = _hoverHit(wx, wy, otherId)
+    if (!hit || hit.id === edge[side]) return // 未命中或无变化
+    const nf = side === 'from' ? hit.id : edge.from
+    const nt = side === 'to' ? hit.id : edge.to
+    if (S.req.edges.some(r => r !== edge && r.from === nf && r.to === nt)) return // 去重
+    edge[side] = hit.id
+    delete edge.wp // 重连后旧航点相对原节点失效，清掉让路由重算
+    S.dirty = true
+    pushHistory()
+    render()
   }
   window.addEventListener('pointermove', move)
   window.addEventListener('pointerup', up)
@@ -584,45 +659,17 @@ function _onPortDown(e, port) {
   cv.appendChild(band)
   const sx = (e.clientX - cvRect.left) / S.scale, sy = (e.clientY - cvRect.top) / S.scale
   band.setAttribute('d', `M ${sx} ${sy} L ${sx} ${sy}`)
-  // 目标节点 hover 提示（draw.io：拖线经过的节点高亮 + 显示连接锚点，松手即连接）
-  // 世界坐标命中（AABB），与 up 建边同逻辑
-  const hoverHit = (wx, wy) => {
-    const PAD = 4 / S.scale
-    for (const n of S.req.nodes) {
-      if (n.id === fromId) continue
-      const sz = (S._nodeSize && S._nodeSize[n.id]) || { w: 180, h: 50 }
-      const p = n.pos || { x: 0, y: 0 }
-      if (wx >= p.x - PAD && wx <= p.x + sz.w + PAD && wy >= p.y - PAD && wy <= p.y + sz.h + PAD) return n
-    }
-    return null
-  }
-  const clearHover = () => {
-    cv.querySelectorAll('g[data-hover]').forEach(g => g.removeAttribute('data-hover'))
-    cv.querySelectorAll('circle.target-port').forEach(c => c.remove())
-  }
   const move = ev => {
     const mx = (ev.clientX - cvRect.left) / S.scale, my = (ev.clientY - cvRect.top) / S.scale
     band.setAttribute('d', `M ${sx} ${sy} L ${mx} ${my}`)
-    // 目标节点 hover 提示
-    const hit = hoverHit(mx, my)
-    const cur = cv.querySelector('g[data-hover]')
-    if (cur && (!hit || cur.getAttribute('data-id') !== hit.id)) {
-      cur.removeAttribute('data-hover')
-      cv.querySelectorAll('circle.target-port').forEach(c => c.remove())
-    }
-    if (hit) {
-      const hg = cv.querySelector('g[data-id="' + hit.id + '"]')
-      if (hg && !hg.getAttribute('data-hover')) {
-        hg.setAttribute('data-hover', '1')
-        _renderTargetPorts(hg)
-      }
-    }
+    // 目标节点 hover 提示（draw.io：拖线经过的节点高亮 + 显示连接锚点，松手即连接）
+    _applyHover(cv, _hoverHit(mx, my, fromId))
   }
   const up = ev => {
     window.removeEventListener('pointermove', move)
     window.removeEventListener('pointerup', up)
     band.remove()
-    clearHover()
+    _clearHover(cv)
     // 命中目标节点（世界坐标 AABB，与框选命中同逻辑——elementsFromPoint 在此环境不可靠）
     // 拖动中滚动会过期 → up 时重取 cvRect；pad 容差抗缩放取整误差（质检抓出）
     const cur = document.getElementById('cv').getBoundingClientRect()
