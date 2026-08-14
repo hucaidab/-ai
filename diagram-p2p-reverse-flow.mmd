@@ -1,0 +1,52 @@
+flowchart TD
+    %% ============================================================
+    %% ERP 采购到付款（P2P）逆向异常处理流程图
+    %% 汇总全部逆向/异常分支的处理路径，异常处理后回到主流程对应环节
+    %% 颜色 = 处理角色：蓝=采购 橙=供应商 绿=仓储质检 青=生产 紫=财务
+    %% ============================================================
+
+    classDef startEnd fill:#1f883d,stroke:#1a7f37,color:#ffffff,stroke-width:2px;
+    classDef dec      fill:#fff8c5,stroke:#9a6700,color:#633c01,stroke-width:1.5px;
+    classDef pur      fill:#ddf4ff,stroke:#0969da,color:#0a3069,stroke-width:1.5px;
+    classDef sup      fill:#fff1e5,stroke:#bc4c00,color:#571f00,stroke-width:1.5px;
+    classDef wh       fill:#dafbe1,stroke:#1a7f37,color:#0a3d1e,stroke-width:1.5px;
+    classDef prd      fill:#e6f6f6,stroke:#0e7490,color:#155e75,stroke-width:1.5px;
+    classDef fin      fill:#fbefff,stroke:#8250df,color:#3e1f6f,stroke-width:1.5px;
+    classDef back     fill:#ffffff,stroke:#8c959f,color:#57606a,stroke-width:1px,stroke-dasharray:4 3;
+
+    %% ================= 开始与异常分类 =================
+    Start([开始：主流程触发逆向 / 异常]):::startEnd
+    Start --> Type{异常类型?}:::dec
+
+    %% ================= 分支 1：审批驳回 =================
+    Type -- 审批驳回 --> R1[采购员：修改采购申请并重新提交]:::pur
+    R1 --> B1((回到：审批环节)):::back
+
+    %% ================= 分支 2：货品异常（拒收 / 质检 / 使用不良） =================
+    Type -- 货品异常<br/>拒收 · 质检 · 使用不良 --> R2[仓库 / 生产：办理退货出库]:::wh
+    R2 --> R3[供应商：换货 / 补货]:::sup
+    R3 --> R4[仓库：重新收货并检验]:::wh
+    R4 --> B2((回到：收货 / 入库环节)):::back
+
+    %% ================= 分支 3：单据异常（发票不符 / 三单不匹配） =================
+    Type -- 单据异常<br/>发票不符 · 三单不匹配 --> R5[财务：退回发票 / 单据]:::fin
+    R5 --> R6[供应商：重开发票 / 补全单据]:::sup
+    R6 --> R7[财务：重新三单匹配]:::fin
+    R7 --> B3((回到：登记应付环节)):::back
+
+    %% ================= 分支 4：资金异常（退票 / 对账差异） =================
+    Type -- 资金异常<br/>退票 · 对账差异 --> R8[出纳：核实退票 / 拒付原因]:::fin
+    R8 --> R9[财务与供应商：核对并调整账务]:::fin
+    R9 --> R10[重新付款 / 冲销调整]:::fin
+    R10 --> B4((回到：收款核销环节)):::back
+
+    %% ================= 结束 =================
+    B1 -.-> End
+    B2 -.-> End
+    B3 -.-> End
+    B4 -.-> End
+    End([结束：异常处理完成 · 回到主流程]):::startEnd
+
+    %% ================= 全局备注 =================
+    N1[备注：逆向处理须关联原采购单与批次<br/>退货保留质检记录 · 冲销保留凭证]:::back
+    N1 -.-> Type

@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>流程图设计智能体开发规格书 v1.0</title>
+<style>
+  :root{
+    --bg:#ffffff; --fg:#1f2328; --muted:#57606a; --border:#d0d7de;
+    --accent:#0969da; --accent-bg:#ddf4ff; --code-bg:#f6f8fa; --tbl-h:#f6f8fa;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#f6f8fa;color:var(--fg);font-family:'Microsoft YaHei','Segoe UI',system-ui,sans-serif;line-height:1.7;font-size:14.5px}
+  .wrap{max-width:1000px;margin:0 auto;padding:32px 20px 80px}
+  .doc{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:40px 48px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  h1{font-size:26px;margin:0 0 4px;border-bottom:3px solid var(--accent);padding-bottom:12px}
+  h2{font-size:20px;margin:36px 0 12px;padding-top:12px;border-top:1px solid var(--border)}
+  h2:first-of-type{border-top:none}
+  h3{font-size:16px;margin:22px 0 8px;color:#0a3069}
+  h4{font-size:14.5px;margin:16px 0 6px}
+  p{margin:8px 0}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code{background:var(--code-bg);border:1px solid #e1e4e8;border-radius:4px;padding:1px 5px;font-size:12.5px;font-family:Consolas,'Courier New',monospace}
+  pre{background:#0d1117;color:#e6edf3;border-radius:8px;padding:14px 16px;overflow-x:auto;line-height:1.55}
+  pre code{background:none;border:none;color:inherit;padding:0;font-size:12.5px}
+  .tbl-wrap{overflow-x:auto;margin:10px 0}
+  table{border-collapse:collapse;width:100%;font-size:13.5px}
+  th,td{border:1px solid var(--border);padding:7px 12px;text-align:left;vertical-align:top}
+  th{background:var(--tbl-h);font-weight:600}
+  tr:nth-child(even) td{background:#fafbfc}
+  blockquote{margin:10px 0;padding:6px 14px;border-left:4px solid var(--accent);background:var(--accent-bg);border-radius:0 6px 6px 0;color:#0a3069}
+  li{margin:3px 0}
+  .toc{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin:18px 0;column-count:2;column-gap:32px;font-size:13px}
+  .toc-title{font-weight:700;color:var(--muted);margin-bottom:6px;column-span:all}
+  .toc a{display:block;padding:1px 0;color:var(--fg)}
+  .toc a:hover{color:var(--accent)}
+  @media print{
+    body{background:#fff}
+    .wrap{padding:0;max-width:none}
+    .doc{border:none;box-shadow:none;padding:20px}
+    .toc{column-count:1}
+    pre{background:#f6f8fa;color:#24292f}
+  }
+  @media (max-width:720px){
+    .doc{padding:24px 18px}
+    .toc{column-count:1}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="doc">
+  <h1 id="sec-流程图设计智能体-flowchart-design-agent-开发规格书">流程图设计智能体（Flowchart Design Agent）开发规格书</h1>
+
+<div class="tbl-wrap"><table>
+  <tr><th>项</th><th>内容</th></tr>
+  <tr><td>文档版本</td><td>v1.0</td></tr>
+  <tr><td>日期</td><td>2026-08-12</td></tr>
+  <tr><td>文档状态</td><td>已评审（基于实际项目验证）</td></tr>
+  <tr><td>适用范围</td><td>流程图设计智能体的需求、设计、实现与验收</td></tr>
+  <tr><td>配套代码</td><td><code>mermaid-render/scripts/</code>、工作目录下 <code>gen-*.mjs</code> 自研布局器</td></tr>
+</table></div>
+
+<p>---</p>
+
+<h2 id="sec-1-背景与目标">1. 背景与目标</h2>
+
+<h3 id="sec-1-1-背景">1.1 背景</h3>
+
+<p>现有基于 Mermaid 的渲染链路存在系统性不可靠问题，经实测验证：</p>
+
+<div class="tbl-wrap"><table>
+  <tr><th>问题</th><th>实测结论</th></tr>
+  <tr><td>官方依赖安装</td><td><code>beautiful-mermaid</code> 走 npm 默认源在国内网络下安装卡死；须用 <code>registry.npmmirror.com</code></td></tr>
+  <tr><td>ESM 兼容</td><td>原包为 ESM-only，<code>require()</code> 必报错，须用 <code>import</code> 封装脚本</td></tr>
+  <tr><td>中文渲染</td><td>原版对 CJK subgraph 标题/子图布局有缺陷，须用社区 fork <code>@ktrysmt/beautiful-mermaid</code></td></tr>
+  <tr><td>泳道（跨职能）布局</td><td>ELK 布局引擎按"拓扑层"打包子图，泳道会乱序/重叠；Graphviz（WASM）cluster 盒子在带回边流程下相互穿透</td></tr>
+  <tr><td>隐形边</td><td>Mermaid <code>~~~</code> 在 <code>@ktrysmt/beautiful-mermaid</code> 解析中被丢弃且破坏后续节点标签，不可用于强制顺序</td></tr>
+</table></div>
+
+<h3 id="sec-1-2-目标">1.2 目标</h3>
+
+<p>开发一套<strong>专用的流程图设计智能体</strong>，具备：</p>
+
+<li value="1">将自然语言/结构化描述转化为符合 <strong>ANSI/ISO 流程图符号规范</strong>的专业流程图；</li>
+<li value="2">支持<strong>多角色/多部门泳道图</strong>（两级：部门 → 岗位），保证泳道不重叠、正逆向流程清晰；</li>
+<li value="3">输出 <strong>SVG + 可维护源码</strong>（Mermaid / DOT / 自研布局脚本数据表）；</li>
+<li value="4">具备<strong>自动化自检与验收</strong>能力（形状、配色、流向、泳道、逆向流程）。</li>
+
+<p>---</p>
+
+<h2 id="sec-2-流程图设计规范-requirements-">2. 流程图设计规范（Requirements）</h2>
+
+<h3 id="sec-2-1-支持的图表类型">2.1 支持的图表类型</h3>
+
+<div class="tbl-wrap"><table>
+  <tr><th>类型</th><th>优先级</th><th>说明</th></tr>
+  <tr><td>流程图 Flowchart</td><td>P0</td><td>核心能力，含泳道/跨职能图</td></tr>
+  <tr><td>时序图 Sequence</td><td>P0</td><td>多角色消息交互（ERP 场景推荐）</td></tr>
+  <tr><td>状态图 State</td><td>P1</td><td>状态机建模</td></tr>
+  <tr><td>类图 / ER 图</td><td>P1</td><td>面向对象 / 数据库设计</td></tr>
+  <tr><td>XY 数据图表</td><td>P2</td><td>柱状/折线/混合</td></tr>
+</table></div>
+
+<h3 id="sec-2-2-流程图形状规范-ansi-iso-符号-">2.2 流程图形状规范（ANSI/ISO 符号）</h3>
+
+<div class="tbl-wrap"><table>
+  <tr><th>语义</th><th>形状</th><th>Mermaid 语法</th><th>自研布局器形状</th></tr>
+  <tr><td>开始 / 结束</td><td>体育场形</td><td><code>([text])</code></td><td>ellipse</td></tr>
+  <tr><td>处理（流程）</td><td>矩形</td><td><code>[text]</code></td><td>rect</td></tr>
+  <tr><td>判断</td><td>菱形</td><td><code>{text}</code></td><td>diamond</td></tr>
+  <tr><td>子流程</td><td>双矩形</td><td><code>[[text]]</code></td><td>box + peripheries=2</td></tr>
+  <tr><td>数据容器</td><td>圆柱</td><td><code>[(text)]</code></td><td>cylinder</td></tr>
+  <tr><td>备注 / 注释</td><td>虚线框</td><td>classDef <code>stroke-dasharray</code></td><td>dashed box</td></tr>
+</table></div>
+
+<p><strong>强制规则：</strong></p>
+<li>判断节点（菱形）<strong>必须</strong>有两个及以上带标签出口（是/否、通过/驳回等）；</li>
+<li>主流程<strong>单一入口、单一出口</strong>（开始 → 结束），异常分支最终回到主流程或显式终止；</li>
+<li>同级节点流向一致（TD 自上而下 或 LR 自左而右），禁止无意义回折；</li>
+<li>子流程（双矩形）表示"封装的处理单元"，可在另一张图展开其内部步骤。</li>
+
+<h3 id="sec-2-3-布局规范">2.3 布局规范</h3>
+
+<div class="tbl-wrap"><table>
+  <tr><th>项</th><th>规范</th></tr>
+  <tr><td>常规流程图方向</td><td>业务流程优先 TD（自上而下）；系统架构/演示优先 LR</td></tr>
+  <tr><td>泳道图（跨职能）</td><td>推荐<strong>网格坐标法</strong>（自研布局器）：列=部门/角色，行=流程顺序，坐标完全可控</td></tr>
+  <tr><td>泳道分级</td><td>一级=角色；二级=部门（大列）+ 岗位（子列）；可内嵌更深审批链（如经理→总监会签）</td></tr>
+  <tr><td>连线路由</td><td>正交（orthogonal）：同岗位垂直直连；同部门跨岗位走子列间隙；跨部门走部门间通道</td></tr>
+  <tr><td>正逆向分离</td><td>正向边走源节点右侧/下方，逆向/异常边走左侧通道绕行，避免重叠</td></tr>
+  <tr><td>间距参数</td><td>padding≥40，nodeSpacing≥32，layerSpacing≥52，rowSpacing≈128（泳道）</td></tr>
+</table></div>
+
+<h3 id="sec-2-4-配色规范">2.4 配色规范</h3>
+
+<li><strong>双语义体系</strong>：形状表达"语义"（起止/处理/判断/子流程/数据/备注），颜色表达"角色或部门"；</li>
+<li>内置 15 主题（github-light / tokyo-night / nord / catppuccin 等），技术文档默认 <code>github-light</code>；</li>
+<li>角色色建议（浅色主题）：用户=红、前端=蓝、后端/核心=紫、数据=绿、外部=橙、辅助=灰；</li>
+<li>对比度要求：深色文字配浅色填充，白色文字配深色填充；相邻泳道色相必须可区分；</li>
+<li>判断节点统一黄色系（<code>#fff8c5</code> / <code>#9a6700</code>），开始/结束统一绿色（<code>#1f883d</code>）。</li>
+
+<h3 id="sec-2-5-文本与命名">2.5 文本与命名</h3>
+
+<li>节点 ID 使用语义化英文命名（<code>P1/SubmitPR</code>），唯一且不与子图 ID 冲突；</li>
+<li>标签默认中文，岗位/角色信息用前缀（<code>采购员：提交采购申请</code>）或子列头表达；</li>
+<li>长文本用 <code>&lt;br/&gt;</code> 换行，单行不超过 12 个中文字符（节点宽度约束）；</li>
+<li>特殊字符（<code>"</code> <code>()</code> <code>&amp;</code> 等）在 Mermaid 标签中须加引号包裹。</li>
+
+<h3 id="sec-2-6-复杂度控制">2.6 复杂度控制</h3>
+
+<li>单图节点 ≤ 30，超过则拆分为"主流程 + 子流程"多张图；</li>
+<li>角色 &gt; 7 时按部门归并泳道（策略②），岗位细节放入部门内子列；</li>
+<li>交互密集型流程（消息往来多）改用<strong>时序图</strong>表达。</li>
+
+<p>---</p>
+
+<h2 id="sec-3-渲染能力与依赖管理">3. 渲染能力与依赖管理</h2>
+
+<h3 id="sec-3-1-渲染管线-已验证可用-">3.1 渲染管线（已验证可用）</h3>
+
+<pre><code class="lang-text">Mermaid 源码 (.mmd)
+  ├─ render-esm.mjs ── @ktrysmt/beautiful-mermaid@1.5.2 ── ELK.js ── SVG   （常规流程图/时序图等）
+DOT 源码 (.dot)
+  └─ render-dot.mjs ── @viz-js/viz (WASM Graphviz) ── SVG                    （无回边泳道等简单图）
+自研泳道布局器 (gen-*.mjs)
+  └─ 网格坐标法：部门列 × 流程行 ── 直接生成 SVG                              （复杂泳道图，推荐）</code></pre>
+
+<h3 id="sec-3-2-渲染器选型决策矩阵">3.2 渲染器选型决策矩阵</h3>
+
+<div class="tbl-wrap"><table>
+  <tr><th>场景</th><th>推荐渲染器</th><th>理由</th></tr>
+  <tr><td>标准流程图/时序图/状态图</td><td><code>render-esm.mjs</code>（ELK）</td><td>成熟、CJK 正常、同步渲染</td></tr>
+  <tr><td>简单无回边泳道</td><td><code>render-dot.mjs</code>（Graphviz）</td><td>cluster 成列整齐</td></tr>
+  <tr><td><strong>复杂泳道（带回边）</strong></td><td><strong>自研网格布局器</strong></td><td>ELK/Graphviz 均会乱序/重叠</td></tr>
+  <tr><td>终端展示</td><td><code>renderMermaidASCII</code></td><td>Unicode/ASCII 双模式</td></tr>
+</table></div>
+
+<h3 id="sec-3-3-依赖安装规范">3.3 依赖安装规范</h3>
+
+<li>一律使用镜像源：<code>--registry https://registry.npmmirror.com --no-audit --no-fund</code>；</li>
+<li>ESM-only 包（beautiful-mermaid 系）必须用 <code>.mjs</code> 脚本 + <code>import</code>，禁止 <code>require</code>；</li>
+<li>路径传参用 Windows 风格绝对路径（<code>C:/...</code>），Git Bash 的 <code>/c/...</code> 会被 Node 误解；</li>
+<li>SVG→PNG 离线校验须先移除 Google Fonts <code>@import</code>（离线无法加载导致文字缺失），并开启 <code>loadSystemFonts</code>。</li>
+
+<h3 id="sec-3-4-已知限制-规避方案-">3.4 已知限制（规避方案）</h3>
+
+<div class="tbl-wrap"><table>
+  <tr><th>限制</th><th>规避</th></tr>
+  <tr><td>ELK 子图按拓扑层打包 → 泳道乱序/重叠</td><td>复杂泳道一律走自研网格布局器</td></tr>
+  <tr><td>Graphviz cluster 盒子相互穿透</td><td>仅用于无回边简单图</td></tr>
+  <tr><td>Mermaid <code>~~~</code> 隐形边解析失败</td><td>用自研布局器的手写坐标/通道约束代替</td></tr>
+  <tr><td>中文文本宽度测量</td><td>节点宽按"字符数 × 13px"估算，留 20% 余量</td></tr>
+</table></div>
+
+<p>---</p>
+
+<h2 id="sec-4-智能体工作流与协议">4. 智能体工作流与协议</h2>
+
+<h3 id="sec-4-1-输入协议">4.1 输入协议</h3>
+
+<p>支持三种输入形态：</p>
+
+<li value="1"><strong>自然语言</strong>：如"画一个用户登录认证流程图，要标准符号、多角色泳道"；</li>
+<li value="2"><strong>结构化 JSON</strong>：</li>
+<pre><code class="lang-json">{
+  "type": "flowchart",
+  "title": "采购到付款 P2P",
+  "lanes": [ { "dept": "采购部", "roles": ["采购员","采购经理"] } ],
+  "nodes": [ { "id": "P1", "role": "采购员", "action": "提交采购申请", "shape": "rect" } ],
+  "edges": [ { "from": "P1", "to": "P2", "label": "申请", "reverse": false } ]
+}</code></pre>
+<li value="3"><strong>源码</strong>：直接给出 <code>.mmd</code> / <code>.dot</code> 要求渲染或修改。</li>
+
+<h3 id="sec-4-2-处理流程-agent-workflow-">4.2 处理流程（Agent Workflow）</h3>
+
+<pre><code class="lang-text">Step 1 需求分析
+  ├─ 确定图表类型（流程图/时序图/泳道图…）
+  ├─ 提取角色/部门/岗位清单（&gt;7 角色 → 按部门归并）
+  └─ 提炼流程主线 + 逆向/异常分支
+Step 2 设计
+  ├─ 分配节点与形状（ANSI/ISO 规范）
+  ├─ 确定布局（方向、泳道分级、间距）
+  └─ 确定配色（语义 + 角色双体系）
+Step 3 渲染
+  └─ 按选型矩阵选择渲染器（复杂泳道 → 自研网格布局器）
+Step 4 自检（自动化）
+  ├─ 形状/配色/标签存在性校验
+  ├─ 泳道容器坐标不重叠校验
+  ├─ 正逆向边数量与虚线校验
+  └─ 复杂度（节点数 ≤ 30）校验
+Step 5 交付
+  └─ SVG + 源码（mmd/dot/脚本数据表）+ 校验报告</code></pre>
+
+<h3 id="sec-4-3-输出协议">4.3 输出协议</h3>
+
+<div class="tbl-wrap"><table>
+  <tr><th>产物</th><th>格式</th><th>说明</th></tr>
+  <tr><td>成品图</td><td><code>diagram-&lt;名称&gt;.svg</code></td><td>矢量、可缩放、可嵌入</td></tr>
+  <tr><td>源码</td><td><code>diagram-&lt;名称&gt;.mmd</code> / <code>.dot</code></td><td>可版本控制、可维护</td></tr>
+  <tr><td>布局器脚本</td><td><code>gen-&lt;流程&gt;.mjs</code></td><td>数据驱动（DEPTS/ROWS/EDGES 三表），换流程只改数据</td></tr>
+  <tr><td>校验报告</td><td>文本输出</td><td>形状/配色/泳道/逆向/复杂度命中数</td></tr>
+</table></div>
+
+<p>---</p>
+
+<h2 id="sec-5-技术架构">5. 技术架构</h2>
+
+<pre><code class="lang-text">┌────────────────────────────────────────────────┐
+│  Agent 编排层（需求分析 → 设计 → 渲染 → 验收）  │
+├──────────────┬──────────────┬──────────────────┤
+│  解析层       │  布局层       │   渲染层          │
+│ parseMermaid │ ELK.js       │ SVG 生成器        │
+│ parseMermaid │ 自研网格坐标  │ ASCII 生成器      │
+│ (DOT)        │ Graphviz     │ PNG 转换(resvg)   │
+├──────────────┴──────────────┴──────────────────┤
+│  主题层（15 内置 + 自定义 bg/fg/line/accent…）  │
+├────────────────────────────────────────────────┤
+│  校验层（存在性 grep + 坐标解析 + 计数断言）     │
+└────────────────────────────────────────────────┘</code></pre>
+
+<p>模块职责：</p>
+<li><strong>解析层</strong>：统一解析 Mermaid/DOT 为节点-边-子图结构；</li>
+<li><strong>布局层</strong>：复杂泳道必须用网格坐标法（列=泳道，行=流程步），正交路由；</li>
+<li><strong>渲染层</strong>：形状按语义、颜色按角色、边按正逆向（虚线=逆向）；</li>
+<li><strong>校验层</strong>：所有验收断言自动化（见 §6）。</li>
+
+<p>---</p>
+
+<h2 id="sec-6-质量验收标准-checklist-">6. 质量验收标准（Checklist）</h2>
+
+<div class="tbl-wrap"><table>
+  <tr><th>#</th><th>验收项</th><th>方法</th><th>通过标准</th></tr>
+  <tr><td>1</td><td>开始/结束存在</td><td>grep 起止节点文本</td><td>各有 ≥1</td></tr>
+  <tr><td>2</td><td>判断节点带分支标签</td><td>grep 是/否、通过/驳回</td><td>每菱形 ≥2 出口标签</td></tr>
+  <tr><td>3</td><td>语义形状齐全</td><td>统计 polygon/rect/ellipse/双框/圆柱</td><td>与设计一致</td></tr>
+  <tr><td>4</td><td>角色/部门齐全</td><td>grep 部门头+岗位子列头</td><td>全部命中</td></tr>
+  <tr><td>5</td><td>泳道不重叠</td><td>解析 subgraph/cluster 容器坐标</td><td>无纵向/横向重叠</td></tr>
+  <tr><td>6</td><td>正逆向分离</td><td>统计 stroke-dasharray 边</td><td>逆向边全为虚线</td></tr>
+  <tr><td>7</td><td>标签渲染</td><td>grep 节点动作文本</td><td>全部命中（≥1 次）</td></tr>
+  <tr><td>8</td><td>复杂度</td><td>统计节点数</td><td>≤30</td></tr>
+  <tr><td>9</td><td>配色生效</td><td>grep 主题/角色色值</td><td>每类 ≥1 命中</td></tr>
+  <tr><td>10</td><td>尺寸合理</td><td>解析 viewBox</td><td>无 0 尺寸 / 异常比例</td></tr>
+</table></div>
+
+<p>---</p>
+
+<h2 id="sec-7-演进路线">7. 演进路线</h2>
+
+<div class="tbl-wrap"><table>
+  <tr><th>版本</th><th>阶段</th><th>内容</th></tr>
+  <tr><td>V1</td><td>已完成</td><td>Mermaid + <code>@ktrysmt/beautiful-mermaid</code>（ELK）常规图渲染；npm 镜像；ESM 封装</td></tr>
+  <tr><td>V2</td><td>已完成</td><td>自研泳道布局器（网格坐标法、两级部门→岗位、正逆向通道）；P2P/OTC 示例</td></tr>
+  <tr><td>V3</td><td>已完成</td><td><strong>统一自研渲染管线（零外部依赖）</strong>：<code>parse-flow.mjs</code>（Mermaid flowchart 子集解析，支持中文 id）+ <code>layout-grid.mjs</code>（auto 拓扑分层 / swimlane 泳道，含部门色板）+ <code>render-svg.mjs</code>（形状/正交路由/classDef）+ <code>render-flow.mjs</code>（CLI）+ <code>agent-orchestrator.mjs</code>（智能体编排：需求 JSON/mmd → 渲染 → 10 项自动验收 → SVG+报告）+ <code>validate.mjs</code>（验收实现）。三例测试 12/12 通过（登录图 auto、P2P 泳道、需求 JSON 协议）</td></tr>
+  <tr><td>V4</td><td>已完成（深化）</td><td><strong>智能体化</strong>：<code>nlp-model.mjs</code>（半结构化 DSL → req.json）+ <code>agent-batch.mjs</code>（批量出图+自动断言+汇总）+ <code>preview-server.mjs</code>（在线预览+PNG 导出）+ <strong>M1 知识库</strong>：<code>templates/</code> 50 模板（供应链/销售/制造/HR/财务/行政/IT/法务 8 域，带 meta.triggers）+ <code>template-finder.mjs</code>（触发词匹配+开头加权+变量覆盖）+ <strong>M2 自动拆图</strong>：<code>split-graph.mjs</code>（最长关键路径→分支簇→链式分段→主图折叠 [[子流程]]+子图+index.html 索引）+ <strong>M3 LLM 建模</strong>：<code>llm-model.mjs</code>（自由自然语言 → req.json，JSON Schema+few-shot，环境变量/<code>llm.config.json</code> 配置，降级链 LLM→DSL→模板）+ <strong>M4 单命令</strong>：<code>agent-flow.mjs</code>（一句话 → 建模→渲染/拆图→验收→预览）。验收：50 模板批量 12/12；42 节点订单全生命周期自动拆主图+子图 12/12；纯自然语言 MES 真实 LLM 出图 12/12</td></tr>
+</table></div>
+
+<p>---</p>
+
+<h2 id="sec-8-附录">8. 附录</h2>
+
+<h3 id="sec-8-1-命令速查">8.1 命令速查</h3>
+
+<pre><code class="lang-bash"># 常规图渲染（ESM）
+node render-esm.mjs &lt;in.mmd&gt; &lt;out.svg&gt; github-light '{"padding":50,"nodeSpacing":36,"layerSpacing":56,"thoroughness":5}'
+# Graphviz 渲染
+node render-dot.mjs &lt;in.dot&gt; &lt;out.svg&gt; dot
+# 自研泳道图（数据驱动）
+node gen-&lt;流程&gt;.mjs
+# ★ 自研渲染管线（V3，零外部依赖）
+node render-flow.mjs &lt;in.mmd&gt; &lt;out.svg&gt; [--mode auto|swimlane] [--title 标题]
+# ★ 智能体编排（渲染 + 自动验收 + 报告）
+node agent-orchestrator.mjs &lt;in.mmd|req.json&gt; &lt;out.svg&gt; [--req] [--mode auto|swimlane]
+    [--expect-text "开始,结束,采购部"] [--expect-reverse 3] [--expect-colors "#0969da,#1f883d"]
+# ★ 需求自动建模（NL/DSL → req.json）
+node nlp-model.mjs &lt;需求.txt&gt; &lt;req.json&gt;
+# ★ 批量出图（自动断言 + 汇总报告）
+node agent-batch.mjs req1.json req2.json ...   # 或 --dir &lt;目录&gt;
+# ★ 在线预览（含 PNG 导出）
+node preview-server.mjs [port=8080] [dir]      # 打开 http://localhost:8080
+# ★ LLM 自由自然语言建模（团队用环境变量 LLM_API_KEY/LLM_BASE_URL/LLM_MODEL 启用；见 LLM_CONFIG.md；未配置自动降级 DSL/模板）
+node llm-model.mjs "画一个采购到付款流程，涉及采购员、采购经理、供应商、仓库、质检..." [--out req.json]
+# ★ 自动拆图（&gt;30 节点 → 主图 + 子图 + 索引页）
+node split-graph.mjs &lt;req.json&gt; &lt;outBase&gt; [--max 30]
+# ★ 单命令智能体（一句话 → 建模 → 渲染/拆图 → 验收 → 交付）
+node agent-flow.mjs "自然语言需求" [--out 前缀] [--max 30]
+# 依赖安装（镜像）
+npm install &lt;pkg&gt; --registry https://registry.npmmirror.com --no-audit --no-fund</code></pre>
+
+<h3 id="sec-8-2-本项目产出索引">8.2 本项目产出索引</h3>
+
+<div class="tbl-wrap"><table>
+  <tr><th>文件</th><th>说明</th></tr>
+  <tr><td><code>diagram-login-auth.{mmd,svg}</code></td><td>登录认证流程图（标准符号 + 角色标注）</td></tr>
+  <tr><td><code>diagram-erp-p2p-roles.svg</code> / <code>gen-p2p-swimlane.mjs</code></td><td>P2P 部门+岗位两级泳道图（含生产使用环节）</td></tr>
+  <tr><td><code>diagram-otc-swimlane.svg</code> / <code>gen-otc-swimlane.mjs</code></td><td>销售订单 OTC 8 岗位泳道图（含总监会签）</td></tr>
+  <tr><td><code>diagram-erp-p2p.mmd/.svg</code></td><td>P2P 时序图（7 角色）</td></tr>
+  <tr><td><code>diagram-p2p-reverse-flow.{mmd,svg}</code></td><td>逆向异常处理流程图</td></tr>
+  <tr><td><code>parse-flow.mjs</code></td><td>自研 Mermaid flowchart 子集解析器（零依赖，中文 id）</td></tr>
+  <tr><td><code>layout-grid.mjs</code></td><td>自研布局器（auto 拓扑分层 / swimlane 泳道）</td></tr>
+  <tr><td><code>render-svg.mjs</code></td><td>自研 SVG 渲染器（形状/部门色板/classDef/正交路由）</td></tr>
+  <tr><td><code>render-flow.mjs</code></td><td>自研渲染管线 CLI（V3）</td></tr>
+  <tr><td><code>agent-orchestrator.mjs</code></td><td>智能体编排（需求 JSON/mmd → 渲染 → 验收 → 报告）</td></tr>
+  <tr><td><code>validate.mjs</code></td><td>10 项自动验收实现</td></tr>
+  <tr><td><code>req-util.mjs</code></td><td>需求 JSON → Mermaid 公共模块</td></tr>
+  <tr><td><code>nlp-model.mjs</code></td><td>需求自动建模（NL/DSL → req.json）</td></tr>
+  <tr><td><code>agent-batch.mjs</code></td><td>批量出图 + 自动断言 + 汇总报告</td></tr>
+  <tr><td><code>preview-server.mjs</code></td><td>在线预览服务（SVG 预览/报告/PNG 导出）</td></tr>
+  <tr><td><code>req-purchase-approval.json</code></td><td>需求 JSON 输入协议示例</td></tr>
+  <tr><td><code>req-sales-order.txt/.json</code></td><td>自然语言 DSL 建模示例（销售订单）</td></tr>
+  <tr><td><code>req-sales-order.svg</code> / <code>req-purchase-approval.svg</code></td><td>批量出图产物</td></tr>
+  <tr><td><code>batch-report.md</code></td><td>批量汇总报告</td></tr>
+  <tr><td><code>templates/</code>（50 个 .json）</td><td>知识库模板（供应链/销售/客服/仓储/制造/研发/运维/HR/财务/税务/行政/法务/安全 全域）</td></tr>
+  <tr><td><code>template-finder.mjs</code></td><td>模板匹配器（触发词打分 + 变量覆盖"X 改叫 Y"）</td></tr>
+  <tr><td><code>split-graph.mjs</code></td><td>自动拆图（关键路径/分支簇/链式分段/索引页）</td></tr>
+  <tr><td><code>llm-model.mjs</code> / <code>llm.config.json</code></td><td>LLM 自然语言建模（<strong>团队用环境变量启用</strong>，配置仅本机兜底，降级链 LLM→DSL→模板）</td></tr>
+  <tr><td><code>LLM_CONFIG.md</code></td><td>团队环境变量配置指引（Win/macOS/Linux/CI + 验证 + 安全红线）</td></tr>
+  <tr><td><code>.gitignore</code></td><td>忽略密钥配置（llm.config.json）与依赖/日志</td></tr>
+  <tr><td><code>agent-flow.mjs</code></td><td>单命令智能体（一句话 → 出图）</td></tr>
+  <tr><td><code>v4-plan.md</code></td><td>V4 深化计划</td></tr>
+  <tr><td><code>req-lifecycle.json</code> / <code>gen-lifecycle.mjs</code></td><td>42 节点拆图测试用例（订单全生命周期）</td></tr>
+  <tr><td><code>lifecycle-main.svg</code> / <code>lifecycle-sub1.svg</code> / <code>lifecycle-index.html</code></td><td>自动拆图产物（主图+子图+索引）</td></tr>
+  <tr><td><code>flowchart-agent-spec.html</code></td><td>规格文档 HTML 版（浏览器阅读/打印）</td></tr>
+  <tr><td><code>flowchart-agent-spec.html</code></td><td>规格文档 HTML 版（浏览器阅读/打印）</td></tr>
+  <tr><td><code>mermaid-render/scripts/render-esm.mjs</code></td><td>Mermaid→SVG（@ktrysmt + ELK）</td></tr>
+  <tr><td><code>mermaid-render/scripts/render-dot.mjs</code></td><td>DOT→SVG（@viz-js/viz WASM）</td></tr>
+  <tr><td><code>LLM_CONFIG.md</code></td><td>团队环境变量配置指引（独立文件，内容与 §8.4 一致）</td></tr>
+</table></div>
+
+<h3 id="sec-8-3-智能体系统提示词草案-可直接使用-">8.3 智能体系统提示词草案（可直接使用）</h3>
+
+<blockquote>你是一位专业的流程图设计智能体。你严格遵守 ANSI/ISO 流程图符号规范：开始/结束=体育场形、处理=矩形、判断=菱形（必须带 ≥2 个带标签出口）、子流程=双矩形、数据=圆柱、备注=虚线框。颜色语义双体系：形状表达类型，颜色表达角色/部门。单图节点不超过 30 个，超过则拆图。多角色（&gt;7）按部门归并泳道；复杂泳道必须使用网格坐标法布局，保证泳道不重叠、正逆向通道分离（正向实线走右通道、逆向虚线走左通道）。渲染前先自检：开始/结束存在、判断有分支标签、泳道无重叠、逆向边为虚线、角色/部门齐全。交付 SVG + 可维护源码 + 校验报告。</blockquote>
+
+<h3 id="sec-8-4-llm-环境变量配置-团队规范-">8.4 LLM 环境变量配置（团队规范）</h3>
+
+<blockquote>本节为 <code>LLM_CONFIG.md</code> 的正式附录版本。<strong>团队统一使用环境变量接入 LLM，禁止把 api_key 提交进代码库。</strong></blockquote>
+
+<p><strong>需要设置的环境变量：</strong></p>
+
+<div class="tbl-wrap"><table>
+  <tr><th>变量</th><th>必填</th><th>说明</th><th>示例</th></tr>
+  <tr><td><code>LLM_API_KEY</code></td><td>是</td><td>API 密钥</td><td><code>sk-xxxxxxxx</code></td></tr>
+  <tr><td><code>LLM_BASE_URL</code></td><td>否</td><td>API 网关地址（默认 deepseek）</td><td><code>https://api.deepseek.com</code></td></tr>
+  <tr><td><code>LLM_MODEL</code></td><td>否</td><td>模型名（默认 deepseek-chat）</td><td><code>deepseek-chat</code></td></tr>
+</table></div>
+
+<blockquote>代码读取优先级：环境变量 &gt; <code>llm.config.json</code>（后者已被 .gitignore 忽略，仅本机临时用）。</blockquote>
+
+<p><strong>Windows（本机永久生效）：</strong></p>
+<pre><code class="lang-bash">setx LLM_API_KEY "sk-xxxxxxxx"
+setx LLM_BASE_URL "https://api.deepseek.com"
+setx LLM_MODEL "deepseek-chat"</code></pre>
+<blockquote><code>setx</code> 设置后需重新打开终端才生效。仅当前会话用：<code>export LLM_API_KEY="sk-xxxxxxxx"</code>。</blockquote>
+
+<p><strong>macOS / Linux（永久生效）：</strong></p>
+<pre><code class="lang-bash">echo 'export LLM_API_KEY="sk-xxxxxxxx"' &gt;&gt; ~/.zshrc   # zsh；bash 用 ~/.bashrc
+echo 'export LLM_BASE_URL="https://api.deepseek.com"' &gt;&gt; ~/.zshrc
+source ~/.zshrc</code></pre>
+
+<p><strong>CI / 流水线（GitHub Actions 示例）：</strong></p>
+<pre><code class="lang-text">env:
+  LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+  LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+  LLM_MODEL: deepseek-chat</code></pre>
+
+<p><strong>验证是否生效：</strong></p>
+<pre><code class="lang-bash">node -e "import('./llm-model.mjs').then(m =&gt; { const c = m.loadLLMConfig(); console.log('base_url:', c.base_url); console.log('model:', c.model); console.log('api_key:', c.api_key ? '已配置(' + c.api_key.slice(0,4) + '***)' : '❌ 未配置'); })"</code></pre>
+
+<p><strong>没有 key 时的降级行为：</strong></p>
+<p><code>llm-model.mjs</code> 自动降级：<strong>LLM → DSL 规则解析（nlp-model）→ 知识库模板（template-finder）</strong>。无 key 也能用模板/DSL 出图，配了 key 则自由自然语言直接建模，两者都不影响 <code>agent-flow.mjs</code> 单命令使用。</p>
+
+<p><strong>安全红线：</strong></p>
+<li>❌ 不要把 api_key 写进任何提交到 git 的文件</li>
+<li>✅ 仓库已含 <code>.gitignore</code> 忽略 <code>llm.config.json</code>，提交前先 <code>git status</code> 确认</li>
+<li>✅ key 泄露后立即到平台后台吊销并重新生成</li>
+
+
+  </div>
+</div>
+</body>
+</html>

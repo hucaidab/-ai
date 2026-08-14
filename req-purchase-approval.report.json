@@ -1,0 +1,66 @@
+{
+  "pass": true,
+  "checks": [
+    {
+      "name": "画布尺寸有效",
+      "pass": true,
+      "detail": "viewBox=704×660"
+    },
+    {
+      "name": "尺寸比例合理",
+      "pass": true,
+      "detail": "宽高比 1.07"
+    },
+    {
+      "name": "节点数 ≤ 30",
+      "pass": true,
+      "detail": "实体节点 6"
+    },
+    {
+      "name": "起止节点存在",
+      "pass": true,
+      "detail": "起止形状 2 个"
+    },
+    {
+      "name": "开始/结束文本",
+      "pass": true,
+      "detail": "均有"
+    },
+    {
+      "name": "判断节点有带标签分支",
+      "pass": true,
+      "detail": "菱形 1 个，带标签出边 2 条"
+    },
+    {
+      "name": "泳道不重叠",
+      "pass": true,
+      "detail": "泳道 2 条，无重叠"
+    },
+    {
+      "name": "逆向边为虚线",
+      "pass": true,
+      "detail": "虚线 1 条 / 预期逆向 1"
+    },
+    {
+      "name": "关键文本标签渲染",
+      "pass": true,
+      "detail": "全部命中（4 项）"
+    },
+    {
+      "name": "配色生效",
+      "pass": true,
+      "detail": "全部命中（4 色）"
+    },
+    {
+      "name": "箭头数量完整",
+      "pass": true,
+      "detail": "箭头 6 / 边 6"
+    },
+    {
+      "name": "SVG 结构完整",
+      "pass": true,
+      "detail": "标签闭合"
+    }
+  ],
+  "summary": "✓ 12/12 项通过"
+}

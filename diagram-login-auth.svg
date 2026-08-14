@@ -1,0 +1,265 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1314.7631666666666 3380.5900000000015" width="1314.7631666666666" height="3380.5900000000015" style="--bg:#ffffff;--fg:#1f2328;--line:#d1d9e0;--accent:#0969da;--muted:#59636e;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      color-mix(in srgb, var(--fg) 75%, var(--bg));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<path class="edge" data-from="Start" data-to="F1" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M419.1955,86.9L419.1954999999999,142.9" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="F1" data-to="U2" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M419.1954999999999,179.8L419.1955,228.90000000000003" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="U2" data-to="F2" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M419.1955,265.80000000000007L419.1955,310.70000000000005Q419.1955,316.70000000000005 413.1955,316.70000000000005L409.98266666666666,316.70000000000005Q403.98266666666666,316.70000000000005 403.98266666666666,322.70000000000005L403.98266666666666,328.70000000000005" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="F2" data-to="NoteFmt" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="否" d="M369.52599999999995,500.98333333333335L369.52599999999995,742.64Q369.52599999999995,748.64 363.52599999999995,748.64L326.7313333333333,748.64Q320.7313333333333,748.64 320.7313333333333,754.64L320.7313333333333,1712.9600000000003Q320.7313333333333,1718.9600000000003 314.7313333333333,1718.9600000000003L289.41133333333335,1718.9600000000003Q283.41133333333335,1718.9600000000003 283.41133333333335,1724.9600000000003L283.41133333333335,1730.9600000000003" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="NoteFmt" data-to="U2" data-style="dotted" data-arrow-start="false" data-arrow-end="true" data-label="重新输入" d="M341.8546666666667,1757.8600000000004L1172.7631666666666,1757.8600000000004Q1178.7631666666666,1757.8600000000004 1178.7631666666666,1751.8600000000004L1178.7631666666666,244.01250000000005Q1178.7631666666666,238.01250000000005 1172.7631666666666,238.01250000000005L514.2705,238.01250000000005" fill="none" stroke="var(--_line)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="F2" data-to="A1" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="是" d="M438.4393333333333,500.9833333333334L438.4393333333333,573.44Q438.4393333333333,579.44 444.4393333333333,579.44L474.33966666666663,579.44Q480.33966666666663,579.44 480.33966666666663,585.44L480.33966666666663,667.74" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="A1" data-to="A2" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M480.33966666666663,704.64L480.3396666666666,760.64" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="A2" data-to="NoteRate" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="是" d="M440.94299999999987,957.6233333333332L440.94299999999987,1111.32Q440.94299999999987,1117.32 434.94299999999987,1117.32L388.12249999999995,1117.32Q382.12249999999995,1117.32 382.12249999999995,1123.32L382.12249999999995,1790.7600000000002Q382.12249999999995,1796.7600000000002 376.12249999999995,1796.7600000000002L171.8986666666666,1796.7600000000002Q165.8986666666666,1796.7600000000002 165.8986666666666,1802.7600000000002L165.8986666666666,1941.6820000000002" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="NoteRate" data-to="U2" data-style="dotted" data-arrow-start="false" data-arrow-end="true" data-label="冷却后重试" d="M223.84799999999996,1968.5820000000003L1184.7631666666666,1968.5820000000003Q1190.7631666666666,1968.5820000000003 1190.7631666666666,1962.5820000000003L1190.7631666666666,250.23750000000004Q1190.7631666666666,244.23750000000004 1184.7631666666666,244.23750000000004L514.2705,244.23750000000004" fill="none" stroke="var(--_line)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="A2" data-to="A3" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="否" d="M519.7363333333333,957.6233333333332L519.7363333333333,1035.7041666666667Q519.7363333333333,1041.02 514.4205,1041.02L514.4205,1041.02Q509.1046666666666,1041.02 509.1046666666666,1046.3358333333333L509.1046666666666,1129.32" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="A3" data-to="D1" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="查询" d="M509.1046666666666,1166.22L509.1046666666666,1298.52" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="D1" data-to="A4" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="用户记录" d="M509.1046666666666,1349.42L509.1046666666666,1481.72" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="A4" data-to="NoteEnum" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="否" d="M457.4196666666666,1636.775L457.4196666666666,1802.7600000000002Q457.4196666666666,1808.7600000000002 451.4196666666666,1808.7600000000002L302.1486666666666,1808.7600000000002Q296.1486666666666,1808.7600000000002 296.1486666666666,1814.7600000000002L296.1486666666666,2051.482" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="A4" data-to="A5" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="否" d="M560.7896666666666,1636.775L560.7896666666666,1694.46Q560.7896666666666,1700.46 566.7896666666666,1700.46L786.3731666666666,1700.46Q792.3731666666666,1700.46 792.3731666666666,1706.46L792.3731666666666,1788.76" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="A5" data-to="A6" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M792.3731666666666,1825.66L792.3731666666666,1881.66" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="A6" data-to="A7" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="是" d="M752.9765,2078.6433333333334L752.9765,2156.04Q752.9765,2162.04 758.9765,2162.04L765.0795833333333,2162.04Q771.0795833333333,2162.04 771.0795833333333,2168.04L771.0795833333333,2252.2610000000004" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="A7" data-to="NoteLock" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M771.0795833333333,2289.1610000000005L771.0795833333333,2325.2400000000002Q771.0795833333333,2331.2400000000002 777.0795833333333,2331.2400000000002L799.0781666666667,2331.2400000000002Q805.0781666666667,2331.2400000000002 805.0781666666667,2337.2400000000002L805.0781666666667,2353.6110000000003" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="NoteLock" data-to="U2" data-style="dotted" data-arrow-start="false" data-arrow-end="true" data-label="一段时间后重试" d="M931.8448333333332,2372.061L1196.7631666666666,2372.061Q1202.7631666666666,2372.061 1202.7631666666666,2366.061L1202.7631666666666,256.46250000000003Q1202.7631666666666,250.46250000000003 1196.7631666666666,250.46250000000003L514.2705,250.46250000000003" fill="none" stroke="var(--_line)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="A6" data-to="ErrMsg" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="否" d="M831.7698333333333,2078.6433333333334L831.7698333333333,2232.34Q831.7698333333333,2238.34 837.7698333333333,2238.34L1001.2964999999999,2238.34Q1007.2964999999999,2238.34 1007.2964999999999,2244.34L1007.2964999999999,2252.2610000000004" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="ErrMsg" data-to="U2" data-style="dotted" data-arrow-start="false" data-arrow-end="true" data-label="重试" d="M1158.7631666666666,2270.7110000000002L1208.7631666666666,2270.7110000000002Q1214.7631666666666,2270.7110000000002 1214.7631666666666,2264.7110000000002L1214.7631666666666,262.68750000000006Q1214.7631666666666,256.68750000000006 1208.7631666666666,256.68750000000006L514.2705,256.68750000000006" fill="none" stroke="var(--_line)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="A4" data-to="A8" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="是" d="M509.1046666666666,1688.46L509.1046666666666,1820.7600000000002" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="A8" data-to="SubMfa" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="是" d="M474.40099999999995,1994.2783333333334L474.40099999999995,2066.982Q474.40099999999995,2072.982 468.40099999999995,2072.982L435.17516666666666,2072.982Q429.17516666666666,2072.982 429.17516666666666,2078.982L429.17516666666666,2161.282" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="SubMfa" data-to="M1" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M429.17516666666666,2198.1820000000002L429.1751666666666,2252.2610000000004" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="M1" data-to="M2" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M429.1751666666666,2306.0610000000006L429.17516666666666,2353.6110000000003" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="M2" data-to="A10" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="是" d="M429.17516666666666,2595.9190000000003L429.17516666666666,2720.5900000000006Q429.17516666666666,2726.5900000000006 435.17516666666666,2726.5900000000006L456.59299999999996,2726.5900000000006Q462.59299999999996,2726.5900000000006 462.59299999999996,2732.5900000000006L462.59299999999996,2738.5900000000006" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="A8" data-to="A10" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="否" d="M543.8083333333333,1994.2783333333334L543.8083333333333,2143.282Q543.8083333333333,2149.282 549.8083333333333,2149.282L583.0341666666666,2149.282Q589.0341666666666,2149.282 589.0341666666666,2155.282L589.0341666666666,2720.5900000000006Q589.0341666666666,2726.5900000000006 583.0341666666666,2726.5900000000006L561.6163333333333,2726.5900000000006Q555.6163333333333,2726.5900000000006 555.6163333333333,2732.5900000000006L555.6163333333333,2738.5900000000006" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="A10" data-to="D2" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="写入会话" d="M509.1046666666666,2775.4900000000007L509.1046666666666,2907.790000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="D2" data-to="A11" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M509.1046666666666,2958.690000000001L509.1046666666666,3014.690000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="A11" data-to="F5" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="Set-Cookie" d="M509.1046666666666,3068.490000000001L509.1046666666666,3200.7900000000013" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="F5" data-to="End" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M509.1046666666666,3237.6900000000014L509.1046666666666,3293.6900000000014" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<g class="edge-label" data-from="F2" data-to="NoteFmt" data-label="否">
+  <rect x="305.7313333333333" y="1649.6600000000003" width="29.53" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="320.49633333333327" y="1664.8100000000004" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">否</text>
+</g>
+<g class="edge-label" data-from="NoteFmt" data-to="U2" data-label="重新输入">
+  <rect x="1146.1781666666666" y="982.7862500000002" width="65.17" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="1178.7631666666666" y="997.9362500000002" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">重新输入</text>
+</g>
+<g class="edge-label" data-from="F2" data-to="A1" data-label="是">
+  <rect x="465.33966666666663" y="586.44" width="29.53" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="480.1046666666666" y="601.59" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">是</text>
+</g>
+<g class="edge-label" data-from="A2" data-to="NoteRate" data-label="是">
+  <rect x="367.12249999999995" y="1217.22" width="29.53" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="381.88749999999993" y="1232.3700000000001" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">是</text>
+</g>
+<g class="edge-label" data-from="NoteRate" data-to="U2" data-label="冷却后重试">
+  <rect x="1152.2381666666665" y="1091.2597500000002" width="77.05000000000001" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="1190.7631666666666" y="1106.4097500000003" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">冷却后重试</text>
+</g>
+<g class="edge-label" data-from="A2" data-to="A3" data-label="否">
+  <rect x="494.1046666666666" y="1048.02" width="29.53" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="508.8696666666666" y="1063.17" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">否</text>
+</g>
+<g class="edge-label" data-from="A3" data-to="D1" data-label="查询">
+  <rect x="488.1046666666666" y="1217.22" width="41.41" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="508.8096666666666" y="1232.3700000000001" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">查询</text>
+</g>
+<g class="edge-label" data-from="D1" data-to="A4" data-label="用户记录">
+  <rect x="476.1046666666666" y="1400.42" width="65.17" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="508.6896666666666" y="1415.5700000000002" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">用户记录</text>
+</g>
+<g class="edge-label" data-from="A4" data-to="NoteEnum" data-label="否">
+  <rect x="281.1486666666666" y="1970.1820000000002" width="29.53" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="295.9136666666666" y="1985.3320000000003" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">否</text>
+</g>
+<g class="edge-label" data-from="A4" data-to="A5" data-label="否">
+  <rect x="777.3731666666666" y="1707.46" width="29.53" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="792.1381666666666" y="1722.6100000000001" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">否</text>
+</g>
+<g class="edge-label" data-from="A6" data-to="A7" data-label="是">
+  <rect x="756.0795833333333" y="2169.04" width="29.53" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="770.8445833333333" y="2184.19" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">是</text>
+</g>
+<g class="edge-label" data-from="NoteLock" data-to="U2" data-label="一段时间后重试">
+  <rect x="1152.3581666666666" y="1296.11175" width="100.81000000000002" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="1202.7631666666666" y="1311.2617500000001" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">一段时间后重试</text>
+</g>
+<g class="edge-label" data-from="A6" data-to="ErrMsg" data-label="否">
+  <rect x="816.7698333333333" y="2169.04" width="29.53" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="831.5348333333333" y="2184.19" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">否</text>
+</g>
+<g class="edge-label" data-from="ErrMsg" data-to="U2" data-label="重试">
+  <rect x="1194.0581666666667" y="1248.54925" width="41.41" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="1214.7631666666666" y="1263.6992500000001" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">重试</text>
+</g>
+<g class="edge-label" data-from="A4" data-to="A8" data-label="是">
+  <rect x="494.1046666666666" y="1739.4600000000003" width="29.53" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="508.8696666666666" y="1754.6100000000004" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">是</text>
+</g>
+<g class="edge-label" data-from="A8" data-to="SubMfa" data-label="是">
+  <rect x="414.17516666666666" y="2079.982" width="29.53" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="428.94016666666664" y="2095.132" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">是</text>
+</g>
+<g class="edge-label" data-from="M2" data-to="A10" data-label="是">
+  <rect x="414.17516666666666" y="2657.2900000000004" width="29.53" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="428.94016666666664" y="2672.4400000000005" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">是</text>
+</g>
+<g class="edge-label" data-from="A8" data-to="A10" data-label="否">
+  <rect x="574.0341666666666" y="2657.2900000000004" width="29.53" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="588.7991666666666" y="2672.4400000000005" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">否</text>
+</g>
+<g class="edge-label" data-from="A10" data-to="D2" data-label="写入会话">
+  <rect x="476.1046666666666" y="2826.4900000000007" width="65.17" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="508.6896666666666" y="2841.640000000001" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">写入会话</text>
+</g>
+<g class="edge-label" data-from="A11" data-to="F5" data-label="Set-Cookie">
+  <rect x="474.1046666666666" y="3119.490000000001" width="69.328" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="508.7686666666666" y="3134.6400000000012" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">Set-Cookie</text>
+</g>
+<g class="node" data-id="Start" data-label="开始：用户访问登录页" data-shape="stadium">
+  <rect x="324.1205" y="50" width="190.14999999999998" height="36.900000000000006" rx="18.450000000000003" ry="18.450000000000003" fill="#1f883d" stroke="#1a7f37" stroke-width="2px" />
+  <text x="419.1955" y="68.45" text-anchor="middle" font-size="13" font-weight="500" fill="#ffffff" dy="4.55">开始：用户访问登录页</text>
+</g>
+<g class="node" data-id="F1" data-label="前端｜显示登录表单" data-shape="rectangle">
+  <rect x="331.53049999999996" y="142.9" width="175.32999999999998" height="36.900000000000006" rx="0" ry="0" fill="#ddf4ff" stroke="#0969da" stroke-width="1.5px" />
+  <text x="419.1954999999999" y="161.35000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3069" dy="4.55">前端｜显示登录表单</text>
+</g>
+<g class="node" data-id="U2" data-label="用户｜输入账号与密码" data-shape="rectangle">
+  <rect x="324.1205" y="228.90000000000003" width="190.14999999999998" height="36.900000000000006" rx="0" ry="0" fill="#ffebe9" stroke="#cf222e" stroke-width="1.5px" />
+  <text x="419.1955" y="247.35000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="#82071e" dy="4.55">用户｜输入账号与密码</text>
+</g>
+<g class="node" data-id="F2" data-label="前端｜输入格式合法?" data-shape="diamond">
+  <polygon points="403.98266666666666,328.70000000000005 507.35266666666666,432.07000000000005 403.98266666666666,535.44 300.61266666666666,432.07000000000005" fill="#ddf4ff" stroke="#0969da" stroke-width="1.5px" />
+  <text x="403.98266666666666" y="432.07000000000005" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3069" dy="4.55">前端｜输入格式合法?</text>
+</g>
+<g class="node" data-id="NoteFmt" data-label="备注：前端即时校验
+提示格式错误" data-shape="rectangle">
+  <rect x="166.5246666666667" y="1730.9600000000003" width="175.32999999999998" height="53.800000000000004" rx="0" ry="0" fill="#ffffff" stroke="#8c959f" stroke-width="1px" />
+  <text x="254.18966666666668" y="1757.8600000000004" text-anchor="middle" font-size="13" font-weight="500" fill="#57606a"><tspan x="254.18966666666668" dy="-3.9000000000000012">备注：前端即时校验</tspan><tspan x="254.18966666666668" dy="16.900000000000002">提示格式错误</tspan></text>
+</g>
+<g class="node" data-id="A1" data-label="认证服务｜接收登录请求" data-shape="rectangle">
+  <rect x="377.8546666666666" y="667.74" width="204.96999999999997" height="36.900000000000006" rx="0" ry="0" fill="#fbefff" stroke="#8250df" stroke-width="1.5px" />
+  <text x="480.33966666666663" y="686.19" text-anchor="middle" font-size="13" font-weight="500" fill="#3e1f6f" dy="4.55">认证服务｜接收登录请求</text>
+</g>
+<g class="node" data-id="A2" data-label="认证服务｜请求频率超限?" data-shape="diamond">
+  <polygon points="480.3396666666666,760.64 598.5296666666666,878.8299999999999 480.3396666666666,997.0199999999999 362.1496666666666,878.8299999999999" fill="#fbefff" stroke="#8250df" stroke-width="1.5px" />
+  <text x="480.3396666666666" y="878.8299999999999" text-anchor="middle" font-size="13" font-weight="500" fill="#3e1f6f" dy="4.55">认证服务｜请求频率超限?</text>
+</g>
+<g class="node" data-id="NoteRate" data-label="备注：返回 429
+冷却 / 触发 CAPTCHA" data-shape="rectangle">
+  <rect x="50" y="1941.6820000000002" width="173.84799999999996" height="53.800000000000004" rx="0" ry="0" fill="#ffffff" stroke="#8c959f" stroke-width="1px" />
+  <text x="136.92399999999998" y="1968.5820000000003" text-anchor="middle" font-size="13" font-weight="500" fill="#57606a"><tspan x="136.92399999999998" dy="-3.9000000000000012">备注：返回 429</tspan><tspan x="136.92399999999998" dy="16.900000000000002">冷却 / 触发 CAPTCHA</tspan></text>
+</g>
+<g class="node" data-id="A3" data-label="认证服务｜查询用户记录" data-shape="rectangle">
+  <rect x="406.61966666666666" y="1129.32" width="204.96999999999997" height="36.900000000000006" rx="0" ry="0" fill="#fbefff" stroke="#8250df" stroke-width="1.5px" />
+  <text x="509.1046666666666" y="1147.77" text-anchor="middle" font-size="13" font-weight="500" fill="#3e1f6f" dy="4.55">认证服务｜查询用户记录</text>
+</g>
+<g class="node" data-id="D1" data-label="数据存储｜用户凭据数据库" data-shape="cylinder">
+  <rect x="399.20966666666664" y="1305.52" width="219.78999999999996" height="36.900000000000006" fill="#dafbe1" stroke="none" />
+  <line x1="399.20966666666664" y1="1305.52" x2="399.20966666666664" y2="1342.42" stroke="#1a7f37" stroke-width="1.5px" />
+  <line x1="618.9996666666666" y1="1305.52" x2="618.9996666666666" y2="1342.42" stroke="#1a7f37" stroke-width="1.5px" />
+  <ellipse cx="509.1046666666666" cy="1342.42" rx="109.89499999999998" ry="7" fill="#dafbe1" stroke="#1a7f37" stroke-width="1.5px" />
+  <ellipse cx="509.1046666666666" cy="1305.52" rx="109.89499999999998" ry="7" fill="#dafbe1" stroke="#1a7f37" stroke-width="1.5px" />
+  <text x="509.1046666666666" y="1323.97" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3d1e" dy="4.55">数据存储｜用户凭据数据库</text>
+</g>
+<g class="node" data-id="A4" data-label="认证服务｜密码匹配?
+Argon2 / bcrypt" data-shape="diamond">
+  <polygon points="509.1046666666666,1481.72 612.4746666666666,1585.09 509.1046666666666,1688.4599999999998 405.7346666666666,1585.09" fill="#fbefff" stroke="#8250df" stroke-width="1.5px" />
+  <text x="509.1046666666666" y="1585.09" text-anchor="middle" font-size="13" font-weight="500" fill="#3e1f6f"><tspan x="509.1046666666666" dy="-3.9000000000000012">认证服务｜密码匹配?</tspan><tspan x="509.1046666666666" dy="16.900000000000002">Argon2 / bcrypt</tspan></text>
+</g>
+<g class="node" data-id="NoteEnum" data-label="备注：统一响应
+防账号枚举" data-shape="rectangle">
+  <rect x="223.30366666666657" y="2051.482" width="145.69" height="53.800000000000004" rx="0" ry="0" fill="#ffffff" stroke="#8c959f" stroke-width="1px" />
+  <text x="296.1486666666666" y="2078.382" text-anchor="middle" font-size="13" font-weight="500" fill="#57606a"><tspan x="296.1486666666666" dy="-3.9000000000000012">备注：统一响应</tspan><tspan x="296.1486666666666" dy="16.900000000000002">防账号枚举</tspan></text>
+</g>
+<g class="node" data-id="A5" data-label="认证服务｜失败计数 +1" data-shape="rectangle">
+  <rect x="698.4096666666667" y="1788.76" width="187.92699999999996" height="36.900000000000006" rx="0" ry="0" fill="#fbefff" stroke="#8250df" stroke-width="1.5px" />
+  <text x="792.3731666666666" y="1807.21" text-anchor="middle" font-size="13" font-weight="500" fill="#3e1f6f" dy="4.55">认证服务｜失败计数 +1</text>
+</g>
+<g class="node" data-id="A6" data-label="认证服务｜超过锁定阈值?" data-shape="diamond">
+  <polygon points="792.3731666666666,1881.66 910.5631666666666,1999.8500000000001 792.3731666666666,2118.04 674.1831666666667,1999.8500000000001" fill="#fbefff" stroke="#8250df" stroke-width="1.5px" />
+  <text x="792.3731666666666" y="1999.8500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="#3e1f6f" dy="4.55">认证服务｜超过锁定阈值?</text>
+</g>
+<g class="node" data-id="A7" data-label="认证服务｜锁定账户 / 指数退避" data-shape="rectangle">
+  <rect x="649.6990833333333" y="2252.2610000000004" width="242.76099999999997" height="36.900000000000006" rx="0" ry="0" fill="#fbefff" stroke="#8250df" stroke-width="1.5px" />
+  <text x="771.0795833333333" y="2270.7110000000002" text-anchor="middle" font-size="13" font-weight="500" fill="#3e1f6f" dy="4.55">认证服务｜锁定账户 / 指数退避</text>
+</g>
+<g class="node" data-id="NoteLock" data-label="备注：通知用户并限流" data-shape="rectangle">
+  <rect x="741.6948333333332" y="2353.6110000000003" width="190.14999999999998" height="36.900000000000006" rx="0" ry="0" fill="#ffffff" stroke="#8c959f" stroke-width="1px" />
+  <text x="836.7698333333333" y="2372.061" text-anchor="middle" font-size="13" font-weight="500" fill="#57606a" dy="4.55">备注：通知用户并限流</text>
+</g>
+<g class="node" data-id="ErrMsg" data-label="前端｜渲染&quot;账号或密码错误&quot;" data-shape="rectangle">
+  <rect x="931.5631666666666" y="2252.2610000000004" width="227.19999999999996" height="36.900000000000006" rx="0" ry="0" fill="#ddf4ff" stroke="#0969da" stroke-width="1.5px" />
+  <text x="1045.1631666666665" y="2270.7110000000002" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3069" dy="4.55">前端｜渲染&quot;账号或密码错误&quot;</text>
+</g>
+<g class="node" data-id="A8" data-label="认证服务｜启用 MFA?" data-shape="diamond">
+  <polygon points="509.1046666666666,1820.7600000000002 613.2156666666666,1924.871 509.1046666666666,2028.982 404.9936666666666,1924.871" fill="#fbefff" stroke="#8250df" stroke-width="1.5px" />
+  <text x="509.1046666666666" y="1924.871" text-anchor="middle" font-size="13" font-weight="500" fill="#3e1f6f" dy="4.55">认证服务｜启用 MFA?</text>
+</g>
+<g class="node" data-id="SubMfa" data-label="认证服务｜MFA 校验子流程" data-shape="subroutine">
+  <rect x="318.5391666666667" y="2161.282" width="221.27199999999996" height="36.900000000000006" rx="0" ry="0" fill="#fbefff" stroke="#8250df" stroke-width="1.5px" />
+  <line x1="326.5391666666667" y1="2161.282" x2="326.5391666666667" y2="2198.1820000000002" stroke="#8250df" stroke-width="1.5px" />
+  <line x1="531.8111666666666" y1="2161.282" x2="531.8111666666666" y2="2198.1820000000002" stroke="#8250df" stroke-width="1.5px" />
+  <text x="429.17516666666666" y="2179.732" text-anchor="middle" font-size="13" font-weight="500" fill="#3e1f6f" dy="4.55">认证服务｜MFA 校验子流程</text>
+</g>
+<g class="node" data-id="M1" data-label="mfa｜MFA 服务｜下发验证码
+TOTP / SMS / WebAuthn" data-shape="rectangle">
+  <rect x="316.3161666666666" y="2252.2610000000004" width="225.718" height="53.800000000000004" rx="0" ry="0" fill="#fff1e5" stroke="#bc4c00" stroke-width="1.5px" />
+  <text x="429.1751666666666" y="2279.1610000000005" text-anchor="middle" font-size="13" font-weight="500" fill="#571f00"><tspan x="429.1751666666666" dy="-3.9000000000000012">mfa｜MFA 服务｜下发验证码</tspan><tspan x="429.1751666666666" dy="16.900000000000002">TOTP / SMS / WebAuthn</tspan></text>
+</g>
+<g class="node" data-id="M2" data-label="mfa｜MFA 服务｜验证通过?" data-shape="diamond">
+  <polygon points="429.17516666666666,2353.6110000000003 550.3291666666667,2474.7650000000003 429.17516666666666,2595.9190000000003 308.02116666666666,2474.7650000000003" fill="#fff1e5" stroke="#bc4c00" stroke-width="1.5px" />
+  <text x="429.17516666666666" y="2474.7650000000003" text-anchor="middle" font-size="13" font-weight="500" fill="#571f00" dy="4.55">mfa｜MFA 服务｜验证通过?</text>
+</g>
+<g class="node" data-id="A10" data-label="认证服务｜签发 Token + 创建 Session" data-shape="rectangle">
+  <rect x="369.56966666666665" y="2738.5900000000006" width="279.06999999999994" height="36.900000000000006" rx="0" ry="0" fill="#fbefff" stroke="#8250df" stroke-width="1.5px" />
+  <text x="509.1046666666666" y="2757.0400000000004" text-anchor="middle" font-size="13" font-weight="500" fill="#3e1f6f" dy="4.55">认证服务｜签发 Token + 创建 Session</text>
+</g>
+<g class="node" data-id="D2" data-label="数据存储｜会话 / 令牌存储" data-shape="cylinder">
+  <rect x="402.5441666666666" y="2914.790000000001" width="213.12099999999998" height="36.900000000000006" fill="#dafbe1" stroke="none" />
+  <line x1="402.5441666666666" y1="2914.790000000001" x2="402.5441666666666" y2="2951.690000000001" stroke="#1a7f37" stroke-width="1.5px" />
+  <line x1="615.6651666666667" y1="2914.790000000001" x2="615.6651666666667" y2="2951.690000000001" stroke="#1a7f37" stroke-width="1.5px" />
+  <ellipse cx="509.1046666666666" cy="2951.690000000001" rx="106.56049999999999" ry="7" fill="#dafbe1" stroke="#1a7f37" stroke-width="1.5px" />
+  <ellipse cx="509.1046666666666" cy="2914.790000000001" rx="106.56049999999999" ry="7" fill="#dafbe1" stroke="#1a7f37" stroke-width="1.5px" />
+  <text x="509.1046666666666" y="2933.2400000000007" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3d1e" dy="4.55">数据存储｜会话 / 令牌存储</text>
+</g>
+<g class="node" data-id="A11" data-label="认证服务｜设置安全 Cookie
+HttpOnly · Secure · SameSite" data-shape="rectangle">
+  <rect x="399.5801666666666" y="3014.690000000001" width="219.04899999999998" height="53.800000000000004" rx="0" ry="0" fill="#fbefff" stroke="#8250df" stroke-width="1.5px" />
+  <text x="509.1046666666666" y="3041.590000000001" text-anchor="middle" font-size="13" font-weight="500" fill="#3e1f6f"><tspan x="509.1046666666666" dy="-3.9000000000000012">认证服务｜设置安全 Cookie</tspan><tspan x="509.1046666666666" dy="16.900000000000002">HttpOnly · Secure · SameSite</tspan></text>
+</g>
+<g class="node" data-id="F5" data-label="前端｜保存会话 · 跳转主页" data-shape="rectangle">
+  <rect x="400.6916666666666" y="3200.7900000000013" width="216.826" height="36.900000000000006" rx="0" ry="0" fill="#ddf4ff" stroke="#0969da" stroke-width="1.5px" />
+  <text x="509.1046666666666" y="3219.240000000001" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3069" dy="4.55">前端｜保存会话 · 跳转主页</text>
+</g>
+<g class="node" data-id="End" data-label="结束：登录成功 · 进入系统" data-shape="stadium">
+  <rect x="400.6916666666666" y="3293.6900000000014" width="216.826" height="36.900000000000006" rx="18.450000000000003" ry="18.450000000000003" fill="#1f883d" stroke="#1a7f37" stroke-width="2px" />
+  <text x="509.1046666666666" y="3312.1400000000012" text-anchor="middle" font-size="13" font-weight="500" fill="#ffffff" dy="4.55">结束：登录成功 · 进入系统</text>
+</g>
+<g class="node" data-id="Legend" data-label="角色图例：红=用户 · 蓝=前端客户端 · 紫=认证服务
+绿=数据存储 · 橙=MFA 服务 · 绿椭圆=开始/结束
+形状：矩形=处理 菱形=判断 双框=子流程 圆柱=数据 虚线=备注" data-shape="rectangle">
+  <rect x="550.2704999999999" y="228.90000000000003" width="443.5719999999999" height="70.7" rx="0" ry="0" fill="#ffffff" stroke="#8c959f" stroke-width="1px" />
+  <text x="772.0564999999998" y="264.25000000000006" text-anchor="middle" font-size="13" font-weight="500" fill="#57606a"><tspan x="772.0564999999998" dy="-12.350000000000001">角色图例：红=用户 · 蓝=前端客户端 · 紫=认证服务</tspan><tspan x="772.0564999999998" dy="16.900000000000002">绿=数据存储 · 橙=MFA 服务 · 绿椭圆=开始/结束</tspan><tspan x="772.0564999999998" dy="16.900000000000002">形状：矩形=处理 菱形=判断 双框=子流程 圆柱=数据 虚线=备注</tspan></text>
+</g>
+</svg>

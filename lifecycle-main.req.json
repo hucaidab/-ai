@@ -1,0 +1,499 @@
+{
+  "type": "flowchart",
+  "title": "订单全生命周期（销售→采购→生产领料）（主流程）",
+  "lanes": [
+    {
+      "dept": "客户",
+      "roles": [
+        "客户"
+      ]
+    },
+    {
+      "dept": "销售部",
+      "roles": [
+        "销售员",
+        "销售经理"
+      ]
+    },
+    {
+      "dept": "信用部",
+      "roles": [
+        "信用专员"
+      ]
+    },
+    {
+      "dept": "仓储部",
+      "roles": [
+        "仓管员"
+      ]
+    },
+    {
+      "dept": "财务部",
+      "roles": [
+        "应收会计",
+        "出纳"
+      ]
+    },
+    {
+      "dept": "采购部",
+      "roles": [
+        "采购员",
+        "采购经理"
+      ]
+    },
+    {
+      "dept": "供应商",
+      "roles": [
+        "供应商"
+      ]
+    },
+    {
+      "dept": "仓储质检部",
+      "roles": [
+        "仓库",
+        "质检"
+      ]
+    },
+    {
+      "dept": "财务部",
+      "roles": [
+        "应付会计",
+        "出纳"
+      ]
+    },
+    {
+      "dept": "生产计划",
+      "roles": [
+        "计划员"
+      ]
+    },
+    {
+      "dept": "车间",
+      "roles": [
+        "领料员"
+      ]
+    },
+    {
+      "dept": "仓储部",
+      "roles": [
+        "仓管员"
+      ]
+    },
+    {
+      "dept": "质检",
+      "roles": [
+        "质检员"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "AN1",
+      "dept": "客户",
+      "role": "客户",
+      "action": "开始：发起订单需求",
+      "shape": "start"
+    },
+    {
+      "id": "AN2",
+      "dept": "销售部",
+      "role": "销售员",
+      "action": "创建销售订单 SO",
+      "shape": "rect"
+    },
+    {
+      "id": "AN3",
+      "dept": "销售部",
+      "role": "销售经理",
+      "action": "金额超限?",
+      "shape": "diamond"
+    },
+    {
+      "id": "AN4",
+      "dept": "信用部",
+      "role": "信用专员",
+      "action": "信用审核",
+      "shape": "rect"
+    },
+    {
+      "id": "AN5",
+      "dept": "销售部",
+      "role": "销售员",
+      "action": "确认订单并发送",
+      "shape": "rect"
+    },
+    {
+      "id": "AN6",
+      "dept": "客户",
+      "role": "客户",
+      "action": "确认订单",
+      "shape": "rect"
+    },
+    {
+      "id": "AN7",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "拣货出库",
+      "shape": "rect"
+    },
+    {
+      "id": "AN8",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "物流发货",
+      "shape": "rect"
+    },
+    {
+      "id": "AN9",
+      "dept": "客户",
+      "role": "客户",
+      "action": "收货并验收",
+      "shape": "rect"
+    },
+    {
+      "id": "AN10",
+      "dept": "财务部",
+      "role": "应收会计",
+      "action": "开具发票",
+      "shape": "rect"
+    },
+    {
+      "id": "AN11",
+      "dept": "财务部",
+      "role": "应收会计",
+      "action": "应收对账",
+      "shape": "rect"
+    },
+    {
+      "id": "AN12",
+      "dept": "客户",
+      "role": "客户",
+      "action": "支付货款",
+      "shape": "rect"
+    },
+    {
+      "id": "AN13",
+      "dept": "财务部",
+      "role": "出纳",
+      "action": "收款并核销",
+      "shape": "rect"
+    },
+    {
+      "id": "AN14",
+      "dept": "财务部",
+      "role": "出纳",
+      "action": "结束：订单完成",
+      "shape": "rect"
+    },
+    {
+      "id": "BN1",
+      "dept": "采购部",
+      "role": "采购员",
+      "action": "开始：产生采购需求",
+      "shape": "rect"
+    },
+    {
+      "id": "BN2",
+      "dept": "采购部",
+      "role": "采购员",
+      "action": "提交采购申请 PR",
+      "shape": "rect"
+    },
+    {
+      "id": "BN3",
+      "dept": "采购部",
+      "role": "采购经理",
+      "action": "审批通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "BN4",
+      "dept": "采购部",
+      "role": "采购员",
+      "action": "下达采购订单 PO",
+      "shape": "rect"
+    },
+    {
+      "id": "BN5",
+      "dept": "供应商",
+      "role": "供应商",
+      "action": "备货并发货",
+      "shape": "rect"
+    },
+    {
+      "id": "BN6",
+      "dept": "仓储质检部",
+      "role": "仓库",
+      "action": "到货收货",
+      "shape": "rect"
+    },
+    {
+      "id": "BN7",
+      "dept": "仓储质检部",
+      "role": "质检",
+      "action": "来料检验",
+      "shape": "rect"
+    },
+    {
+      "id": "BN8",
+      "dept": "仓储质检部",
+      "role": "质检",
+      "action": "检验合格?",
+      "shape": "diamond"
+    },
+    {
+      "id": "BN9",
+      "dept": "仓储质检部",
+      "role": "仓库",
+      "action": "入库并更新库存",
+      "shape": "rect"
+    },
+    {
+      "id": "BN10",
+      "dept": "采购部",
+      "role": "采购员",
+      "action": "提交收货单与订单",
+      "shape": "rect"
+    },
+    {
+      "id": "BN12",
+      "dept": "财务部",
+      "role": "应付会计",
+      "action": "三单匹配（PO/入库/发票）",
+      "shape": "rect"
+    },
+    {
+      "id": "BN13",
+      "dept": "财务部",
+      "role": "应付会计",
+      "action": "匹配通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "SUB2",
+      "dept": "客户",
+      "role": "",
+      "action": "分段2",
+      "shape": "subroutine"
+    },
+    {
+      "id": "__END__",
+      "dept": "客户",
+      "role": "",
+      "action": "结束：流程完成",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "AN1",
+      "to": "AN2",
+      "label": "询单",
+      "reverse": false
+    },
+    {
+      "from": "AN2",
+      "to": "AN3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "AN3",
+      "to": "AN4",
+      "label": "未超限",
+      "reverse": false
+    },
+    {
+      "from": "AN3",
+      "to": "AN2",
+      "label": "驳回·修改",
+      "reverse": true
+    },
+    {
+      "from": "AN4",
+      "to": "AN5",
+      "label": "信用通过",
+      "reverse": false
+    },
+    {
+      "from": "AN4",
+      "to": "AN2",
+      "label": "信用不通过·补充",
+      "reverse": true
+    },
+    {
+      "from": "AN5",
+      "to": "AN6",
+      "label": "发送订单",
+      "reverse": false
+    },
+    {
+      "from": "AN6",
+      "to": "AN7",
+      "label": "确认",
+      "reverse": false
+    },
+    {
+      "from": "AN7",
+      "to": "AN8",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "AN8",
+      "to": "AN9",
+      "label": "发货",
+      "reverse": false
+    },
+    {
+      "from": "AN9",
+      "to": "AN10",
+      "label": "验收完成",
+      "reverse": false
+    },
+    {
+      "from": "AN9",
+      "to": "AN8",
+      "label": "退货",
+      "reverse": true
+    },
+    {
+      "from": "AN10",
+      "to": "AN11",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "AN11",
+      "to": "AN12",
+      "label": "对账单",
+      "reverse": false
+    },
+    {
+      "from": "AN11",
+      "to": "AN12",
+      "label": "对账差异·催收",
+      "reverse": true
+    },
+    {
+      "from": "AN12",
+      "to": "AN13",
+      "label": "付款",
+      "reverse": false
+    },
+    {
+      "from": "AN12",
+      "to": "AN13",
+      "label": "逾期催收",
+      "reverse": true
+    },
+    {
+      "from": "AN13",
+      "to": "AN14",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "BN1",
+      "to": "BN2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "BN2",
+      "to": "BN3",
+      "label": "提交",
+      "reverse": false
+    },
+    {
+      "from": "BN3",
+      "to": "BN4",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "BN3",
+      "to": "BN2",
+      "label": "驳回",
+      "reverse": true
+    },
+    {
+      "from": "BN4",
+      "to": "BN5",
+      "label": "下达 PO",
+      "reverse": false
+    },
+    {
+      "from": "BN5",
+      "to": "BN6",
+      "label": "送货",
+      "reverse": false
+    },
+    {
+      "from": "BN6",
+      "to": "BN7",
+      "label": "报检",
+      "reverse": false
+    },
+    {
+      "from": "BN7",
+      "to": "BN8",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "BN8",
+      "to": "BN9",
+      "label": "合格",
+      "reverse": false
+    },
+    {
+      "from": "BN8",
+      "to": "BN5",
+      "label": "不合格·退货",
+      "reverse": true
+    },
+    {
+      "from": "BN9",
+      "to": "BN10",
+      "label": "入库完成",
+      "reverse": false
+    },
+    {
+      "from": "BN10",
+      "to": "BN12",
+      "label": "提交单据",
+      "reverse": false
+    },
+    {
+      "from": "BN12",
+      "to": "BN13",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "BN13",
+      "to": "SUB2",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "BN13",
+      "to": "BN12",
+      "label": "不通过·重新核对",
+      "reverse": true
+    },
+    {
+      "from": "AN14",
+      "to": "BN1",
+      "label": "转采购补货",
+      "reverse": false
+    },
+    {
+      "from": "SUB2",
+      "to": "__END__",
+      "label": "",
+      "reverse": false
+    }
+  ]
+}

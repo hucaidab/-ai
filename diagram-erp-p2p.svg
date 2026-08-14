@@ -1,0 +1,184 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3126.4369999999994 962.744" width="3126.4369999999994" height="962.744" style="--bg:#ffffff;--fg:#1f2328;--line:#d1d9e0;--accent:#0969da;--muted:#59636e;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      color-mix(in srgb, var(--fg) 75%, var(--bg));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<g class="subgraph" data-id="LANE_PUR" data-label="采购部 Purchasing">
+  <rect x="89" y="50" width="882.0969999999999" height="277.74" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="89" y="50" width="882.0969999999999" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="101" y="64" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">采购部 Purchasing</text>
+</g>
+<g class="subgraph" data-id="LANE_SUP" data-label="供应商 Supplier">
+  <rect x="1736.7039999999997" y="336.644" width="207.32999999999998" height="210.70000000000002" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="1736.7039999999997" y="336.644" width="207.32999999999998" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="1748.7039999999997" y="350.644" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">供应商 Supplier</text>
+</g>
+<g class="subgraph" data-id="LANE_WH" data-label="仓储质检部 Warehouse &amp; QC">
+  <rect x="206.68849999999975" y="675.644" width="964.04" height="237.1" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="206.68849999999975" y="675.644" width="964.04" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="218.68849999999975" y="689.644" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">仓储质检部 Warehouse &amp; QC</text>
+</g>
+<g class="subgraph" data-id="LANE_FIN" data-label="财务部 Finance">
+  <rect x="1677.7769999999996" y="687.644" width="1304.6599999999999" height="192.64" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="1677.7769999999996" y="687.644" width="1304.6599999999999" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="1689.7769999999996" y="701.644" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">财务部 Finance</text>
+</g>
+<path class="edge" data-from="P3" data-to="S1" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="下达 PO" d="M955.0969999999999,249.1995L965.3555527037736,246.0863498341767Q971.0969999999999,244.34400000000002 977.0969999999999,244.34400000000002L1720.7039999999997,244.34400000000002Q1726.7039999999997,244.34400000000002 1726.7039999999997,250.34400000000002L1726.7039999999997,400.244Q1726.7039999999997,405.244 1731.7039999999997,405.244L1731.7039999999997,405.244Q1736.7039999999997,405.244 1741.7039999999997,405.244L1752.7039999999997,405.244" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="S1" data-to="W1" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="送货" d="M1928.0339999999997,399.094L1938.0339999999997,399.094Q1944.0339999999997,399.094 1950.0339999999997,399.094L2062.6139999999996,399.094Q2068.6139999999996,399.094 2068.6139999999996,405.094L2068.6139999999996,645.644Q2068.6139999999996,651.644 2062.6139999999996,651.644L202.68849999999975,651.644Q196.68849999999975,651.644 196.68849999999975,657.644L196.68849999999975,802.194Q196.68849999999975,808.194 202.03026599871666,805.4616866916563L201.34673400128284,805.8113133083436Q206.68849999999975,803.079 212.68849999999975,803.079L222.68849999999975,803.079" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="W3" data-to="S1" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="不合格 · 退货" d="M769.8934999999997,784.3415L2996.4369999999994,784.3415Q3002.4369999999994,784.3415 3002.4369999999994,778.3415L3002.4369999999994,405.094Q3002.4369999999994,399.094 2996.4369999999994,399.094L1928.0339999999997,399.094" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="W4" data-to="P4" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="入库完成" d="M1154.7284999999997,793.739L3008.4369999999994,793.739Q3014.4369999999994,793.739 3014.4369999999994,787.739L3014.4369999999994,255.1995Q3014.4369999999994,249.1995 3008.4369999999994,249.1995L324.78999999999996,249.1995" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="P4" data-to="F1" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="提交收货单" d="M324.78999999999996,255.3495L330.78999999999996,255.3495Q336.78999999999996,255.3495 336.78999999999996,261.34950000000003L336.78999999999996,304.74Q336.78999999999996,310.74 342.78999999999996,310.74L966.097,310.74Q971.0969999999999,310.74 976.0969999999998,310.74L976.0969999999998,310.74Q981.0969999999998,310.74 981.0969999999998,315.73999999999995L981.0969999999998,621.644Q981.0969999999998,627.644 987.0969999999998,627.644L1637.7769999999996,627.644Q1643.7769999999996,627.644 1643.7769999999996,633.644L1643.7769999999996,808.8389999999999Q1643.7769999999996,814.8389999999999 1649.7769999999996,814.8389999999999L1671.7769999999996,814.8389999999999Q1677.7769999999996,814.8389999999999 1683.7769999999996,814.8389999999999L1881.1069999999995,814.8389999999999L1881.1069999999995,815.639L1929.1069999999995,815.639" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="S2" data-to="F1" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="发票" d="M1913.2139999999997,512.894L1939.0339999999997,512.894Q1944.0339999999997,512.894 1949.0339999999997,512.894L1949.0339999999997,512.894Q1954.0339999999997,512.894 1954.0339999999997,517.894L1954.0339999999997,633.644Q1954.0339999999997,639.644 1948.0339999999997,639.644L1661.7769999999996,639.644Q1655.7769999999996,639.644 1655.7769999999996,645.644L1655.7769999999996,795.389Q1655.7769999999996,801.389 1661.7769999999996,801.389L1671.7769999999996,801.389Q1677.7769999999996,801.389 1683.7769999999996,801.389L1881.1069999999995,801.389L1881.1069999999995,802.189L1929.1069999999995,802.189" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="F4" data-to="S3" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="付款" d="M2966.4369999999994,803.0790000000001L3020.4369999999994,803.0790000000001Q3026.4369999999994,803.0790000000001 3026.4369999999994,797.0790000000001L3026.4369999999994,461.99399999999997Q3026.4369999999994,455.99399999999997 3020.4369999999994,455.99399999999997L1928.0339999999997,455.99399999999997" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="S3" data-to="F5" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="收款确认" d="M1928.0339999999997,455.994L1938.0339999999997,455.994Q1944.0339999999997,455.994 1950.0339999999997,455.994L2005.4439999999995,455.99399999999997Q2011.4439999999995,455.99399999999997 2011.4439999999995,461.99399999999997L2011.4439999999995,657.644Q2011.4439999999995,663.644 2005.4439999999995,663.644L1673.7769999999996,663.644Q1667.7769999999996,663.644 1667.7769999999996,669.644L1667.7769999999996,766.939Q1667.7769999999996,772.939 1670.7637994922538,767.73524858462L1674.7902005077453,760.72025141538Q1677.7769999999996,755.5165 1683.7769999999996,755.5165L1693.7769999999996,755.5165" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="P1" data-to="P2" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M955.0969999999999,164.89600000000002L3032.4369999999994,164.89600000000002Q3038.4369999999994,164.89600000000002 3038.4369999999994,170.89600000000002L3038.4369999999994,191.37Q3038.4369999999994,197.37 3032.4369999999994,197.37L591.53,197.37" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="P2" data-to="P3" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="通过" d="M529.508,259.392L603.53,259.392L603.53,260.994L694.1177499999999,260.994Q696.9399999999999,260.994 696.9399999999999,258.17175000000003L696.9399999999999,258.17175000000003Q696.9399999999999,255.3495 699.76225,255.3495L744.9399999999999,255.3495" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="P2" data-to="P1" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="驳回" d="M529.508,135.348L598.268,135.348Q603.53,135.348 603.53,140.61L603.53,140.61Q603.53,145.872 608.7919999999999,145.872L690.9399999999999,145.872Q696.9399999999999,145.872 696.9399999999999,151.872L696.9399999999999,152.746Q696.9399999999999,158.746 702.9399999999999,158.746L744.9399999999999,158.74599999999998" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="W1" data-to="W2" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M368.37849999999975,809.229L428.37849999999975,809.229" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="W2" data-to="W3" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M574.0684999999997,808.1940000000001L3044.4369999999994,808.1940000000001Q3050.4369999999994,808.1940000000001 3050.4369999999994,814.1940000000001L3050.4369999999994,860.8915Q3050.4369999999994,866.8915 3044.4369999999994,866.8915L769.8934999999998,866.8915" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="W3" data-to="W4" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="合格" d="M811.1684999999998,825.6165L910.5784999999997,825.6165Q916.5784999999997,825.6165 916.5784999999997,819.6165L916.5784999999997,805.889Q916.5784999999997,799.889 922.5784999999997,799.889L964.5784999999997,799.889" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="F1" data-to="F2" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M2104.4369999999994,802.189L3062.4369999999994,802.189L3062.4369999999994,803.3865000000001L2402.3669999999993,803.3865000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="F2" data-to="F3" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="通过" d="M2380.2603333333327,825.4931666666668L2501.7769999999996,825.4931666666668Q2507.7769999999996,825.4931666666668 2507.7769999999996,819.4931666666668L2507.7769999999996,805.889Q2507.7769999999996,799.889 2513.7769999999996,799.889L2555.7769999999996,799.889" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="F2" data-to="F1" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="不通过" d="M2273.9519999999993,807.6115L2104.4369999999994,807.6115" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="F3" data-to="F4" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M2760.7469999999994,805.004L2820.7469999999994,805.004" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<g class="edge-label" data-from="P3" data-to="S1" data-label="下达 PO">
+  <rect x="1697.7039999999997" y="251.34399999999997" width="57.448" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="1726.4279999999997" y="266.49399999999997" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">下达 PO</text>
+</g>
+<g class="edge-label" data-from="S1" data-to="W1" data-label="送货">
+  <rect x="2047.6139999999996" y="602.344" width="41.41" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="2068.3189999999995" y="617.494" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">送货</text>
+</g>
+<g class="edge-label" data-from="W3" data-to="S1" data-label="不合格 · 退货">
+  <rect x="2959.1599999999994" y="576.56775" width="86.554" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="3002.4369999999994" y="591.71775" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">不合格 · 退货</text>
+</g>
+<g class="edge-label" data-from="W4" data-to="P4" data-label="入库完成">
+  <rect x="2981.8519999999994" y="506.31925" width="65.17" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="3014.4369999999994" y="521.46925" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">入库完成</text>
+</g>
+<g class="edge-label" data-from="P4" data-to="F1" data-label="提交收货单">
+  <rect x="942.0969999999998" y="558.0440000000001" width="77.05000000000001" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="980.6219999999997" y="573.1940000000001" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">提交收货单</text>
+</g>
+<g class="edge-label" data-from="S2" data-to="F1" data-label="发票">
+  <rect x="1933.0339999999997" y="602.344" width="41.41" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="1953.7389999999996" y="617.494" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">发票</text>
+</g>
+<g class="edge-label" data-from="F4" data-to="S3" data-label="付款">
+  <rect x="3005.7319999999995" y="614.3865000000001" width="41.41" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="3026.4369999999994" y="629.5365" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">付款</text>
+</g>
+<g class="edge-label" data-from="S3" data-to="F5" data-label="收款确认">
+  <rect x="1978.4439999999995" y="602.344" width="65.17" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="2011.0289999999995" y="617.494" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">收款确认</text>
+</g>
+<g class="edge-label" data-from="P2" data-to="P3" data-label="通过">
+  <rect x="647.53" y="244.994" width="41.41" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="668.235" y="260.144" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">通过</text>
+</g>
+<g class="edge-label" data-from="P2" data-to="P1" data-label="驳回">
+  <rect x="647.53" y="129.872" width="41.41" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="668.235" y="145.02200000000002" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">驳回</text>
+</g>
+<g class="edge-label" data-from="W3" data-to="W4" data-label="合格">
+  <rect x="867.1684999999998" y="792.1940000000001" width="41.41" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="887.8734999999998" y="807.344" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">合格</text>
+</g>
+<g class="edge-label" data-from="F2" data-to="F3" data-label="通过">
+  <rect x="2458.3669999999997" y="804.0706666666666" width="41.41" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="2479.0719999999997" y="819.2206666666666" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">通过</text>
+</g>
+<g class="edge-label" data-from="F2" data-to="F1" data-label="不通过">
+  <rect x="2160.4369999999994" y="781.964" width="53.29" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="2187.0819999999994" y="797.114" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">不通过</text>
+</g>
+<g class="node" data-id="P1" data-label="采购员：提交采购申请 PR" data-shape="rectangle">
+  <rect x="744.9399999999999" y="146.446" width="210.15699999999995" height="36.900000000000006" rx="0" ry="0" fill="#ddf4ff" stroke="#0969da" stroke-width="1.5px" />
+  <text x="850.0184999999999" y="164.89600000000002" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3069" dy="4.55">采购员：提交采购申请 PR</text>
+</g>
+<g class="node" data-id="P2" data-label="采购经理：审批通过?" data-shape="diamond">
+  <polygon points="488.15999999999997,94.00000000000001 591.53,197.37 488.15999999999997,300.74 384.78999999999996,197.37" fill="#fff8c5" stroke="#9a6700" stroke-width="1.5px" />
+  <text x="488.15999999999997" y="197.37" text-anchor="middle" font-size="13" font-weight="500" fill="#633c01" dy="4.55">采购经理：审批通过?</text>
+</g>
+<g class="node" data-id="P3" data-label="采购员：下达采购订单 PO" data-shape="rectangle">
+  <rect x="744.9399999999999" y="230.7495" width="210.15699999999995" height="36.900000000000006" rx="0" ry="0" fill="#ddf4ff" stroke="#0969da" stroke-width="1.5px" />
+  <text x="850.0184999999999" y="249.1995" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3069" dy="4.55">采购员：下达采购订单 PO</text>
+</g>
+<g class="node" data-id="P4" data-label="采购员：提交收货单与订单" data-shape="rectangle">
+  <rect x="105" y="230.7495" width="219.78999999999996" height="36.900000000000006" rx="0" ry="0" fill="#ddf4ff" stroke="#0969da" stroke-width="1.5px" />
+  <text x="214.89499999999998" y="249.1995" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3069" dy="4.55">采购员：提交收货单与订单</text>
+</g>
+<g class="node" data-id="S1" data-label="供应商：备货并发货" data-shape="rectangle">
+  <rect x="1752.7039999999997" y="380.644" width="175.32999999999998" height="36.900000000000006" rx="0" ry="0" fill="#ddf4ff" stroke="#0969da" stroke-width="1.5px" />
+  <text x="1840.3689999999997" y="399.094" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3069" dy="4.55">供应商：备货并发货</text>
+</g>
+<g class="node" data-id="S2" data-label="供应商：开具发票" data-shape="rectangle">
+  <rect x="1752.7039999999997" y="494.444" width="160.51" height="36.900000000000006" rx="0" ry="0" fill="#ddf4ff" stroke="#0969da" stroke-width="1.5px" />
+  <text x="1832.9589999999998" y="512.894" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3069" dy="4.55">供应商：开具发票</text>
+</g>
+<g class="node" data-id="S3" data-label="供应商：收款并确认" data-shape="rectangle">
+  <rect x="1752.7039999999997" y="437.544" width="175.32999999999998" height="36.900000000000006" rx="0" ry="0" fill="#ddf4ff" stroke="#0969da" stroke-width="1.5px" />
+  <text x="1840.3689999999997" y="455.99399999999997" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3069" dy="4.55">供应商：收款并确认</text>
+</g>
+<g class="node" data-id="W1" data-label="仓库：到货收货" data-shape="rectangle">
+  <rect x="222.68849999999975" y="784.629" width="145.69" height="36.900000000000006" rx="0" ry="0" fill="#ddf4ff" stroke="#0969da" stroke-width="1.5px" />
+  <text x="295.5334999999998" y="803.0790000000001" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3069" dy="4.55">仓库：到货收货</text>
+</g>
+<g class="node" data-id="W2" data-label="质检：来料检验" data-shape="rectangle">
+  <rect x="428.37849999999975" y="789.744" width="145.69" height="36.900000000000006" rx="0" ry="0" fill="#ddf4ff" stroke="#0969da" stroke-width="1.5px" />
+  <text x="501.2234999999997" y="808.1940000000001" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3069" dy="4.55">质检：来料检验</text>
+</g>
+<g class="node" data-id="W3" data-label="质检：检验合格?" data-shape="diamond">
+  <polygon points="722.6184999999997,737.0665 811.1684999999997,825.6165 722.6184999999997,914.1664999999999 634.0684999999997,825.6165" fill="#fff8c5" stroke="#9a6700" stroke-width="1.5px" />
+  <text x="722.6184999999997" y="825.6165" text-anchor="middle" font-size="13" font-weight="500" fill="#633c01" dy="4.55">质检：检验合格?</text>
+</g>
+<g class="node" data-id="W4" data-label="仓库：入库并更新库存" data-shape="rectangle">
+  <rect x="964.5784999999997" y="775.289" width="190.14999999999998" height="36.900000000000006" rx="0" ry="0" fill="#ddf4ff" stroke="#0969da" stroke-width="1.5px" />
+  <text x="1059.6534999999997" y="793.739" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3069" dy="4.55">仓库：入库并更新库存</text>
+</g>
+<g class="node" data-id="F1" data-label="应付会计：三单匹配
+PO / 入库单 / 发票" data-shape="rectangle">
+  <rect x="1929.1069999999995" y="775.289" width="175.32999999999998" height="53.800000000000004" rx="0" ry="0" fill="#ddf4ff" stroke="#0969da" stroke-width="1.5px" />
+  <text x="2016.7719999999995" y="802.189" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3069"><tspan x="2016.7719999999995" dy="-3.9000000000000012">应付会计：三单匹配</tspan><tspan x="2016.7719999999995" dy="16.900000000000002">PO / 入库单 / 发票</tspan></text>
+</g>
+<g class="node" data-id="F2" data-label="匹配通过?" data-shape="diamond">
+  <polygon points="2336.0469999999996,737.0665000000001 2402.3669999999997,803.3865000000001 2336.0469999999996,869.7065 2269.7269999999994,803.3865000000001" fill="#fff8c5" stroke="#9a6700" stroke-width="1.5px" />
+  <text x="2336.0469999999996" y="803.3865000000001" text-anchor="middle" font-size="13" font-weight="500" fill="#633c01" dy="4.55">匹配通过?</text>
+</g>
+<g class="node" data-id="F3" data-label="应付会计：登记应付账款" data-shape="rectangle">
+  <rect x="2555.7769999999996" y="775.289" width="204.96999999999997" height="36.900000000000006" rx="0" ry="0" fill="#ddf4ff" stroke="#0969da" stroke-width="1.5px" />
+  <text x="2658.2619999999997" y="793.739" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3069" dy="4.55">应付会计：登记应付账款</text>
+</g>
+<g class="node" data-id="F4" data-label="出纳：银行付款" data-shape="rectangle">
+  <rect x="2820.7469999999994" y="784.629" width="145.69" height="36.900000000000006" rx="0" ry="0" fill="#ddf4ff" stroke="#0969da" stroke-width="1.5px" />
+  <text x="2893.591999999999" y="803.0790000000001" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3069" dy="4.55">出纳：银行付款</text>
+</g>
+<g class="node" data-id="F5" data-label="应付会计：账务核销" data-shape="rectangle">
+  <rect x="1693.7769999999996" y="737.0665" width="175.32999999999998" height="36.900000000000006" rx="0" ry="0" fill="#ddf4ff" stroke="#0969da" stroke-width="1.5px" />
+  <text x="1781.4419999999996" y="755.5165000000001" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3069" dy="4.55">应付会计：账务核销</text>
+</g>
+</svg>

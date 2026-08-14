@@ -1,0 +1,154 @@
+{
+  "type": "flowchart",
+  "title": "设备维保流程（TPM）",
+  "lanes": [
+    {
+      "dept": "车间",
+      "roles": [
+        "设备操作员",
+        "班组长"
+      ]
+    },
+    {
+      "dept": "设备部",
+      "roles": [
+        "维修工程师",
+        "设备主管"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "车间",
+      "role": "设备操作员",
+      "action": "提报设备故障或保养需求",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "设备部",
+      "role": "维修工程师",
+      "action": "故障诊断",
+      "shape": "rect"
+    },
+    {
+      "id": "N3",
+      "dept": "设备部",
+      "role": "维修工程师",
+      "action": "可现场维修?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N4",
+      "dept": "设备部",
+      "role": "维修工程师",
+      "action": "现场维修",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "设备部",
+      "role": "维修工程师",
+      "action": "委外维修",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "设备部",
+      "role": "设备主管",
+      "action": "验收合格?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N7",
+      "dept": "车间",
+      "role": "班组长",
+      "action": "恢复生产",
+      "shape": "rect"
+    },
+    {
+      "id": "N8",
+      "dept": "设备部",
+      "role": "维修工程师",
+      "action": "维保记录归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "是",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N5",
+      "label": "否",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "合格",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N2",
+      "label": "不合格",
+      "reverse": true
+    },
+    {
+      "from": "N7",
+      "to": "N8",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "设备",
+      "维保",
+      "维修",
+      "保养",
+      "tpm",
+      "maintenance"
+    ],
+    "tags": [
+      "制造",
+      "设备"
+    ]
+  }
+}

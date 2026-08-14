@@ -1,0 +1,113 @@
+{
+  "type": "flowchart",
+  "title": "社保公积金办理流程",
+  "lanes": [
+    {
+      "dept": "员工",
+      "roles": [
+        "员工"
+      ]
+    },
+    {
+      "dept": "HR",
+      "roles": [
+        "HR 专员"
+      ]
+    },
+    {
+      "dept": "财务部",
+      "roles": [
+        "薪酬专员"
+      ]
+    },
+    {
+      "dept": "社保局/公积金中心",
+      "roles": [
+        "外部机构",
+        "社保局/公积金中心"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "员工",
+      "role": "员工",
+      "action": "提交社保公积金办理申请",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "HR",
+      "role": "HR 专员",
+      "action": "资料齐全且合规?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "HR",
+      "role": "HR 专员",
+      "action": "增减员申报",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "财务部",
+      "role": "薪酬专员",
+      "action": "费用核算与扣缴",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "社保局/公积金中心",
+      "role": "社保局/公积金中心",
+      "action": "外部机构.受理办理",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "HR",
+      "role": "HR 专员",
+      "action": "办理结果反馈",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "齐全",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N1",
+      "label": "补资料",
+      "reverse": true
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "社保",
+      "公积金",
+      "五险一金",
+      "social"
+    ],
+    "tags": [
+      "HR",
+      "薪酬"
+    ]
+  }
+}

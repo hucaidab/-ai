@@ -1,0 +1,307 @@
+{
+  "type": "flowchart",
+  "title": "订单全生命周期（销售→采购→生产领料） · 分段2",
+  "lanes": [
+    {
+      "dept": "客户",
+      "roles": [
+        "客户"
+      ]
+    },
+    {
+      "dept": "销售部",
+      "roles": [
+        "销售员",
+        "销售经理"
+      ]
+    },
+    {
+      "dept": "信用部",
+      "roles": [
+        "信用专员"
+      ]
+    },
+    {
+      "dept": "仓储部",
+      "roles": [
+        "仓管员"
+      ]
+    },
+    {
+      "dept": "财务部",
+      "roles": [
+        "应收会计",
+        "出纳"
+      ]
+    },
+    {
+      "dept": "采购部",
+      "roles": [
+        "采购员",
+        "采购经理"
+      ]
+    },
+    {
+      "dept": "供应商",
+      "roles": [
+        "供应商"
+      ]
+    },
+    {
+      "dept": "仓储质检部",
+      "roles": [
+        "仓库",
+        "质检"
+      ]
+    },
+    {
+      "dept": "财务部",
+      "roles": [
+        "应付会计",
+        "出纳"
+      ]
+    },
+    {
+      "dept": "生产计划",
+      "roles": [
+        "计划员"
+      ]
+    },
+    {
+      "dept": "车间",
+      "roles": [
+        "领料员"
+      ]
+    },
+    {
+      "dept": "仓储部",
+      "roles": [
+        "仓管员"
+      ]
+    },
+    {
+      "dept": "质检",
+      "roles": [
+        "质检员"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "BN13",
+      "dept": "财务部",
+      "role": "应付会计",
+      "action": "进入：匹配通过?",
+      "shape": "start"
+    },
+    {
+      "id": "BN14",
+      "dept": "财务部",
+      "role": "应付会计",
+      "action": "登记应付账款",
+      "shape": "rect"
+    },
+    {
+      "id": "BN15",
+      "dept": "财务部",
+      "role": "出纳",
+      "action": "银行付款",
+      "shape": "rect"
+    },
+    {
+      "id": "BN16",
+      "dept": "供应商",
+      "role": "供应商",
+      "action": "收款并确认",
+      "shape": "rect"
+    },
+    {
+      "id": "BN17",
+      "dept": "财务部",
+      "role": "应付会计",
+      "action": "账务核销",
+      "shape": "rect"
+    },
+    {
+      "id": "BN18",
+      "dept": "财务部",
+      "role": "应付会计",
+      "action": "结束：付款完成",
+      "shape": "rect"
+    },
+    {
+      "id": "CN1",
+      "dept": "生产计划",
+      "role": "计划员",
+      "action": "开始：下达生产计划",
+      "shape": "rect"
+    },
+    {
+      "id": "CN2",
+      "dept": "生产计划",
+      "role": "计划员",
+      "action": "生成领料单",
+      "shape": "rect"
+    },
+    {
+      "id": "CN3",
+      "dept": "车间",
+      "role": "领料员",
+      "action": "提交领料申请",
+      "shape": "rect"
+    },
+    {
+      "id": "CN4",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "核对领料单与库存",
+      "shape": "rect"
+    },
+    {
+      "id": "CN5",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "库存充足?",
+      "shape": "diamond"
+    },
+    {
+      "id": "CN6",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "拣货出库",
+      "shape": "rect"
+    },
+    {
+      "id": "CN7",
+      "dept": "车间",
+      "role": "领料员",
+      "action": "车间领用并签字",
+      "shape": "rect"
+    },
+    {
+      "id": "CN8",
+      "dept": "质检",
+      "role": "质检员",
+      "action": "领料检验合格?",
+      "shape": "diamond"
+    },
+    {
+      "id": "CN9",
+      "dept": "车间",
+      "role": "领料员",
+      "action": "投入生产",
+      "shape": "rect"
+    },
+    {
+      "id": "CN10",
+      "dept": "生产计划",
+      "role": "计划员",
+      "action": "结束：领料完成",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "BN14",
+      "to": "BN15",
+      "label": "付款申请",
+      "reverse": false
+    },
+    {
+      "from": "BN15",
+      "to": "BN16",
+      "label": "付款",
+      "reverse": false
+    },
+    {
+      "from": "BN16",
+      "to": "BN17",
+      "label": "收款确认",
+      "reverse": false
+    },
+    {
+      "from": "BN15",
+      "to": "BN16",
+      "label": "退票·重付",
+      "reverse": true
+    },
+    {
+      "from": "BN17",
+      "to": "BN18",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "CN1",
+      "to": "CN2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "CN2",
+      "to": "CN3",
+      "label": "下发",
+      "reverse": false
+    },
+    {
+      "from": "CN3",
+      "to": "CN4",
+      "label": "提交",
+      "reverse": false
+    },
+    {
+      "from": "CN4",
+      "to": "CN5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "CN5",
+      "to": "CN6",
+      "label": "充足",
+      "reverse": false
+    },
+    {
+      "from": "CN5",
+      "to": "CN2",
+      "label": "缺料·重新排产",
+      "reverse": true
+    },
+    {
+      "from": "CN6",
+      "to": "CN7",
+      "label": "出库",
+      "reverse": false
+    },
+    {
+      "from": "CN7",
+      "to": "CN8",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "CN8",
+      "to": "CN9",
+      "label": "合格",
+      "reverse": false
+    },
+    {
+      "from": "CN8",
+      "to": "CN6",
+      "label": "不合格·退料",
+      "reverse": true
+    },
+    {
+      "from": "CN9",
+      "to": "CN10",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "BN18",
+      "to": "CN1",
+      "label": "安排生产领料",
+      "reverse": false
+    }
+  ]
+}

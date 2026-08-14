@@ -1,0 +1,175 @@
+{
+  "type": "flowchart",
+  "title": "版本发布上线流程",
+  "lanes": [
+    {
+      "dept": "研发部",
+      "roles": [
+        "开发工程师"
+      ]
+    },
+    {
+      "dept": "测试部",
+      "roles": [
+        "测试经理"
+      ]
+    },
+    {
+      "dept": "运维部",
+      "roles": [
+        "运维工程师"
+      ]
+    },
+    {
+      "dept": "产品部",
+      "roles": [
+        "产品经理"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "研发部",
+      "role": "开发工程师",
+      "action": "提交版本发布申请",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "测试部",
+      "role": "测试经理",
+      "action": "测试准入通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "测试部",
+      "role": "测试经理",
+      "action": "测试验证",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "测试部",
+      "role": "测试经理",
+      "action": "测试通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N5",
+      "dept": "运维部",
+      "role": "运维工程师",
+      "action": "灰度发布",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "运维部",
+      "role": "运维工程师",
+      "action": "全量发布",
+      "shape": "rect"
+    },
+    {
+      "id": "N7",
+      "dept": "产品部",
+      "role": "产品经理",
+      "action": "发布验收通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N8",
+      "dept": "运维部",
+      "role": "运维工程师",
+      "action": "发布后监控",
+      "shape": "rect"
+    },
+    {
+      "id": "N9",
+      "dept": "产品部",
+      "role": "产品经理",
+      "action": "版本上线完成",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N1",
+      "label": "不通过",
+      "reverse": true
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N1",
+      "label": "不通过",
+      "reverse": true
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N7",
+      "to": "N8",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N7",
+      "to": "N5",
+      "label": "不通过·回滚",
+      "reverse": true
+    },
+    {
+      "from": "N8",
+      "to": "N9",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "发布",
+      "上线",
+      "灰度",
+      "release"
+    ],
+    "tags": [
+      "研发",
+      "运维"
+    ]
+  }
+}

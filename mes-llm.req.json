@@ -1,0 +1,304 @@
+{
+  "type": "flowchart",
+  "title": "手机MES生产制造流程",
+  "lanes": [
+    {
+      "dept": "生产计划",
+      "roles": [
+        "计划员"
+      ]
+    },
+    {
+      "dept": "仓储部",
+      "roles": [
+        "仓管员"
+      ]
+    },
+    {
+      "dept": "SMT车间",
+      "roles": [
+        "操作员"
+      ]
+    },
+    {
+      "dept": "组装车间",
+      "roles": [
+        "组装工"
+      ]
+    },
+    {
+      "dept": "测试部",
+      "roles": [
+        "测试员"
+      ]
+    },
+    {
+      "dept": "品质部",
+      "roles": [
+        "检验员"
+      ]
+    },
+    {
+      "dept": "包装部",
+      "roles": [
+        "包装工"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "生产计划",
+      "role": "计划员",
+      "action": "开始：下达生产工单",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "生产计划",
+      "role": "计划员",
+      "action": "MES排程",
+      "shape": "rect"
+    },
+    {
+      "id": "N3",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "按工单备料",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "备料齐全?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N5",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "补料重备",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "SMT车间",
+      "role": "操作员",
+      "action": "领料上料",
+      "shape": "rect"
+    },
+    {
+      "id": "N7",
+      "dept": "SMT车间",
+      "role": "操作员",
+      "action": "贴片首件检验",
+      "shape": "diamond"
+    },
+    {
+      "id": "N8",
+      "dept": "SMT车间",
+      "role": "操作员",
+      "action": "调参重试",
+      "shape": "rect"
+    },
+    {
+      "id": "N9",
+      "dept": "SMT车间",
+      "role": "操作员",
+      "action": "批量贴片和回流焊",
+      "shape": "rect"
+    },
+    {
+      "id": "N10",
+      "dept": "组装车间",
+      "role": "组装工",
+      "action": "整机组装",
+      "shape": "rect"
+    },
+    {
+      "id": "N11",
+      "dept": "测试部",
+      "role": "测试员",
+      "action": "功能测试",
+      "shape": "diamond"
+    },
+    {
+      "id": "N12",
+      "dept": "测试部",
+      "role": "测试员",
+      "action": "返工回组装",
+      "shape": "rect"
+    },
+    {
+      "id": "N13",
+      "dept": "测试部",
+      "role": "测试员",
+      "action": "老化与可靠性测试",
+      "shape": "rect"
+    },
+    {
+      "id": "N14",
+      "dept": "品质部",
+      "role": "检验员",
+      "action": "成品检验",
+      "shape": "diamond"
+    },
+    {
+      "id": "N15",
+      "dept": "品质部",
+      "role": "检验员",
+      "action": "返工重检",
+      "shape": "rect"
+    },
+    {
+      "id": "N16",
+      "dept": "包装部",
+      "role": "包装工",
+      "action": "包装",
+      "shape": "rect"
+    },
+    {
+      "id": "N17",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "成品入库并在MES过账",
+      "shape": "rect"
+    },
+    {
+      "id": "N18",
+      "dept": "生产计划",
+      "role": "计划员",
+      "action": "结束：生产完成",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "缺料",
+      "reverse": true
+    },
+    {
+      "from": "N5",
+      "to": "N3",
+      "label": "补料",
+      "reverse": true
+    },
+    {
+      "from": "N4",
+      "to": "N6",
+      "label": "齐全",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N7",
+      "to": "N8",
+      "label": "不合格",
+      "reverse": true
+    },
+    {
+      "from": "N8",
+      "to": "N7",
+      "label": "调参",
+      "reverse": true
+    },
+    {
+      "from": "N7",
+      "to": "N9",
+      "label": "合格",
+      "reverse": false
+    },
+    {
+      "from": "N9",
+      "to": "N10",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N10",
+      "to": "N11",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N11",
+      "to": "N12",
+      "label": "不良",
+      "reverse": true
+    },
+    {
+      "from": "N12",
+      "to": "N10",
+      "label": "返工",
+      "reverse": true
+    },
+    {
+      "from": "N11",
+      "to": "N13",
+      "label": "合格",
+      "reverse": false
+    },
+    {
+      "from": "N13",
+      "to": "N14",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N14",
+      "to": "N15",
+      "label": "不合格",
+      "reverse": true
+    },
+    {
+      "from": "N15",
+      "to": "N14",
+      "label": "返工",
+      "reverse": true
+    },
+    {
+      "from": "N14",
+      "to": "N16",
+      "label": "合格",
+      "reverse": false
+    },
+    {
+      "from": "N16",
+      "to": "N17",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N17",
+      "to": "N18",
+      "label": "",
+      "reverse": false
+    }
+  ]
+}

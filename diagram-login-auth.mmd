@@ -1,0 +1,65 @@
+flowchart TD
+    %% ============================================================
+    %% 用户登录认证流程 - 标准流程图（带角色标注）
+    %% 颜色 = 角色，形状 = 语义：
+    %%   红=用户 | 蓝=前端 | 紫=认证服务 | 绿=数据存储 | 橙=MFA 服务
+    %%   椭圆=起止 | 矩形=处理 | 菱形=判断 | 双框=子流程 | 圆柱=数据 | 虚线=备注
+    %% ============================================================
+
+    %% ---------- 样式：按角色配色 ----------
+    classDef startEnd fill:#1f883d,stroke:#1a7f37,color:#ffffff,stroke-width:2px;
+    classDef user   fill:#ffebe9,stroke:#cf222e,color:#82071e,stroke-width:1.5px;
+    classDef front  fill:#ddf4ff,stroke:#0969da,color:#0a3069,stroke-width:1.5px;
+    classDef auth   fill:#fbefff,stroke:#8250df,color:#3e1f6f,stroke-width:1.5px;
+    classDef db     fill:#dafbe1,stroke:#1a7f37,color:#0a3d1e,stroke-width:1.5px;
+    classDef mfa    fill:#fff1e5,stroke:#bc4c00,color:#571f00,stroke-width:1.5px;
+    classDef note   fill:#ffffff,stroke:#8c959f,color:#57606a,stroke-width:1px,stroke-dasharray:4 3;
+
+    %% ================= 1. 开始（用户） =================
+    Start([开始：用户访问登录页]):::startEnd
+    Start --> F1[前端｜显示登录表单]:::front
+    F1 --> U2[用户｜输入账号与密码]:::user
+
+    %% ================= 2. 格式校验（前端） =================
+    U2 --> F2{前端｜输入格式合法?}:::front
+    F2 -- 否 --> NoteFmt[备注：前端即时校验<br/>提示格式错误]:::note
+    NoteFmt -.->|重新输入| U2
+    F2 -- 是 --> A1[认证服务｜接收登录请求]:::auth
+
+    %% ================= 3. 速率限制（认证服务） =================
+    A1 --> A2{认证服务｜请求频率超限?}:::auth
+    A2 -- 是 --> NoteRate[备注：返回 429<br/>冷却 / 触发 CAPTCHA]:::note
+    NoteRate -.->|冷却后重试| U2
+    A2 -- 否 --> A3[认证服务｜查询用户记录]:::auth
+
+    %% ================= 4. 凭证校验（认证服务 + 数据存储） =================
+    A3 -->|查询| D1[(数据存储｜用户凭据数据库)]:::db
+    D1 -->|用户记录| A4{认证服务｜密码匹配?<br/>Argon2 / bcrypt}:::auth
+    A4 -- 否 --> NoteEnum[备注：统一响应<br/>防账号枚举]:::note
+
+    %% ================= 5. 失败处理（认证服务） =================
+    A4 -- 否 --> A5[认证服务｜失败计数 +1]:::auth
+    A5 --> A6{认证服务｜超过锁定阈值?}:::auth
+    A6 -- 是 --> A7[认证服务｜锁定账户 / 指数退避]:::auth
+    A7 --> NoteLock[备注：通知用户并限流]:::note
+    NoteLock -.->|一段时间后重试| U2
+    A6 -- 否 --> ErrMsg[前端｜渲染"账号或密码错误"]:::front
+    ErrMsg -.->|重试| U2
+
+    %% ================= 6. MFA（认证服务 + MFA 服务） =================
+    A4 -- 是 --> A8{认证服务｜启用 MFA?}:::auth
+    A8 -- 是 --> SubMfa[[认证服务｜MFA 校验子流程]]:::auth
+    SubMfa --> M1[mfa｜MFA 服务｜下发验证码<br/>TOTP / SMS / WebAuthn]:::mfa
+    M1 --> M2{mfa｜MFA 服务｜验证通过?}:::mfa
+    M2 -- 否 -.->|重新输入| U2
+    M2 -- 是 --> A10[认证服务｜签发 Token + 创建 Session]:::auth
+    A8 -- 否 --> A10
+
+    %% ================= 7. 会话与令牌（认证服务 + 数据存储 + 前端） =================
+    A10 -->|写入会话| D2[(数据存储｜会话 / 令牌存储)]:::db
+    D2 --> A11[认证服务｜设置安全 Cookie<br/>HttpOnly · Secure · SameSite]:::auth
+    A11 -->|Set-Cookie| F5[前端｜保存会话 · 跳转主页]:::front
+    F5 --> End([结束：登录成功 · 进入系统]):::startEnd
+
+    %% ================= 8. 角色图例 =================
+    Legend[角色图例：红=用户 · 蓝=前端客户端 · 紫=认证服务<br/>绿=数据存储 · 橙=MFA 服务 · 绿椭圆=开始/结束<br/>形状：矩形=处理 菱形=判断 双框=子流程 圆柱=数据 虚线=备注]:::note

@@ -1,0 +1,198 @@
+{
+  "type": "flowchart",
+  "title": "销售订单处理流程",
+  "lanes": [
+    {
+      "dept": "销售部",
+      "roles": [
+        "销售员",
+        "销售经理"
+      ]
+    },
+    {
+      "dept": "仓储部",
+      "roles": [
+        "仓管员"
+      ]
+    },
+    {
+      "dept": "财务部",
+      "roles": [
+        "应收会计",
+        "出纳"
+      ]
+    },
+    {
+      "dept": "客户",
+      "roles": [
+        "客户"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "客户",
+      "role": "客户",
+      "action": "发起订单需求",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "销售部",
+      "role": "销售员",
+      "action": "创建销售订单 SO",
+      "shape": "rect"
+    },
+    {
+      "id": "N3",
+      "dept": "销售部",
+      "role": "销售经理",
+      "action": "金额超限?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N4",
+      "dept": "销售部",
+      "role": "销售员",
+      "action": "确认订单",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "拣货出库",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "物流发货",
+      "shape": "rect"
+    },
+    {
+      "id": "N7",
+      "dept": "财务部",
+      "role": "应收会计",
+      "action": "开具发票",
+      "shape": "rect"
+    },
+    {
+      "id": "N8",
+      "dept": "客户",
+      "role": "客户",
+      "action": "收货并验收",
+      "shape": "rect"
+    },
+    {
+      "id": "N9",
+      "dept": "财务部",
+      "role": "应收会计",
+      "action": "对账",
+      "shape": "rect"
+    },
+    {
+      "id": "N10",
+      "dept": "客户",
+      "role": "客户",
+      "action": "支付货款",
+      "shape": "rect"
+    },
+    {
+      "id": "N11",
+      "dept": "财务部",
+      "role": "出纳",
+      "action": "收款核销",
+      "shape": "rect"
+    },
+    {
+      "id": "N12",
+      "dept": "财务部",
+      "role": "出纳",
+      "action": "订单完成",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N2",
+      "label": "驳回",
+      "reverse": true
+    },
+    {
+      "from": "N4",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N8",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N8",
+      "to": "N7",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N7",
+      "to": "N9",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N9",
+      "to": "N10",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N10",
+      "to": "N11",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N11",
+      "to": "N12",
+      "label": "",
+      "reverse": false
+    }
+  ]
+}

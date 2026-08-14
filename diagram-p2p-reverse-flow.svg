@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1140.512 1028.6399999999999" width="1140.512" height="1028.6399999999999" style="--bg:#ffffff;--fg:#1f2328;--line:#d1d9e0;--accent:#0969da;--muted:#59636e;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      color-mix(in srgb, var(--fg) 75%, var(--bg));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<path class="edge" data-from="Start" data-to="Type" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M425.50325,95.35000000000001L425.50325,137.8Q425.50325,143.8 431.50325,143.8L545.8543333333332,143.8Q551.8543333333332,143.8 551.8543333333332,149.8L551.8543333333332,177.90666666666678" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="Type" data-to="R1" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="审批驳回" d="M534.169,248.648L534.169,310.44Q534.169,316.44 528.169,316.44L188.125,316.44Q182.125,316.44 182.125,322.44L182.125,699.79" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="R1" data-to="B1" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M182.125,736.6899999999999L182.125,758.7399999999999" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="Type" data-to="R2" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="货品异常
+拒收 · 质检 · 使用不良" d="M560.6969999999999,275.1759999999999L560.6969999999999,322.44Q560.6969999999999,328.44 554.6969999999999,328.44L462.8105,328.44Q456.8105,328.44 456.8105,334.44L456.8105,445.04" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="R2" data-to="R3" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M456.8105,481.94L456.81050000000005,533.9399999999999" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="R3" data-to="R4" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M456.81050000000005,570.8399999999999L456.8105,622.8399999999999" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="R4" data-to="B2" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M456.8105,659.7399999999999L456.8105,699.79" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="Type" data-to="R5" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="单据异常
+发票不符 · 三单不匹配" d="M587.2249999999999,275.1760000000001L587.2249999999999,330.44Q587.2249999999999,336.44 593.2249999999999,336.44L685.1115,336.44Q691.1115,336.44 691.1115,342.44L691.1115,445.04" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="R5" data-to="R6" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M691.1115,481.94L691.1115000000001,533.9399999999999" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="R6" data-to="R7" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M691.1115000000001,570.8399999999999L691.1115,622.8399999999999" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="R7" data-to="B3" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M691.1115,659.7399999999999L691.1115,699.79" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="Type" data-to="R8" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="资金异常
+退票 · 对账差异" d="M613.7529999999999,248.64800000000005L613.7529999999999,318.44Q613.7529999999999,324.44 619.7529999999999,324.44L959.797,324.44Q965.797,324.44 965.797,330.44L965.797,445.04" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="R8" data-to="R9" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M965.797,481.94L965.797,533.9399999999999" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="R9" data-to="R10" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M965.797,570.8399999999999L965.797,622.8399999999999" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="R10" data-to="B4" data-style="solid" data-arrow-start="false" data-arrow-end="true" d="M965.797,659.7399999999999L965.797,699.79" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="B1" data-to="End" data-style="dotted" data-arrow-start="false" data-arrow-end="true" d="M182.125,917.7399999999999L182.125,923.7399999999999Q182.125,929.7399999999999 188.125,929.7399999999999L565.6886666666667,929.7399999999999Q571.6886666666667,929.7399999999999 571.6886666666667,935.7399999999999L571.6886666666667,941.7399999999999" fill="none" stroke="var(--_line)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="B2" data-to="End" data-style="dotted" data-arrow-start="false" data-arrow-end="true" d="M456.8105,895.79L456.8105,923.7399999999999Q456.8105,929.7399999999999 462.8105,929.7399999999999L565.6886666666667,929.7399999999999Q571.6886666666667,929.7399999999999 571.6886666666667,935.7399999999999L571.6886666666667,941.7399999999999" fill="none" stroke="var(--_line)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="B3" data-to="End" data-style="dotted" data-arrow-start="false" data-arrow-end="true" d="M691.1115,887.79L691.1115,923.7399999999999Q691.1115,929.7399999999999 685.1115,929.7399999999999L577.6886666666667,929.7399999999999Q571.6886666666667,929.7399999999999 571.6886666666667,935.7399999999999L571.6886666666667,941.7399999999999" fill="none" stroke="var(--_line)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="B4" data-to="End" data-style="dotted" data-arrow-start="false" data-arrow-end="true" d="M965.797,887.79L965.797,923.7399999999999Q965.797,929.7399999999999 959.797,929.7399999999999L577.6886666666667,929.7399999999999Q571.6886666666667,929.7399999999999 571.6886666666667,935.7399999999999L571.6886666666667,941.7399999999999" fill="none" stroke="var(--_line)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
+<path class="edge" data-from="N1" data-to="Type" data-style="dotted" data-arrow-start="false" data-arrow-end="true" d="M722.41875,112.25000000000001L722.41875,137.8Q722.41875,143.8 716.41875,143.8L602.0676666666666,143.8Q596.0676666666666,143.8 596.0676666666666,149.8L596.0676666666666,177.9066666666666" fill="none" stroke="var(--_line)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
+<g class="edge-label" data-from="Type" data-to="R1" data-label="审批驳回">
+  <rect x="149.125" y="592.54" width="65.17" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="181.71" y="607.6899999999999" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">审批驳回</text>
+</g>
+<g class="edge-label" data-from="Type" data-to="R2" data-label="货品异常
+拒收 · 质检 · 使用不良">
+  <rect x="390.81049999999993" y="335.44" width="131.69800000000004" height="44.6" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="456.6595" y="357.74" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)"><tspan x="456.6595" dy="-3.3000000000000007">货品异常</tspan><tspan x="456.6595" dy="14.3">拒收 · 质检 · 使用不良</tspan></text>
+</g>
+<g class="edge-label" data-from="Type" data-to="R5" data-label="单据异常
+发票不符 · 三单不匹配">
+  <rect x="623.6115" y="343.44" width="134.074" height="44.6" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="690.6485" y="365.74" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)"><tspan x="690.6485" dy="-3.3000000000000007">单据异常</tspan><tspan x="690.6485" dy="14.3">发票不符 · 三单不匹配</tspan></text>
+</g>
+<g class="edge-label" data-from="Type" data-to="R8" data-label="资金异常
+退票 · 对账差异">
+  <rect x="916.297" y="371.44" width="98.43400000000001" height="44.6" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="965.514" y="393.74" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)"><tspan x="965.514" dy="-3.3000000000000007">资金异常</tspan><tspan x="965.514" dy="14.3">退票 · 对账差异</tspan></text>
+</g>
+<g class="node" data-id="Start" data-label="开始：主流程触发逆向 / 异常" data-shape="stadium">
+  <rect x="311.53274999999996" y="58.45" width="227.94099999999997" height="36.900000000000006" rx="18.450000000000003" ry="18.450000000000003" fill="#1f883d" stroke="#1a7f37" stroke-width="2px" />
+  <text x="425.50325" y="76.9" text-anchor="middle" font-size="13" font-weight="500" fill="#ffffff" dy="4.55">开始：主流程触发逆向 / 异常</text>
+</g>
+<g class="node" data-id="Type" data-label="异常类型?" data-shape="diamond">
+  <polygon points="573.961,155.8 640.281,222.12 573.961,288.44 507.641,222.12" fill="#fff8c5" stroke="#9a6700" stroke-width="1.5px" />
+  <text x="573.961" y="222.12" text-anchor="middle" font-size="13" font-weight="500" fill="#633c01" dy="4.55">异常类型?</text>
+</g>
+<g class="node" data-id="R1" data-label="采购员：修改采购申请并重新提交" data-shape="rectangle">
+  <rect x="50" y="699.79" width="264.25" height="36.900000000000006" rx="0" ry="0" fill="#ddf4ff" stroke="#0969da" stroke-width="1.5px" />
+  <text x="182.125" y="718.24" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3069" dy="4.55">采购员：修改采购申请并重新提交</text>
+</g>
+<g class="node" data-id="B1" data-label="回到：审批环节" data-shape="circle">
+  <circle cx="182.125" cy="838.2399999999999" r="79.5" fill="#ffffff" stroke="#8c959f" stroke-width="1px" />
+  <text x="182.125" y="838.2399999999999" text-anchor="middle" font-size="13" font-weight="500" fill="#57606a" dy="4.55">回到：审批环节</text>
+</g>
+<g class="node" data-id="R2" data-label="仓库 / 生产：办理退货出库" data-shape="rectangle">
+  <rect x="350.25" y="445.04" width="213.12099999999998" height="36.900000000000006" rx="0" ry="0" fill="#dafbe1" stroke="#1a7f37" stroke-width="1.5px" />
+  <text x="456.8105" y="463.49" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3d1e" dy="4.55">仓库 / 生产：办理退货出库</text>
+</g>
+<g class="node" data-id="R3" data-label="供应商：换货 / 补货" data-shape="rectangle">
+  <rect x="372.48" y="533.9399999999999" width="168.661" height="36.900000000000006" rx="0" ry="0" fill="#fff1e5" stroke="#bc4c00" stroke-width="1.5px" />
+  <text x="456.81050000000005" y="552.39" text-anchor="middle" font-size="13" font-weight="500" fill="#571f00" dy="4.55">供应商：换货 / 补货</text>
+</g>
+<g class="node" data-id="R4" data-label="仓库：重新收货并检验" data-shape="rectangle">
+  <rect x="361.7355" y="622.8399999999999" width="190.14999999999998" height="36.900000000000006" rx="0" ry="0" fill="#dafbe1" stroke="#1a7f37" stroke-width="1.5px" />
+  <text x="456.8105" y="641.29" text-anchor="middle" font-size="13" font-weight="500" fill="#0a3d1e" dy="4.55">仓库：重新收货并检验</text>
+</g>
+<g class="node" data-id="B2" data-label="回到：收货 / 入库环节" data-shape="circle">
+  <circle cx="456.8105" cy="797.79" r="98" fill="#ffffff" stroke="#8c959f" stroke-width="1px" />
+  <text x="456.8105" y="797.79" text-anchor="middle" font-size="13" font-weight="500" fill="#57606a" dy="4.55">回到：收货 / 入库环节</text>
+</g>
+<g class="node" data-id="R5" data-label="财务：退回发票 / 单据" data-shape="rectangle">
+  <rect x="599.3710000000001" y="445.04" width="183.481" height="36.900000000000006" rx="0" ry="0" fill="#fbefff" stroke="#8250df" stroke-width="1.5px" />
+  <text x="691.1115000000001" y="463.49" text-anchor="middle" font-size="13" font-weight="500" fill="#3e1f6f" dy="4.55">财务：退回发票 / 单据</text>
+</g>
+<g class="node" data-id="R6" data-label="供应商：重开发票 / 补全单据" data-shape="rectangle">
+  <rect x="577.1410000000001" y="533.9399999999999" width="227.94099999999997" height="36.900000000000006" rx="0" ry="0" fill="#fff1e5" stroke="#bc4c00" stroke-width="1.5px" />
+  <text x="691.1115000000001" y="552.39" text-anchor="middle" font-size="13" font-weight="500" fill="#571f00" dy="4.55">供应商：重开发票 / 补全单据</text>
+</g>
+<g class="node" data-id="R7" data-label="财务：重新三单匹配" data-shape="rectangle">
+  <rect x="603.4465" y="622.8399999999999" width="175.32999999999998" height="36.900000000000006" rx="0" ry="0" fill="#fbefff" stroke="#8250df" stroke-width="1.5px" />
+  <text x="691.1115" y="641.29" text-anchor="middle" font-size="13" font-weight="500" fill="#3e1f6f" dy="4.55">财务：重新三单匹配</text>
+</g>
+<g class="node" data-id="B3" data-label="回到：登记应付环节" data-shape="circle">
+  <circle cx="691.1115" cy="793.79" r="94" fill="#ffffff" stroke="#8c959f" stroke-width="1px" />
+  <text x="691.1115" y="793.79" text-anchor="middle" font-size="13" font-weight="500" fill="#57606a" dy="4.55">回到：登记应付环节</text>
+</g>
+<g class="node" data-id="R8" data-label="出纳：核实退票 / 拒付原因" data-shape="rectangle">
+  <rect x="859.2365000000001" y="445.04" width="213.12099999999998" height="36.900000000000006" rx="0" ry="0" fill="#fbefff" stroke="#8250df" stroke-width="1.5px" />
+  <text x="965.797" y="463.49" text-anchor="middle" font-size="13" font-weight="500" fill="#3e1f6f" dy="4.55">出纳：核实退票 / 拒付原因</text>
+</g>
+<g class="node" data-id="R9" data-label="财务与供应商：核对并调整账务" data-shape="rectangle">
+  <rect x="841.0820000000001" y="533.9399999999999" width="249.42999999999998" height="36.900000000000006" rx="0" ry="0" fill="#fbefff" stroke="#8250df" stroke-width="1.5px" />
+  <text x="965.7970000000001" y="552.39" text-anchor="middle" font-size="13" font-weight="500" fill="#3e1f6f" dy="4.55">财务与供应商：核对并调整账务</text>
+</g>
+<g class="node" data-id="R10" data-label="重新付款 / 冲销调整" data-shape="rectangle">
+  <rect x="881.4665" y="622.8399999999999" width="168.661" height="36.900000000000006" rx="0" ry="0" fill="#fbefff" stroke="#8250df" stroke-width="1.5px" />
+  <text x="965.797" y="641.29" text-anchor="middle" font-size="13" font-weight="500" fill="#3e1f6f" dy="4.55">重新付款 / 冲销调整</text>
+</g>
+<g class="node" data-id="B4" data-label="回到：收款核销环节" data-shape="circle">
+  <circle cx="965.797" cy="793.79" r="94" fill="#ffffff" stroke="#8c959f" stroke-width="1px" />
+  <text x="965.797" y="793.79" text-anchor="middle" font-size="13" font-weight="500" fill="#57606a" dy="4.55">回到：收款核销环节</text>
+</g>
+<g class="node" data-id="End" data-label="End" data-shape="rectangle">
+  <rect x="538.8576666666667" y="941.7399999999999" width="65.662" height="36.900000000000006" rx="0" ry="0" fill="#1f883d" stroke="#1a7f37" stroke-width="2px" />
+  <text x="571.6886666666667" y="960.1899999999999" text-anchor="middle" font-size="13" font-weight="500" fill="#ffffff" dy="4.55">End</text>
+</g>
+<g class="node" data-id="N1" data-label="备注：逆向处理须关联原采购单与批次
+退货保留质检记录 · 冲销保留凭证" data-shape="rectangle">
+  <rect x="575.47375" y="58.45" width="293.89" height="53.800000000000004" rx="0" ry="0" fill="#ffffff" stroke="#8c959f" stroke-width="1px" />
+  <text x="722.41875" y="85.35000000000001" text-anchor="middle" font-size="13" font-weight="500" fill="#57606a"><tspan x="722.41875" dy="-3.9000000000000012">备注：逆向处理须关联原采购单与批次</tspan><tspan x="722.41875" dy="16.900000000000002">退货保留质检记录 · 冲销保留凭证</tspan></text>
+</g>
+</svg>

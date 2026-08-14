@@ -1,0 +1,24 @@
+{
+  "type": "flowchart",
+  "title": "采购申请审批流程",
+  "lanes": [
+    { "dept": "采购部", "roles": ["采购员", "采购经理"] },
+    { "dept": "财务部", "roles": ["出纳"] }
+  ],
+  "nodes": [
+    { "id": "P0", "dept": "采购部", "role": "采购员", "action": "开始：发起采购申请", "shape": "start" },
+    { "id": "P1", "dept": "采购部", "role": "采购员", "action": "填写采购申请单", "shape": "rect" },
+    { "id": "P2", "dept": "采购部", "role": "采购经理", "action": "审批通过?", "shape": "diamond" },
+    { "id": "P3", "dept": "采购部", "role": "采购员", "action": "采购申请单归档", "shape": "rect" },
+    { "id": "F1", "dept": "财务部", "role": "出纳", "action": "预算核销", "shape": "rect" },
+    { "id": "F2", "dept": "财务部", "role": "出纳", "action": "结束：完成预算登记", "shape": "end" }
+  ],
+  "edges": [
+    { "from": "P0", "to": "P1", "label": "" },
+    { "from": "P1", "to": "P2", "label": "提交" },
+    { "from": "P2", "to": "P1", "label": "驳回", "reverse": true },
+    { "from": "P2", "to": "P3", "label": "通过" },
+    { "from": "P3", "to": "F1", "label": "转财务" },
+    { "from": "F1", "to": "F2", "label": "" }
+  ]
+}

@@ -1,0 +1,402 @@
+[
+  {
+    "name": "aftersale-visit",
+    "title": "售后现场服务流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 8,
+    "edges": 9
+  },
+  {
+    "name": "announcement",
+    "title": "制度公告发布审批流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 6,
+    "edges": 6
+  },
+  {
+    "name": "asset",
+    "title": "固定资产申购流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 6,
+    "edges": 7
+  },
+  {
+    "name": "attendance",
+    "title": "考勤异常处理流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 4,
+    "edges": 4
+  },
+  {
+    "name": "audit-support",
+    "title": "内部审计配合流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 9,
+    "edges": 10
+  },
+  {
+    "name": "budget",
+    "title": "预算申请流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 5,
+    "edges": 6
+  },
+  {
+    "name": "bug-fix",
+    "title": "缺陷修复流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 6,
+    "edges": 6
+  },
+  {
+    "name": "business-trip",
+    "title": "出差申请流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 7,
+    "edges": 8
+  },
+  {
+    "name": "change-request",
+    "title": "变更管理流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 7,
+    "edges": 9
+  },
+  {
+    "name": "complaint",
+    "title": "客户投诉处理流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 9,
+    "edges": 12
+  },
+  {
+    "name": "contract",
+    "title": "合同审批流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 8,
+    "edges": 10
+  },
+  {
+    "name": "customer-onboard",
+    "title": "客户建档流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 5,
+    "edges": 6
+  },
+  {
+    "name": "data-export",
+    "title": "数据导出审批流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 6,
+    "edges": 7
+  },
+  {
+    "name": "expense",
+    "title": "费用报销流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 8,
+    "edges": 9
+  },
+  {
+    "name": "invoice",
+    "title": "发票管理流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 6,
+    "edges": 6
+  },
+  {
+    "name": "it-request",
+    "title": "IT 服务请求流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 7,
+    "edges": 9
+  },
+  {
+    "name": "leave",
+    "title": "请假审批流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 6,
+    "edges": 7
+  },
+  {
+    "name": "login-auth",
+    "title": "登录认证流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 13,
+    "edges": 17
+  },
+  {
+    "name": "maintenance",
+    "title": "设备维保流程（TPM）",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 8,
+    "edges": 10
+  },
+  {
+    "name": "material-issue",
+    "title": "生产领料流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 10,
+    "edges": 11
+  },
+  {
+    "name": "meeting-room",
+    "title": "会议室预订流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 7,
+    "edges": 8
+  },
+  {
+    "name": "month-end-close",
+    "title": "月末结账流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 8,
+    "edges": 10
+  },
+  {
+    "name": "nda-request",
+    "title": "保密协议签署流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 8,
+    "edges": 10
+  },
+  {
+    "name": "office-supply",
+    "title": "办公用品申购流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 4,
+    "edges": 4
+  },
+  {
+    "name": "onboarding",
+    "title": "员工入职流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 12,
+    "edges": 15
+  },
+  {
+    "name": "otc",
+    "title": "销售订单 Order-to-Cash",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 14,
+    "edges": 18
+  },
+  {
+    "name": "outbound",
+    "title": "销售出库发货流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 7,
+    "edges": 7
+  },
+  {
+    "name": "p2p",
+    "title": "采购到付款 P2P",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 18,
+    "edges": 21
+  },
+  {
+    "name": "payment-request",
+    "title": "付款申请流程（应付）",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 6,
+    "edges": 7
+  },
+  {
+    "name": "probation",
+    "title": "试用期转正流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 6,
+    "edges": 7
+  },
+  {
+    "name": "production-plan",
+    "title": "生产计划编制流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 9,
+    "edges": 10
+  },
+  {
+    "name": "project-kickoff",
+    "title": "项目立项流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 7,
+    "edges": 9
+  },
+  {
+    "name": "quality-issue",
+    "title": "质量问题处理流程（8D）",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 8,
+    "edges": 10
+  },
+  {
+    "name": "quotation",
+    "title": "销售报价流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 7,
+    "edges": 7
+  },
+  {
+    "name": "release",
+    "title": "版本发布上线流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 9,
+    "edges": 11
+  },
+  {
+    "name": "resign",
+    "title": "员工离职流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 7,
+    "edges": 7
+  },
+  {
+    "name": "return-refund",
+    "title": "退货退款流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 9,
+    "edges": 10
+  },
+  {
+    "name": "rfq",
+    "title": "供应商询价比价流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 6,
+    "edges": 6
+  },
+  {
+    "name": "salary-adjustment",
+    "title": "调薪申请流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 6,
+    "edges": 7
+  },
+  {
+    "name": "scrap",
+    "title": "物料报废处理流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 6,
+    "edges": 7
+  },
+  {
+    "name": "seal-request",
+    "title": "用印申请流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 6,
+    "edges": 7
+  },
+  {
+    "name": "social-security",
+    "title": "社保公积金办理流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 6,
+    "edges": 4
+  },
+  {
+    "name": "stock-take",
+    "title": "库存盘点流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 9,
+    "edges": 11
+  },
+  {
+    "name": "tax-filing",
+    "title": "纳税申报流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 7,
+    "edges": 8
+  },
+  {
+    "name": "training",
+    "title": "培训申请流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 6,
+    "edges": 6
+  },
+  {
+    "name": "transfer",
+    "title": "员工内部调动流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 6,
+    "edges": 7
+  },
+  {
+    "name": "vehicle-request",
+    "title": "公务用车申请流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 8,
+    "edges": 10
+  },
+  {
+    "name": "visitor",
+    "title": "访客接待管理流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 6,
+    "edges": 6
+  },
+  {
+    "name": "warehouse-transfer",
+    "title": "仓库调拨流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 8,
+    "edges": 9
+  },
+  {
+    "name": "workorder",
+    "title": "生产工单执行流程",
+    "pass": true,
+    "summary": "✓ 12/12 项通过",
+    "nodes": 7,
+    "edges": 7
+  }
+]

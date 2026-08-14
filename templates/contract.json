@@ -1,0 +1,163 @@
+{
+  "type": "flowchart",
+  "title": "合同审批流程",
+  "lanes": [
+    {
+      "dept": "业务部门",
+      "roles": [
+        "经办人",
+        "部门经理"
+      ]
+    },
+    {
+      "dept": "法务部",
+      "roles": [
+        "法务专员"
+      ]
+    },
+    {
+      "dept": "财务部",
+      "roles": [
+        "财务经理"
+      ]
+    },
+    {
+      "dept": "管理层",
+      "roles": [
+        "授权审批人"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "业务部门",
+      "role": "经办人",
+      "action": "提交合同文本",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "业务部门",
+      "role": "部门经理",
+      "action": "业务审批通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "法务部",
+      "role": "法务专员",
+      "action": "法务审核",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "法务部",
+      "role": "法务专员",
+      "action": "法务审核通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N5",
+      "dept": "财务部",
+      "role": "财务经理",
+      "action": "财务条款审核",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "管理层",
+      "role": "授权审批人",
+      "action": "合同用印审批通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N7",
+      "dept": "业务部门",
+      "role": "经办人",
+      "action": "合同签署与归档",
+      "shape": "rect"
+    },
+    {
+      "id": "N8",
+      "dept": "业务部门",
+      "role": "经办人",
+      "action": "合同生效",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N1",
+      "label": "驳回",
+      "reverse": true
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N1",
+      "label": "退回修改",
+      "reverse": true
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N1",
+      "label": "不通过",
+      "reverse": true
+    },
+    {
+      "from": "N7",
+      "to": "N8",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "合同",
+      "签约",
+      "法务",
+      "contract"
+    ],
+    "tags": [
+      "法务",
+      "合同"
+    ]
+  }
+}
