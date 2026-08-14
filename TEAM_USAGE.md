@@ -38,9 +38,9 @@ node preview-server.mjs 8080 .
 
 **你只需要在群里说一句**：去 DeepSeek 开放平台（platform.deepseek.com）注册申请 API key，在自己电脑上 `setx LLM_API_KEY "sk-xxx"`。key 各自保管、禁止共享、禁止发群里。
 
-### ③ 把 WorkBuddy 技能包同步给成员（可选，对话式使用）
+### ③ 告诉用 WorkBuddy 的同事：技能已经进仓库，clone 即生效
 
-如果你的团队用 WorkBuddy 对话干活，把 `~/.workbuddy/skills/flowchart-agent/` 整个目录拷给成员放到同样位置，他们在对话里说"画个流程图"就能触发（见 §4）。
+技能包已装在仓库的 `.workbuddy/skills/flowchart-agent/`（**项目级**）。成员 `git clone` 后，**用 WorkBuddy 打开这个项目目录**，对话里直接说需求就会自动触发技能（见 §4），**无需任何手动安装**。
 
 ## 2. 成员上手（5 分钟）
 
@@ -73,15 +73,18 @@ node agent-flow.mjs "请假审批流程：员工提交申请，直属经理审�
 | **在线预览/导出 PNG** | `node preview-server.mjs 8080 .` → 浏览器打开 http://localhost:8080 |
 | **大流程自动拆图** | `node split-graph.mjs big.json big --max 30` → 主图+子图+索引页 |
 
-## 4. 日常使用（WorkBuddy 对话）
+## 4. 日常使用（WorkBuddy 对话 ⭐ 推荐）
 
-装了技能包后，直接在对话里说：
+**前置**：clone 仓库后，用 WorkBuddy 打开项目目录（技能包已项目级化，自动生效）。
+
+直接在对话里说：
 
 > "画一个手机 MES 生产制造流程图，7 个部门泳道"
 > "报销流程，出纳改叫资金专员"
 > "员工入职流程怎么走"
+> "采购到付款流程，要体现审批驳回"
 
-技能自动触发 → 建模 → 出图 → 验收，SVG 直接在对话里展示。
+技能自动触发 → 建模 → 出图 → 验收，SVG 直接在对话里展示，还能让 AI 改（"把驳回改成虚线标红"）。**员工只需会打字，这是最推荐的入口。**
 
 ## 5. DSL 快速写法（不配 LLM 时用）
 
