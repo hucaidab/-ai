@@ -8,7 +8,7 @@
 // 注：锚点连边（拖出新连线）为 backlog 项，尚未实现
 // ============================================================
 import { parseFlow } from './parse-flow.mjs'
-import { layout, rerouteEdges, routeEdgePoints, routeWithWaypoints, edgeOffsets } from './layout-grid.mjs'
+import { layout, rerouteEdges, routeEdgePoints, routeWithWaypoints, edgeOffsets, anchorPoint } from './layout-grid.mjs'
 import { renderSVG } from './render-svg.mjs'
 import { reqToMermaid } from './req-util.mjs'
 
@@ -94,11 +94,30 @@ export function render() {
   let doc = svg.replace(/<svg /, '<svg id="cv" ')
   const out = _svgHost
   out.innerHTML = doc
-  // 节点选中高亮
+  // 节点选中高亮 + 连接锚点
   if (S.selected && S.selected.kind === 'node') {
     const g = out.querySelector('g[data-id="' + S.selected.id + '"]')
-    if (g) g.setAttribute('data-sel', '1')
+    if (g) {
+      g.setAttribute('data-sel', '1')
+      _renderPorts(g)
+    }
   }
+  // 节点备注标签（📝，有 note 常驻；点击查看）
+  const NS = 'http://www.w3.org/2000/svg'
+  S.req.nodes.forEach(n => {
+    if (!n.note) return
+    const sz = S._nodeSize[n.id] || { w: 180, h: 50 }
+    const p = n.pos || { x: 0, y: 0 }
+    const badge = document.createElementNS(NS, 'text')
+    badge.setAttribute('x', p.x + sz.w - 6)
+    badge.setAttribute('y', p.y + 4)
+    badge.setAttribute('font-size', 13)
+    badge.setAttribute('cursor', 'pointer')
+    badge.setAttribute('class', 'note-badge')
+    badge.setAttribute('data-note-id', n.id)
+    badge.textContent = '📝'
+    out.querySelector('svg').appendChild(badge)
+  })
   // 记录节点真实尺寸（框选命中检测用）
   S._nodeSize = {}
   lay.nodes.forEach(n => { S._nodeSize[n.id] = { w: n.w, h: n.h } })
@@ -173,27 +192,27 @@ function _onEdgeDbl(e, hitEl) {
   const realIdx = S._edgeMap[ei]
   const edge = S.req.edges[realIdx]
   if (!edge) return
-  const cvRect = document.getElementById('cv').getBoundingClientRect()
-  const wx = (e.clientX - cvRect.left) / S.scale
-  const wy = (e.clientY - cvRect.top) / S.scale
-  const pts = parsePathPts(hitEl.getAttribute('d'))
-  if (pts.length < 2) return
-  // 找最近线段 + 最近点
-  let bestD = Infinity, segIdx = 0, ins = null
-  for (let i = 0; i < pts.length - 1; i++) {
-    const q = nearestOnSeg(wx, wy, pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1])
-    const d = (q[0] - wx) ** 2 + (q[1] - wy) ** 2
-    if (d < bestD) { bestD = d; segIdx = i; ins = q }
+  // 双击线 = 编辑线标签（备注）；浮动 input（同节点双击改字模式）。
+  // 加航点改由"拖边接管折点 + 拖手柄"承担，避免双击语义冲突。
+  const input = document.createElement('input')
+  input.value = edge.label || ''
+  input.placeholder = '输入连线备注（如：通过 / 驳回）'
+  input.style.cssText = `position:fixed;left:${e.clientX + 8}px;top:${e.clientY + 8}px;width:200px;font-size:13px;border:2px solid #0969da;border-radius:6px;padding:4px 8px;z-index:99;box-sizing:border-box`
+  document.body.appendChild(input)
+  input.focus(); input.select()
+  let cancelled = false, committed = false // committed 防重入：remove→blur→commit 二次调用直接返回
+  const commit = () => {
+    if (committed) return
+    committed = true
+    const v = input.value.trim()
+    if (!cancelled && v !== (edge.label || '')) { edge.label = v; S.dirty = true; pushHistory(); render() }
+    if (input.isConnected) input.remove()
   }
-  if (!ins) return
-  // 无 wp 时先接管当前中间折点（手动控制路径）
-  if (!edge.wp || !edge.wp.length) edge.wp = pts.slice(1, -1).map(p => [p[0], p[1]])
-  // 插入位置：段 segIdx 位于折点 segIdx 与 segIdx+1 之间 → wp 下标 segIdx-1 处（端点段对应 0 边界）
-  const at = Math.max(0, Math.min(edge.wp.length, segIdx - 1))
-  edge.wp.splice(at, 0, [Math.round(ins[0]), Math.round(ins[1])])
-  S.dirty = true
-  pushHistory()
-  render()
+  input.addEventListener('keydown', ev => {
+    if (ev.key === 'Enter') commit()
+    if (ev.key === 'Escape') { cancelled = true; input.remove() }
+  })
+  input.addEventListener('blur', () => { if (!cancelled) commit() })
 }
 
 // 双击手柄 → 删除该航点
@@ -264,6 +283,9 @@ export function bindInteractions() {
   cv._bound = true
   // 节点：pointerdown 拖动 / dblclick 改文字（通过 closest 定位，点文字/形状都命中）
   cv.addEventListener('pointerdown', e => {
+    // 连接锚点（拖线建边）优先
+    const port = e.target.closest ? e.target.closest('.node-port') : null
+    if (port) { _onPortDown(e, port); return }
     const h = e.target.closest ? e.target.closest('.wp-handle') : null
     if (h) { _onHandleDown(e, h); return }
     const g = e.target.closest ? e.target.closest('g[data-id]') : null
@@ -277,10 +299,64 @@ export function bindInteractions() {
     if (h) { _onHandleDbl(e, h); return }
     const g = e.target.closest ? e.target.closest('g[data-id]') : null
     if (g) { _onDblClick(e, g); return }
-    // 边路径双击 → 加航点（命中层 .edge-hit 或原 path）
+    // 边路径双击 → 编辑线标签备注（命中层 .edge-hit 或原 path）
     const hit = e.target.closest ? (e.target.closest('path.edge-hit') || e.target.closest('path[data-edge]')) : null
     if (hit) { e.stopPropagation(); _onEdgeDbl(e, hit) }
   })
+  // 节点右键 → 备注编辑
+  cv.addEventListener('contextmenu', e => {
+    const g = e.target.closest ? e.target.closest('g[data-id]') : null
+    if (g) { e.preventDefault(); _onNodeCtx(e, g) }
+  })
+  // 备注标签点击 → 查看备注
+  cv.addEventListener('click', e => {
+    const b = e.target.closest ? e.target.closest('.note-badge') : null
+    if (b) { e.stopPropagation(); _showNote(b.getAttribute('data-note-id')) }
+  })
+}
+
+// ---------- 节点备注（右键编辑多行 + 📝 标签查看） ----------
+function _onNodeCtx(e, g) {
+  e.preventDefault()
+  const id = g.getAttribute('data-id')
+  const n = S.req.nodes.find(x => x.id === id)
+  if (!n) return
+  // 浮层备注编辑器（多行 textarea）
+  const wrap = document.createElement('div')
+  wrap.style.cssText = 'position:fixed;left:50%;top:45%;transform:translate(-50%,-50%);background:#fff;border:1px solid #d0d7de;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.22);padding:16px;z-index:200;width:340px;font-family:inherit'
+  wrap.innerHTML = `<div style="font-weight:700;margin-bottom:8px;font-size:14px">📝 节点备注（${escHtml(n.action || n.id)}）</div>
+    <textarea id="noteInput" rows="5" style="width:100%;box-sizing:border-box;border:1px solid #d0d7de;border-radius:6px;padding:8px;font-size:13px;resize:vertical" placeholder="输入备注（支持多行）…">${escHtml(n.note || '')}</textarea>
+    <div style="margin-top:10px;text-align:right">
+      <button id="noteCancel" style="background:#fff;border:1px solid #d0d7de;border-radius:6px;padding:6px 16px;margin-right:8px;cursor:pointer">取消</button>
+      <button id="noteSave" style="background:#0969da;color:#fff;border:none;border-radius:6px;padding:6px 16px;cursor:pointer">保存</button>
+    </div>`
+  document.body.appendChild(wrap)
+  const ta = document.getElementById('noteInput')
+  ta.focus()
+  const save = () => {
+    const v = ta.value.trim()
+    if (v) n.note = v; else delete n.note
+    S.dirty = true
+    pushHistory()
+    render()
+    wrap.remove()
+  }
+  document.getElementById('noteCancel').onclick = () => wrap.remove()
+  document.getElementById('noteSave').onclick = save
+  ta.addEventListener('keydown', ev => { if ((ev.ctrlKey || ev.metaKey) && ev.key === 'Enter') save() })
+}
+
+// 查看备注弹窗
+function _showNote(id) {
+  const n = S.req.nodes.find(x => x.id === id)
+  if (!n || !n.note) return
+  const wrap = document.createElement('div')
+  wrap.style.cssText = 'position:fixed;left:50%;top:45%;transform:translate(-50%,-50%);background:#fff;border:1px solid #d0d7de;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.22);padding:16px;z-index:200;width:340px;max-width:80vw;font-family:inherit'
+  wrap.innerHTML = `<div style="font-weight:700;margin-bottom:8px;font-size:14px">📝 ${escHtml(n.action || n.id)} 的备注</div>
+    <div style="font-size:13px;white-space:pre-wrap;color:#24292f;line-height:1.6;max-height:60vh;overflow:auto">${escHtml(n.note)}</div>
+    <div style="margin-top:12px;text-align:right"><button id="noteClose" style="background:#0969da;color:#fff;border:none;border-radius:6px;padding:6px 16px;cursor:pointer">关闭</button></div>`
+  document.body.appendChild(wrap)
+  document.getElementById('noteClose').onclick = () => wrap.remove()
 }
 
 function _onNodeDown(e, g) {
@@ -292,6 +368,7 @@ function _onNodeDown(e, g) {
   S.selected = { kind: 'node', id }
   document.querySelectorAll('#cv g[data-sel]').forEach(x => x.removeAttribute('data-sel'))
   g.setAttribute('data-sel', '1')
+  _renderPorts(g) // 连接锚点（拖线建边）
   _updatePanel()
   const startX = e.clientX, startY = e.clientY
   const origX = node.pos ? node.pos.x : 0, origY = node.pos ? node.pos.y : 0
@@ -327,11 +404,13 @@ function _onDblClick(e, g) {
   input.focus(); input.select()
   // cancelled 标志隔离事件链副作用：input.remove() 会触发 blur，若 blur 直接 commit，
   // Escape 取消的修改会被保存（案例9）——取消路径必须与提交路径隔离
-  let cancelled = false
+  let cancelled = false, committed = false // committed 防重入：remove→blur→commit 二次调用直接返回
   const commit = () => {
+    if (committed) return
+    committed = true
     const v = input.value.trim()
     if (!cancelled && v && v !== node.action) { node.action = v; S.dirty = true; pushHistory(); render() }
-    input.remove()
+    if (input.isConnected) input.remove()
   }
   input.addEventListener('keydown', ev => {
     if (ev.key === 'Enter') commit()
@@ -409,6 +488,75 @@ function _onCanvasDown(e) {
       return p.x < wx + ww && p.x + sz.w > wx && p.y < wy + wh && p.y + sz.h > wy
     })
     if (hit.length) { selectNode(hit[hit.length - 1].id) }
+  }
+  window.addEventListener('pointermove', move)
+  window.addEventListener('pointerup', up)
+}
+
+// ---------- 锚点连边（draw.io：节点连接点拖到目标节点建边） ----------
+const PORT_DIRS = ['e', 'se', 's', 'sw', 'w', 'nw', 'n', 'ne']
+// 选中节点渲染 8 方向连接锚点（小圆点，拖到目标节点建边）
+function _renderPorts(g) {
+  const cv = document.getElementById('cv')
+  if (!cv) return
+  const NS = 'http://www.w3.org/2000/svg'
+  const id = g.getAttribute('data-id')
+  const n = S.req.nodes.find(x => x.id === id)
+  if (!n) return
+  const sz = (S._nodeSize && S._nodeSize[id]) || { w: 180, h: 50 }
+  const p = n.pos || { x: 0, y: 0 }
+  const obj = { id, x: p.x, y: p.y, w: sz.w, h: sz.h, pos: p }
+  for (const dir of PORT_DIRS) {
+    const a = anchorPoint(obj, dir)
+    const c = document.createElementNS(NS, 'circle')
+    c.setAttribute('cx', a.x); c.setAttribute('cy', a.y)
+    c.setAttribute('r', 5)
+    c.setAttribute('fill', '#fff'); c.setAttribute('stroke', '#0969da'); c.setAttribute('stroke-width', 2)
+    c.setAttribute('class', 'node-port'); c.setAttribute('data-node-port', id); c.setAttribute('data-port-dir', dir)
+    c.setAttribute('cursor', 'crosshair')
+    cv.appendChild(c)
+  }
+}
+
+// 按下连接锚点 → 拖橡皮筋线到目标节点松手建边（未命中取消）
+function _onPortDown(e, port) {
+  e.stopPropagation()
+  const fromId = port.getAttribute('data-node-port')
+  const cv = document.getElementById('cv')
+  const cvRect = cv.getBoundingClientRect()
+  const NS = 'http://www.w3.org/2000/svg'
+  // 橡皮筋预览线
+  const band = document.createElementNS(NS, 'path')
+  band.setAttribute('stroke', '#0969da'); band.setAttribute('stroke-width', 2)
+  band.setAttribute('stroke-dasharray', '6 4'); band.setAttribute('fill', 'none')
+  band.setAttribute('class', 'rubber-band')
+  cv.appendChild(band)
+  const sx = (e.clientX - cvRect.left) / S.scale, sy = (e.clientY - cvRect.top) / S.scale
+  band.setAttribute('d', `M ${sx} ${sy} L ${sx} ${sy}`)
+  const move = ev => {
+    const mx = (ev.clientX - cvRect.left) / S.scale, my = (ev.clientY - cvRect.top) / S.scale
+    band.setAttribute('d', `M ${sx} ${sy} L ${mx} ${my}`)
+  }
+  const up = ev => {
+    window.removeEventListener('pointermove', move)
+    window.removeEventListener('pointerup', up)
+    band.remove()
+    // 命中目标节点（世界坐标 AABB，与框选命中同逻辑——elementsFromPoint 在此环境不可靠）
+    const wx = (ev.clientX - cvRect.left) / S.scale
+    const wy = (ev.clientY - cvRect.top) / S.scale
+    let toId = null
+    for (const n of S.req.nodes) {
+      if (n.id === fromId) continue
+      const sz = (S._nodeSize && S._nodeSize[n.id]) || { w: 180, h: 50 }
+      const p = n.pos || { x: 0, y: 0 }
+      if (wx >= p.x && wx <= p.x + sz.w && wy >= p.y && wy <= p.y + sz.h) { toId = n.id; break }
+    }
+    if (toId && !S.req.edges.some(r => r.from === fromId && r.to === toId)) {
+      S.req.edges.push({ from: fromId, to: toId, label: '', reverse: false })
+      S.dirty = true
+      pushHistory()
+      render()
+    }
   }
   window.addEventListener('pointermove', move)
   window.addEventListener('pointerup', up)
