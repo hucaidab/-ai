@@ -77,13 +77,14 @@ export function parseFlow(src) {
     return nodes.get(id)
   }
 
-  // 解析边：from [link] to[def]
+  // 解析边：from[shape] [link] to[def]（from 可带形状，如 `A([x]) --> B`）
   function parseEdge(s) {
-    const m = s.match(/^([A-Za-z0-9_\u4e00-\u9fa5]+)\s*(-->|-.->|==>|--[^>]*-->|==[^>]*==>|-[^>]*\.->)\s*(.+)$/)
+    const m = s.match(/^([A-Za-z0-9_\u4e00-\u9fa5]+)\s*((?:[\[({][^\n]*?[\]})])?)\s*(-->|-.->|==>|--[^>]*-->|==[^>]*==>|-[^>]*\.->)\s*(.+)$/)
     if (!m) return null
     const from = m[1]
-    let link = m[2]
-    let toPart = m[3].trim()
+    const fromShape = m[2].trim()
+    let link = m[3]
+    let toPart = m[4].trim()
     let label = ''
     let style = 'solid'
     if (link === '-.->') style = 'dotted'
@@ -105,8 +106,14 @@ export function parseFlow(src) {
     // to 可能是节点定义
     const toDef = parseNodeDef(toPart)
     if (!toDef) return null
-    ensureNode(from)
+    const fromNode = ensureNode(from)
     ensureNode(toDef.id, toDef.cls)
+    // from 带形状（如 `A([开始：登录]) --> B`）→ 应用形状
+    if (fromShape) {
+      const { shape, label } = parseShape(fromShape)
+      if (shape !== 'default') fromNode.shape = shape
+      if (label !== from) fromNode.label = label
+    }
     if (toDef.shape !== 'default' || toDef.label !== toDef.id) {
       const t = nodes.get(toDef.id)
       if (toDef.shape !== 'default') { t.shape = toDef.shape }
@@ -176,6 +183,12 @@ export function parseFlow(src) {
       continue
     }
 
+    // 边（优先：行含箭头，支持 from 带形状如 `A([x]) --> B`）
+    if (/(-->|-.->|==>)/.test(line)) {
+      const e = parseEdge(line)
+      if (e) { edges.push(e); continue }
+    }
+
     // 节点单独定义（无箭头）
     if (/^[A-Za-z0-9_\u4e00-\u9fa5]+\s*[[({]/.test(line) || /^[A-Za-z0-9_\u4e00-\u9fa5]+:::/.test(line)) {
       const nd = parseNodeDef(line)
@@ -195,7 +208,7 @@ export function parseFlow(src) {
       continue
     }
 
-    // 边
+    // 边（无箭头前缀匹配失败时兜底）
     const e = parseEdge(line)
     if (e) { edges.push(e); continue }
 

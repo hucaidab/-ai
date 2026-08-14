@@ -1,0 +1,144 @@
+{
+  "type": "flowchart",
+  "title": "知识产权申请流程",
+  "lanes": [
+    {
+      "dept": "发明人",
+      "roles": [
+        "发明人"
+      ]
+    },
+    {
+      "dept": "法务部",
+      "roles": [
+        "知识产权专员"
+      ]
+    },
+    {
+      "dept": "管理层",
+      "roles": [
+        "审批人"
+      ]
+    },
+    {
+      "dept": "外部",
+      "roles": [
+        "代理机构"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "发明人",
+      "role": "发明人",
+      "action": "提交知识产权申报",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "法务部",
+      "role": "知识产权专员",
+      "action": "新颖性初审通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "法务部",
+      "role": "知识产权专员",
+      "action": "查新与评估",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "管理层",
+      "role": "审批人",
+      "action": "申报审批通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N5",
+      "dept": "外部",
+      "role": "代理机构",
+      "action": "提交申请文件",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "法务部",
+      "role": "知识产权专员",
+      "action": "审查跟踪",
+      "shape": "rect"
+    },
+    {
+      "id": "N7",
+      "dept": "法务部",
+      "role": "知识产权专员",
+      "action": "授权登记归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N1",
+      "label": "驳回",
+      "reverse": true
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N3",
+      "label": "退回",
+      "reverse": true
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "知识产权",
+      "专利",
+      "商标",
+      "版权",
+      "ip"
+    ],
+    "tags": [
+      "法务",
+      "研发"
+    ]
+  }
+}

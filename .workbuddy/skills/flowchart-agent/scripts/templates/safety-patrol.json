@@ -1,0 +1,118 @@
+{
+  "type": "flowchart",
+  "title": "安全生产巡检流程",
+  "lanes": [
+    {
+      "dept": "安全部",
+      "roles": [
+        "安全员",
+        "安全主管"
+      ]
+    },
+    {
+      "dept": "生产部",
+      "roles": [
+        "车间主管"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "安全部",
+      "role": "安全员",
+      "action": "制定巡检计划",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "安全部",
+      "role": "安全员",
+      "action": "现场巡查",
+      "shape": "rect"
+    },
+    {
+      "id": "N3",
+      "dept": "安全部",
+      "role": "安全员",
+      "action": "发现隐患?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N4",
+      "dept": "生产部",
+      "role": "车间主管",
+      "action": "隐患整改",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "安全部",
+      "role": "安全主管",
+      "action": "整改复查通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N6",
+      "dept": "安全部",
+      "role": "安全员",
+      "action": "巡检报告归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N6",
+      "label": "无",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "有",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N4",
+      "label": "未通过",
+      "reverse": true
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "安全巡检",
+      "安全巡查",
+      "6s"
+    ],
+    "tags": [
+      "制造",
+      "安全"
+    ]
+  }
+}

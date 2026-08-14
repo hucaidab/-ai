@@ -1,0 +1,154 @@
+{
+  "type": "flowchart",
+  "title": "干线运输管理流程",
+  "lanes": [
+    {
+      "dept": "物流部",
+      "roles": [
+        "运输经理"
+      ]
+    },
+    {
+      "dept": "车队",
+      "roles": [
+        "司机"
+      ]
+    },
+    {
+      "dept": "调度中心",
+      "roles": [
+        "调度员"
+      ]
+    },
+    {
+      "dept": "客户",
+      "roles": [
+        "客户"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "物流部",
+      "role": "运输经理",
+      "action": "制定运输计划",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "调度中心",
+      "role": "调度员",
+      "action": "运输计划确认?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "车队",
+      "role": "司机",
+      "action": "出车检查",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "车队",
+      "role": "司机",
+      "action": "干线运输",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "调度中心",
+      "role": "调度员",
+      "action": "在途异常?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N6",
+      "dept": "调度中心",
+      "role": "调度员",
+      "action": "异常处理与调度",
+      "shape": "rect"
+    },
+    {
+      "id": "N7",
+      "dept": "客户",
+      "role": "客户",
+      "action": "到货验收",
+      "shape": "rect"
+    },
+    {
+      "id": "N8",
+      "dept": "物流部",
+      "role": "运输经理",
+      "action": "运输结算归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "确认",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N1",
+      "label": "调整",
+      "reverse": true
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N7",
+      "label": "正常",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "异常",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N4",
+      "label": "",
+      "reverse": true
+    },
+    {
+      "from": "N7",
+      "to": "N8",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "干线运输",
+      "运输管理",
+      "在途"
+    ],
+    "tags": [
+      "物流"
+    ]
+  }
+}

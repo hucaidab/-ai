@@ -1,0 +1,149 @@
+{
+  "type": "flowchart",
+  "title": "面试评估流程",
+  "lanes": [
+    {
+      "dept": "HR",
+      "roles": [
+        "HR专员"
+      ]
+    },
+    {
+      "dept": "用人部门",
+      "roles": [
+        "面试官",
+        "部门经理"
+      ]
+    },
+    {
+      "dept": "管理层",
+      "roles": [
+        "审批人"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "HR",
+      "role": "HR专员",
+      "action": "简历初筛",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "HR",
+      "role": "HR专员",
+      "action": "初筛通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "用人部门",
+      "role": "面试官",
+      "action": "技术面谈",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "用人部门",
+      "role": "面试官",
+      "action": "技术评估通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N5",
+      "dept": "用人部门",
+      "role": "部门经理",
+      "action": "终面评估",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "管理层",
+      "role": "审批人",
+      "action": "录用审批通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N7",
+      "dept": "HR",
+      "role": "HR专员",
+      "action": "发录用通知",
+      "shape": "end"
+    },
+    {
+      "id": "N8",
+      "dept": "HR",
+      "role": "HR专员",
+      "action": "终止招聘",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N8",
+      "label": "不通过",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N8",
+      "label": "不通过",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N8",
+      "label": "驳回",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "面试",
+      "简历筛选",
+      "面谈"
+    ],
+    "tags": [
+      "HR"
+    ]
+  }
+}

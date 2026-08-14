@@ -239,7 +239,8 @@ Step 5 交付
 | V1 | 已完成 | Mermaid + `@ktrysmt/beautiful-mermaid`（ELK）常规图渲染；npm 镜像；ESM 封装 |
 | V2 | 已完成 | 自研泳道布局器（网格坐标法、两级部门→岗位、正逆向通道）；P2P/OTC 示例 |
 | V3 | 已完成 | **统一自研渲染管线（零外部依赖）**：`parse-flow.mjs`（Mermaid flowchart 子集解析，支持中文 id）+ `layout-grid.mjs`（auto 拓扑分层 / swimlane 泳道，含部门色板）+ `render-svg.mjs`（形状/正交路由/classDef）+ `render-flow.mjs`（CLI）+ `agent-orchestrator.mjs`（智能体编排：需求 JSON/mmd → 渲染 → 10 项自动验收 → SVG+报告）+ `validate.mjs`（验收实现）。三例测试 12/12 通过（登录图 auto、P2P 泳道、需求 JSON 协议） |
-| V4 | 已完成（深化） | **智能体化**：`nlp-model.mjs`（半结构化 DSL → req.json）+ `agent-batch.mjs`（批量出图+自动断言+汇总）+ `preview-server.mjs`（在线预览+PNG 导出）+ **M1 知识库**：`templates/` 50 模板（供应链/销售/制造/HR/财务/行政/IT/法务 8 域，带 meta.triggers）+ `template-finder.mjs`（触发词匹配+开头加权+变量覆盖）+ **M2 自动拆图**：`split-graph.mjs`（最长关键路径→分支簇→链式分段→主图折叠 [[子流程]]+子图+index.html 索引）+ **M3 LLM 建模**：`llm-model.mjs`（自由自然语言 → req.json，JSON Schema+few-shot，环境变量/`llm.config.json` 配置，降级链 LLM→DSL→模板）+ **M4 单命令**：`agent-flow.mjs`（一句话 → 建模→渲染/拆图→验收→预览）。验收：50 模板批量 12/12；42 节点订单全生命周期自动拆主图+子图 12/12；纯自然语言 MES 真实 LLM 出图 12/12 |
+| V4 | 已完成（深化） | **智能体化**：`nlp-model.mjs`（半结构化 DSL → req.json）+ `agent-batch.mjs`（批量出图+自动断言+汇总）+ `preview-server.mjs`（在线预览+PNG 导出）+ **M1 知识库**：`templates/` 100 模板（供应链/销售/客服/仓储/物流/制造/研发/运维/HR/财务/税务/行政/法务/安全 13 域，带 meta.triggers）+ `template-finder.mjs`（触发词匹配+开头加权+变量覆盖）+ **M2 自动拆图**：`split-graph.mjs`（最长关键路径→分支簇→链式分段→主图折叠 [[子流程]]+子图+index.html 索引）+ **M3 LLM 建模**：`llm-model.mjs`（自由自然语言 → req.json，JSON Schema+few-shot，环境变量/`llm.config.json` 配置，降级链 LLM→DSL→模板）+ **M4 单命令**：`agent-flow.mjs`（一句话 → 建模→渲染/拆图→验收→预览）。验收：100 模板批量 12/12；42 节点订单全生命周期自动拆主图+子图 12/12；纯自然语言 MES 真实 LLM 出图 12/12 |
+| V5 | 已完成（增强） | **鲁棒性与体验**：`llm-model.mjs` 新增 `selfCheck`/`autoFix`（缺起止/判断出口标签/孤立节点规则修复）+ LLM 不合格自动重试链；`lib-export.mjs` 多格式导出（SVG/PNG/**PDF**/Mermaid 源码，零依赖 PNG filter 解码 + FlateDecode PDF）；`agent-flow.mjs` 新增 `--edit req.json "修改描述"`（对话式改图）与 `--mmd`/`--pdf`；`preview-server.mjs` 生成器新增**历史记录/改一版重生成**/PDF·Mermaid 下载/`api/history`；`deploy-windows.bat`/`deploy-linux.sh` 一键部署；`test-core.mjs` 单元测试 13 项（parse/layout/selfCheck/autoFix/nlp/template-finder/req-util 回归）。单测 13/13、模板 100/100、编辑/多格式端到端验证通过 |
 
 ---
 
@@ -298,13 +299,17 @@ npm install <pkg> --registry https://registry.npmmirror.com --no-audit --no-fund
 | `req-sales-order.txt/.json` | 自然语言 DSL 建模示例（销售订单） |
 | `req-sales-order.svg` / `req-purchase-approval.svg` | 批量出图产物 |
 | `batch-report.md` | 批量汇总报告 |
-| `templates/`（50 个 .json） | 知识库模板（供应链/销售/客服/仓储/制造/研发/运维/HR/财务/税务/行政/法务/安全 全域） |
+| `templates/`（100 个 .json） | 知识库模板（供应链/销售/客服/仓储/制造/研发/运维/HR/财务/税务/行政/法务/安全 全域） |
 | `template-finder.mjs` | 模板匹配器（触发词打分 + 变量覆盖"X 改叫 Y"） |
 | `split-graph.mjs` | 自动拆图（关键路径/分支簇/链式分段/索引页） |
 | `llm-model.mjs` / `llm.config.json` | LLM 自然语言建模（**团队用环境变量启用**，配置仅本机兜底，降级链 LLM→DSL→模板） |
 | `LLM_CONFIG.md` | 团队环境变量配置指引（Win/macOS/Linux/CI + 验证 + 安全红线） |
 | `.gitignore` | 忽略密钥配置（llm.config.json）与依赖/日志 |
-| `agent-flow.mjs` | 单命令智能体（一句话 → 出图） |
+| `agent-flow.mjs` | 单命令智能体（一句话 → 出图；`--edit` 对话式改图；`--mmd`/`--pdf` 多格式） |
+| `lib-export.mjs` | 多格式导出（Mermaid 源码 / SVG→PNG→PDF，零依赖 PNG filter 解码） |
+| `test-core.mjs` | 单元测试 13 项（`node --test test-core.mjs`，含自检/修复/解析回归） |
+| `gen-100-templates.mjs` | 模板批量生成器（DSL 定义 → 100 模板，可追加） |
+| `deploy-windows.bat` / `deploy-linux.sh` | 一键部署（Windows 双击 / Linux 后台常驻） |
 | `v4-plan.md` | V4 深化计划 |
 | `req-lifecycle.json` / `gen-lifecycle.mjs` | 42 节点拆图测试用例（订单全生命周期） |
 | `lifecycle-main.svg` / `lifecycle-sub1.svg` / `lifecycle-index.html` | 自动拆图产物（主图+子图+索引） |

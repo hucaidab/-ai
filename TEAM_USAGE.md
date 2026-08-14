@@ -66,12 +66,15 @@ node agent-flow.mjs "请假审批流程：员工提交申请，直属经理审�
 
 | 场景 | 方式 |
 |------|------|
-| **员工（非技术）** | 浏览器打开 `http://localhost:8080/generate`，一句话生成，零命令行 ⭐ |
+| **员工（非技术）** | 浏览器打开 `http://localhost:8080/generate`，一句话生成 + **历史记录改一版** + 下载 PNG/PDF/Mermaid，零命令行 ⭐ |
 | **一句话出图**（命令行） | `node agent-flow.mjs "采购到付款流程，要体现审批驳回" --out xxx` |
+| **对话式改图** | `node agent-flow.mjs --edit xxx.req.json "去掉确认订单，发货后加客户签收" --out xxx` |
+| **多格式导出** | `node agent-flow.mjs "需求" --out xxx --mmd --pdf`（SVG/PNG/Mermaid/PDF 四种） |
 | **用 DSL 精确控制** | 写 `req.txt`（见 §5），`node nlp-model.mjs req.txt req.json && node agent-flow.mjs "标题" --req req.json --out xxx` |
 | **批量出图** | 把多个需求 json 放一个目录，`node agent-batch.mjs --dir ./需求目录` |
 | **在线预览/导出 PNG** | `node preview-server.mjs 8080 .` → 浏览器打开 http://localhost:8080 |
 | **大流程自动拆图** | `node split-graph.mjs big.json big --max 30` → 主图+子图+索引页 |
+| **一键部署** | Windows 双击 `deploy-windows.bat`；Linux 服务器 `bash deploy-linux.sh`（后台常驻，团队访问） |
 
 ## 4. 日常使用（WorkBuddy 对话 ⭐ 推荐）
 

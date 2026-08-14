@@ -1,0 +1,128 @@
+{
+  "type": "flowchart",
+  "title": "员工关怀活动流程",
+  "lanes": [
+    {
+      "dept": "HR",
+      "roles": [
+        "HR专员"
+      ]
+    },
+    {
+      "dept": "财务部",
+      "roles": [
+        "费用会计"
+      ]
+    },
+    {
+      "dept": "行政部",
+      "roles": [
+        "行政专员"
+      ]
+    },
+    {
+      "dept": "员工",
+      "roles": [
+        "员工"
+      ]
+    },
+    {
+      "dept": "管理层",
+      "roles": [
+        "管理层"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "HR",
+      "role": "HR专员",
+      "action": "制定关怀活动方案",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "管理层",
+      "role": "管理层",
+      "action": "方案审批通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "财务部",
+      "role": "费用会计",
+      "action": "预算拨付",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "行政部",
+      "role": "行政专员",
+      "action": "活动组织执行",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "员工",
+      "role": "员工",
+      "action": "参与反馈",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "HR",
+      "role": "HR专员",
+      "action": "活动总结归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N1",
+      "label": "退回",
+      "reverse": true
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "员工关怀",
+      "生日会",
+      "团建"
+    ],
+    "tags": [
+      "HR"
+    ]
+  }
+}

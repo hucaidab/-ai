@@ -1,0 +1,129 @@
+{
+  "type": "flowchart",
+  "title": "销售价格审批流程",
+  "lanes": [
+    {
+      "dept": "销售部",
+      "roles": [
+        "销售员",
+        "销售经理"
+      ]
+    },
+    {
+      "dept": "管理层",
+      "roles": [
+        "审批人"
+      ]
+    },
+    {
+      "dept": "客户",
+      "roles": [
+        "客户"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "销售部",
+      "role": "销售员",
+      "action": "提交价格申请",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "销售部",
+      "role": "销售经理",
+      "action": "价格区间内审批?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "管理层",
+      "role": "审批人",
+      "action": "特批价格审批通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N4",
+      "dept": "销售部",
+      "role": "销售员",
+      "action": "向客户报价",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "客户",
+      "role": "客户",
+      "action": "接受价格?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N6",
+      "dept": "销售部",
+      "role": "销售员",
+      "action": "价格执行归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N4",
+      "label": "在区间",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "超区间",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N1",
+      "label": "驳回",
+      "reverse": true
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "接受",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N1",
+      "label": "讨价",
+      "reverse": true
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "价格审批",
+      "报价审批",
+      "折扣"
+    ],
+    "tags": [
+      "销售"
+    ]
+  }
+}

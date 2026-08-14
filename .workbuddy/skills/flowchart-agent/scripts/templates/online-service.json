@@ -1,0 +1,142 @@
+{
+  "type": "flowchart",
+  "title": "在线咨询处理流程",
+  "lanes": [
+    {
+      "dept": "客户",
+      "roles": [
+        "客户"
+      ]
+    },
+    {
+      "dept": "客服部",
+      "roles": [
+        "客服专员",
+        "客服主管"
+      ]
+    },
+    {
+      "dept": "业务部",
+      "roles": [
+        "业务专家"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "客户",
+      "role": "客户",
+      "action": "发起在线咨询",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "客服部",
+      "role": "客服专员",
+      "action": "智能应答解决?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "客服部",
+      "role": "客服专员",
+      "action": "人工会话接入",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "客服部",
+      "role": "客服专员",
+      "action": "业务知识库可答?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N5",
+      "dept": "业务部",
+      "role": "业务专家",
+      "action": "专业解答",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "客服部",
+      "role": "客服主管",
+      "action": "客户满意度确认?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N7",
+      "dept": "客服部",
+      "role": "客服专员",
+      "action": "会话归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "未解决",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N7",
+      "label": "解决",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N6",
+      "label": "可答",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "不可答",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "满意",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N3",
+      "label": "不满意",
+      "reverse": true
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "在线咨询",
+      "在线客服",
+      "在线服务"
+    ],
+    "tags": [
+      "客服"
+    ]
+  }
+}

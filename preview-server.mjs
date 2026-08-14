@@ -101,10 +101,21 @@ const GEN_PAGE = `<!DOCTYPE html>
   .err{background:#fff5f5;border:1px solid #ffcecb;color:#cf222e;border-radius:8px;padding:12px 16px;font-size:13px}
   .err b{display:block;margin-bottom:4px}
   .foot{text-align:center;color:var(--muted);font-size:12px;margin:20px 0}
+  .hist{margin-top:14px}
+  .hist h3{font-size:13px;margin:0 0 8px;color:var(--muted)}
+  .hist-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;font-size:12.5px;background:#fafbfc}
+  .hist-item .t{font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .hist-item .meta{color:var(--muted);font-size:11.5px;white-space:nowrap}
+  .hist-item button{padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;font-size:12px;white-space:nowrap}
+  .hist-item button:hover{border-color:var(--accent);color:var(--accent)}
+  .hist-empty{color:var(--muted);font-size:12.5px;padding:8px 2px}
+  .edit-tip{display:none;background:#fff8c5;border:1px solid #d4a72c;color:#633c01;border-radius:8px;padding:8px 14px;font-size:12.5px;margin-bottom:12px}
+  .edit-tip.show{display:block}
 </style></head>
 <body>
 <header><h1>✏️ 流程图生成器</h1><a href="/">查看已有图 →</a></header>
 <div class="wrap">
+  <div class="edit-tip" id="editTip">✏️ 编辑模式：正在修改 <b id="editName"></b> —— 在下面描述你想改什么（例：去掉确认订单，发货后加客户签收）</div>
   <div class="card">
     <h2>用一句话描述你的流程</h2>
     <p class="sub">想画什么流程？说清楚「谁做什么、判断条件、退回情况」，点生成即可（例：员工提交申请，经理审批，驳回退回）</p>
@@ -116,20 +127,51 @@ const GEN_PAGE = `<!DOCTYPE html>
       <div class="res-head">
         <span class="badge" id="badge"></span>
         <span class="t" id="rt"></span>
-        <button class="dl-btn" id="dlPng">⬇ 下载 PNG 图片</button>
-        <button class="dl-btn" id="dlSvg">⬇ 下载 SVG</button>
+        <button class="dl-btn" id="dlPng">⬇ PNG</button>
+        <button class="dl-btn" id="dlSvg">⬇ SVG</button>
+        <button class="dl-btn" id="dlPdf">⬇ PDF</button>
+        <button class="dl-btn" id="dlMmd">⬇ Mermaid</button>
       </div>
       <div class="canvas" id="canvas"></div>
       <div class="report" id="report"></div>
     </div>
   </div>
-  <div class="foot">没写清楚也没关系，AI 会自动帮你补全 · 生成后可在「查看已有图」里继续浏览</div>
+  <div class="card hist">
+    <h3>📚 历史生成（点「改一版」继续编辑，点「下载」拿文件）</h3>
+    <div id="histList"></div>
+  </div>
+  <div class="foot">没写清楚也没关系，AI 会自动帮你补全 · 历史记录保留最近生成的需求，可反复迭代</div>
 </div>
 <script>
 const EXAMPLES = ${JSON.stringify(EXAMPLES)};
 document.getElementById('chips').innerHTML = EXAMPLES.map(e=>'<button class="chip" onclick="fill(\\''+e.label+'\\')">'+e.label+'</button>').join('');
 function fill(k){ const e=EXAMPLES.find(x=>x.label===k); document.getElementById('in').value=e.text; }
-let cur = null;
+let cur = null, curReq = null;
+async function loadHistory(){
+  try {
+    const r = await fetch('/api/history');
+    const items = await r.json();
+    const box = document.getElementById('histList');
+    if (!items.length) { box.innerHTML = '<div class="hist-empty">还没有生成记录，画一张试试～</div>'; return; }
+    box.innerHTML = items.map(h => {
+      const d = new Date(h.time);
+      const tm = d.getMonth()+1+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+      return '<div class="hist-item"><span class="t">'+h.title+'</span><span class="meta">'+h.nodes+' 节点 · '+tm+'</span>' +
+        '<button onclick="editReq(\\''+h.reqFile+'\\',\\''+h.title.replace(/'/g,"\\\\'")+'\\')">✏️ 改一版</button>' +
+        '<button onclick="dlFile(\\'req\\',\\''+h.reqFile+'\\')">⬇</button></div>';
+    }).join('');
+  } catch(e){ document.getElementById('histList').innerHTML = '<div class="hist-empty">历史加载失败</div>'; }
+}
+function editReq(reqFile, title){
+  curReq = reqFile;
+  document.getElementById('editTip').classList.add('show');
+  document.getElementById('editName').textContent = title;
+  document.getElementById('in').value = '把『' + title + '』的流程修改一下：';
+  document.getElementById('in').focus();
+  document.getElementById('go').textContent = '✏️ 应用修改生成';
+  document.getElementById('status').textContent = '';
+  document.getElementById('res').classList.remove('show');
+}
 document.getElementById('go').onclick = async () => {
   const text = document.getElementById('in').value.trim();
   const st = document.getElementById('status'), res = document.getElementById('res');
@@ -138,31 +180,36 @@ document.getElementById('go').onclick = async () => {
   st.textContent = '⏳ 正在理解你的需求并画图…（一般 5~20 秒）';
   res.classList.remove('show');
   try {
-    const r = await fetch('/api/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text}) });
+    const r = await fetch('/api/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text, reqFile: curReq || ''}) });
     const d = await r.json();
     if(!d.ok){ st.innerHTML=''; res.innerHTML='<div class="err"><b>😅 没生成成功</b>'+d.error+'</div>'; return; }
-    cur = d.file;
-    st.textContent = '✅ 完成（来源：' + d.source + '）';
+    cur = d.file; curReq = d.reqFile;
+    st.textContent = '✅ 完成（来源：' + d.source + (d.edited ? ' · 编辑模式' : '') + '）';
     res.classList.add('show');
     document.getElementById('badge').textContent = d.pass ? '✓ 验收通过' : '⚠ 有 1 项未达标';
     document.getElementById('badge').className = 'badge ' + (d.pass ? 'b-ok' : 'b-no');
     document.getElementById('rt').textContent = d.title + '（' + d.nodes + ' 节点 · ' + d.lanes + ' 个部门泳道）';
     document.getElementById('canvas').innerHTML = d.svg;
     document.getElementById('report').innerHTML = '<b>验收报告</b><pre>' + d.reportMd.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</pre>';
+    document.getElementById('editTip').classList.remove('show');
+    document.getElementById('go').textContent = '⚡ 生成流程图';
+    loadHistory();
   } catch(e){ st.innerHTML=''; res.innerHTML='<div class="err"><b>😅 服务出错</b>'+e.message+'</div>'; }
   finally { btn.disabled = false; }
 };
-document.getElementById('dlPng').onclick = async () => {
-  if(!cur) return;
-  const r = await fetch('/api/png?file='+encodeURIComponent(cur));
-  if(!r.ok) return alert('图片转换失败');
-  const b = await r.blob(), a = document.createElement('a');
-  a.href = URL.createObjectURL(b); a.download = cur.replace(/\\.svg$/,'.png'); a.click();
-};
-document.getElementById('dlSvg').onclick = () => {
-  if(!cur) return;
-  const a = document.createElement('a'); a.href = '/file/'+encodeURIComponent(cur); a.download = cur; a.click();
-};
+function dlFile(kind, file){
+  const a = document.createElement('a');
+  if (kind === 'req') { a.href = '/file/'+encodeURIComponent(file); a.download = file; }
+  else if (kind === 'png') { fetch('/api/png?file='+encodeURIComponent(file)).then(r=>r.blob()).then(b=>{ const x=document.createElement('a'); x.href=URL.createObjectURL(b); x.download=file.replace(/\\.svg$/,'.png'); x.click(); }); return; }
+  else if (kind === 'pdf') { a.href = '/api/pdf?file='+encodeURIComponent(file); a.download = file.replace(/\\.svg$/,'.pdf'); }
+  else if (kind === 'mmd') { a.href = '/api/mmd?file='+encodeURIComponent(file); a.download = file.replace(/\\.req\\.json$/,'.mmd'); }
+  a.click();
+}
+document.getElementById('dlPng').onclick = () => { if(cur) dlFile('png', cur); };
+document.getElementById('dlSvg').onclick = () => { if(cur) dlFile('svg', cur); };
+document.getElementById('dlPdf').onclick = () => { if(cur) dlFile('pdf', cur); };
+document.getElementById('dlMmd').onclick = () => { if(curReq) dlFile('mmd', curReq); };
+loadHistory();
 </script></body></html>`
 
 const PAGE = `<!DOCTYPE html>
@@ -254,15 +301,44 @@ const server = http.createServer(async (req, res) => {
 
   if (p === '/') return send(200, PAGE, 'text/html; charset=utf-8')
   if (p === '/generate') return send(200, GEN_PAGE, 'text/html; charset=utf-8')
+  if (p === '/api/history') {
+    // 历史生成记录：gen-*.req.json 列表（按时间倒序）
+    const items = []
+    for (const f of fs.readdirSync(DIR)) {
+      if (!/^gen-.+\.req\.json$/.test(f)) continue
+      const base = f.replace(/\.req\.json$/, '')
+      try {
+        const req = JSON.parse(fs.readFileSync(path.join(DIR, f), 'utf-8'))
+        const st = fs.statSync(path.join(DIR, f))
+        items.push({ reqFile: f, title: req.title || base, nodes: req.nodes.length, time: st.mtimeMs })
+      } catch { /* 跳过损坏文件 */ }
+    }
+    items.sort((a, b) => b.time - a.time)
+    return send(200, JSON.stringify(items), 'application/json')
+  }
   if (p === '/api/generate' && req.method === 'POST') {
     let body = ''
     for await (const c of req) body += c
-    let text = ''
-    try { text = (JSON.parse(body || '{}').text || '').trim() } catch { return send(400, '参数格式错误') }
+    let payload = {}
+    try { payload = JSON.parse(body || '{}') } catch { return send(400, '参数格式错误') }
+    const text = (payload.text || '').trim()
+    const editReqFile = payload.reqFile || ''
     if (!text) return send(400, JSON.stringify({ ok: false, error: '需求不能为空，先写一句话再点生成～' }))
     try {
       const { llmModel, splitAndRender } = await loadGen()
-      const r = await llmModel(text)
+      let r
+      if (editReqFile) {
+        // 编辑重生成：基于历史 req.json + 修改描述
+        const fp = path.join(DIR, editReqFile)
+        if (!fs.existsSync(fp)) return send(400, JSON.stringify({ ok: false, error: '找不到源需求文件：' + editReqFile }))
+        const base = JSON.parse(fs.readFileSync(fp, 'utf-8'))
+        const summary = '现有流程图标题：' + (base.title || '未命名') + '\n' +
+          '现有节点：' + base.nodes.map(n => n.id + '(' + (n.dept || '') + '/' + (n.role || '') + '/' + (n.action || '') + '/' + (n.shape || 'rect') + ')').join('、') + '\n' +
+          '现有边：' + base.edges.map(e => e.from + '→' + e.to + (e.label ? '(' + e.label + ')' : '') + (e.reverse ? '[逆向]' : '')).join('、')
+        r = await llmModel(summary + '\n用户修改要求：' + text + '\n（严格按修改要求执行：要求删除/去掉的节点和边必须移除；要求新增的环节必须出现；其余骨架保持不变）')
+      } else {
+        r = await llmModel(text)
+      }
       if (!r.req) return send(200, JSON.stringify({ ok: false, error: '没看懂你的需求，请说得更具体些，例如：员工提交申请，经理审批（驳回退回），出纳打款' }))
       const stamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14)
       const base = path.join(DIR, 'gen-' + stamp)
@@ -277,6 +353,7 @@ const server = http.createServer(async (req, res) => {
         reportMd: fs.existsSync(reportFile) ? fs.readFileSync(reportFile, 'utf-8') : '（无验收报告）',
         pass: result.pass, source: r.source, title: r.req.title || '未命名',
         nodes: r.req.nodes.length, lanes: (r.req.lanes || []).length,
+        edited: !!editReqFile,
       }
       return send(200, JSON.stringify(out), 'application/json')
     } catch (e) {
@@ -298,6 +375,34 @@ const server = http.createServer(async (req, res) => {
       if (!png) return send(500, 'resvg 未加载')
       res.writeHead(200, { 'Content-Type': 'image/png' }); res.end(png)
     } catch (e) { send(500, 'PNG 转换失败: ' + e.message.slice(0, 120)) }
+    return
+  }
+  if (p === '/api/pdf') {
+    // SVG → PDF（M5 多格式）
+    const name = u.searchParams.get('file')
+    if (!name) return send(400, '缺 file 参数')
+    const fp = path.join(DIR, name)
+    if (!fs.existsSync(fp) || !fp.endsWith('.svg')) return send(404, 'not found')
+    try {
+      const { svgToPdf } = await import('./lib-export.mjs')
+      const pdf = svgToPdf(fs.readFileSync(fp, 'utf-8'))
+      res.writeHead(200, { 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="' + name.replace(/\.svg$/, '.pdf') + '"' })
+      res.end(pdf)
+    } catch (e) { send(500, 'PDF 转换失败: ' + e.message.slice(0, 120)) }
+    return
+  }
+  if (p === '/api/mmd') {
+    // req.json → Mermaid 源码（M5 多格式）
+    const name = u.searchParams.get('file')
+    if (!name) return send(400, '缺 file 参数')
+    const fp = path.join(DIR, name)
+    if (!fs.existsSync(fp) || !fp.endsWith('.req.json')) return send(404, 'not found')
+    try {
+      const { exportMermaid } = await import('./lib-export.mjs')
+      const req = JSON.parse(fs.readFileSync(fp, 'utf-8'))
+      res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8', 'Content-Disposition': 'attachment; filename="' + name.replace(/\.req\.json$/, '.mmd') + '"' })
+      res.end(exportMermaid(req))
+    } catch (e) { send(500, 'Mermaid 导出失败: ' + e.message.slice(0, 120)) }
     return
   }
   if (p.startsWith('/file/')) {

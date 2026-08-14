@@ -1,0 +1,129 @@
+{
+  "type": "flowchart",
+  "title": "离职交接核查流程",
+  "lanes": [
+    {
+      "dept": "员工",
+      "roles": [
+        "离职员工"
+      ]
+    },
+    {
+      "dept": "部门",
+      "roles": [
+        "部门经理"
+      ]
+    },
+    {
+      "dept": "HR",
+      "roles": [
+        "HR专员"
+      ]
+    },
+    {
+      "dept": "IT",
+      "roles": [
+        "IT管理员"
+      ]
+    },
+    {
+      "dept": "财务部",
+      "roles": [
+        "出纳",
+        "财务部"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "员工",
+      "role": "离职员工",
+      "action": "发起离职交接",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "部门",
+      "role": "部门经理",
+      "action": "工作与文档交接",
+      "shape": "rect"
+    },
+    {
+      "id": "N3",
+      "dept": "IT",
+      "role": "IT管理员",
+      "action": "账号权限回收",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "财务部",
+      "role": "财务部",
+      "action": "费用与资产清算",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "HR",
+      "role": "HR专员",
+      "action": "交接清单完成?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N6",
+      "dept": "HR",
+      "role": "HR专员",
+      "action": "离职手续办结",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "完成",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N2",
+      "label": "缺项",
+      "reverse": true
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "离职交接",
+      "工作交接",
+      "离职"
+    ],
+    "tags": [
+      "HR"
+    ]
+  }
+}

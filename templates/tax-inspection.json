@@ -1,0 +1,141 @@
+{
+  "type": "flowchart",
+  "title": "税务稽查配合流程",
+  "lanes": [
+    {
+      "dept": "税务局",
+      "roles": [
+        "稽查人员"
+      ]
+    },
+    {
+      "dept": "财务部",
+      "roles": [
+        "财务经理"
+      ]
+    },
+    {
+      "dept": "税务部",
+      "roles": [
+        "税务专员"
+      ]
+    },
+    {
+      "dept": "管理层",
+      "roles": [
+        "审批人"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "税务局",
+      "role": "稽查人员",
+      "action": "下达稽查通知",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "财务部",
+      "role": "财务经理",
+      "action": "资料准备",
+      "shape": "rect"
+    },
+    {
+      "id": "N3",
+      "dept": "税务部",
+      "role": "税务专员",
+      "action": "资料完整性自查?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N4",
+      "dept": "税务部",
+      "role": "税务专员",
+      "action": "配合现场稽查",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "税务部",
+      "role": "税务专员",
+      "action": "稽查结论确认",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "管理层",
+      "role": "审批人",
+      "action": "补缴或异议处理?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N7",
+      "dept": "税务部",
+      "role": "税务专员",
+      "action": "稽查结案归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "齐全",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N2",
+      "label": "缺失",
+      "reverse": true
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "无异议",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "有异议",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "税务稽查",
+      "稽查配合",
+      "税务检查"
+    ],
+    "tags": [
+      "税务"
+    ]
+  }
+}

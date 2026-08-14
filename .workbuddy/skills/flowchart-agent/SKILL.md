@@ -84,21 +84,21 @@ node verify-llm.mjs
 流程: 审批通过? --驳回--> 发起采购申请 (逆向)
 ```
 
-## 知识库模板（templates/，50 个流程）
+## 知识库模板（templates/，100 个流程，13 业务域）
 
-| 域 | 模板（触发词） |
-|---|---|
-| 供应链/采购 | p2p 采购到付款（采购/进货）、rfq 询价比价（询价/比价）、payment-request 付款申请（付款/应付）、return-refund 退货退款（退货/退款） |
-| 销售/客服 | otc 销售订单（销售/订单）、quotation 报价（报价）、customer-onboard 客户建档（客户建档）、complaint 客诉（投诉）、aftersale-visit 售后现场服务（售后/上门） |
-| 仓储/物流 | stock-take 库存盘点（盘点）、outbound 销售出库发货（出库/发货）、warehouse-transfer 仓库调拨（调拨）、material-issue 生产领料（领料） |
-| 制造/质量 | workorder 生产工单（工单/报工）、production-plan 生产计划（生产计划/mps）、maintenance 设备维保（设备/tpm）、scrap 物料报废（报废）、quality-issue 质量 8D（质量/8d） |
-| 研发/运维 | bug-fix 缺陷修复（缺陷/bug）、release 版本发布（发布/上线）、change-request 变更管理（变更/rfc）、it-request IT 工单（it/权限） |
-| HR | onboarding 入职（入职/招聘）、resign 离职（离职）、transfer 调动（调动）、leave 请假（请假）、attendance 考勤（考勤/补卡）、training 培训（培训）、probation 转正（转正/试用期）、salary-adjustment 调薪（调薪/加薪）、social-security 社保公积金（社保/公积金） |
-| 财务/税务 | expense 报销（报销/费用）、budget 预算（预算）、invoice 发票（发票/开票）、asset 固定资产（固定资产）、month-end-close 月末结账（结账/月结）、tax-filing 纳税申报（纳税/报税）、audit-support 内部审计（审计） |
-| 行政/法务/安全 | office-supply 办公用品（办公用品）、vehicle-request 用车（用车/派车）、visitor 访客（访客/来访）、meeting-room 会议室（会议室预订）、seal-request 用印（用印/盖章）、business-trip 出差（出差/差旅）、contract 合同（合同/法务）、nda-request 保密协议（保密/nda）、announcement 制度公告（制度/公告）、data-export 数据导出（数据导出/报表申请） |
-| 其他 | login-auth 登录认证（登录/认证）、project-kickoff 项目立项（立项/项目启动） |
+| 域 | 模板数量 | 代表模板（触发词） |
+|---|---|---|
+| 供应链/采购 | 8 | p2p 采购到付款（采购/进货）、rfq 询价比价、payment-request 付款申请、return-refund 退货退款、supplier-onboard 供应商准入、supplier-eval 供应商评估、po-change 采购变更、goods-return 物料退货 |
+| 销售/客服 | 10 | otc 销售订单（销售/订单）、quotation 报价、customer-onboard 客户建档、complaint 客诉、order-change 订单变更、price-approval 价格审批、collection 回款催收、online-service 在线咨询、ticket-escalation 工单升级、satisfaction-survey 满意度回访 |
+| 仓储/物流 | 8 | stock-take 盘点、outbound 出库发货、warehouse-transfer 调拨、warehouse-inbound 入库验收、material-issue 领料、logistics-dispatch 物流调度、courier 快递、transport 干线运输 |
+| 制造/质量 | 9 | workorder 工单、production-plan 生产计划、maintenance 设备维保、scrap 报废、quality-issue 质量 8D、schedule-change 排产变更、process-change 工艺变更、equipment-inspection 设备点检、safety-patrol 安全巡检 |
+| 研发/运维 | 8 | bug-fix 缺陷修复、release 版本发布、change-request 变更管理、it-request IT 工单、requirement-mgmt 需求管理、tech-review 方案评审、code-review 代码走查、test-review 用例评审 |
+| HR | 16 | onboarding 入职、resign 离职、transfer 调动、leave 请假、attendance 考勤、training 培训、probation 转正、salary-adjustment 调薪、social-security 社保公积金、recruit-request 招聘需求、interview 面试评估、overtime 加班、comp-time 调休、annual-leave 年假、resign-handover 离职交接、employee-care 员工关怀 |
+| 财务/税务 | 12 | expense 报销、budget 预算、invoice 发票、asset 固定资产、month-end-close 月末结账、tax-filing 纳税申报、audit-support 内审、cash-plan 资金计划、budget-adjust 预算调整、travel-advance 差旅预支、bank-reconcile 银行对账、payroll 工资发放 |
+| 行政/法务/安全 | 17 | office-supply 办公用品、vehicle-request 用车、visitor 访客、meeting-room 会议室、seal-request 用印、business-trip 出差、contract 合同、nda-request 保密协议、announcement 制度公告、data-export 数据导出、litigation 诉讼、legal-consult 法务咨询、ip-apply 知识产权、compliance-review 合规审查、archive-mgmt 档案、seal-borrow 印章借用、gift-purchase 礼品采购 |
+| 其他 | 12 | login-auth 登录认证、project-kickoff 立项、invoice-auth 发票认证、tax-inspection 稽查配合、annual-settlement 汇算清缴、incident-report 事故报告、info-security 信息安全、emergency-response 应急响应、complaint-escalation 投诉升级、benefit-distribute 福利发放、newspaper-sub 报刊订阅、employee-care 员工关怀 |
 
-> 任意需求先在模板库匹配（`template-finder`，开头关键词加权）；未命中再走 LLM/DSL。
+> 任意需求先在模板库匹配（`template-finder`，开头关键词加权）；未命中再走 LLM/DSL。扩充模板用 `gen-100-templates.mjs`（DSL 批量定义）。
 
 ## 验收标准（10 项自动检查）
 

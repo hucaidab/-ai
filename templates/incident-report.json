@@ -1,0 +1,123 @@
+{
+  "type": "flowchart",
+  "title": "安全事故报告流程",
+  "lanes": [
+    {
+      "dept": "现场",
+      "roles": [
+        "目击者"
+      ]
+    },
+    {
+      "dept": "安全部",
+      "roles": [
+        "安全员",
+        "安全主管"
+      ]
+    },
+    {
+      "dept": "管理层",
+      "roles": [
+        "应急小组"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "现场",
+      "role": "目击者",
+      "action": "现场上报事故",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "安全部",
+      "role": "安全员",
+      "action": "事故分级?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "管理层",
+      "role": "应急小组",
+      "action": "紧急处置",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "安全部",
+      "role": "安全员",
+      "action": "现场保护与调查",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "安全部",
+      "role": "安全主管",
+      "action": "整改措施落实?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N6",
+      "dept": "安全部",
+      "role": "安全主管",
+      "action": "事故报告归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "重大",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N4",
+      "label": "一般",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "落实",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N4",
+      "label": "未落实",
+      "reverse": true
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "事故报告",
+      "安全事故",
+      "工伤"
+    ],
+    "tags": [
+      "安全"
+    ]
+  }
+}

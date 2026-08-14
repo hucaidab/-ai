@@ -1,0 +1,132 @@
+{
+  "type": "flowchart",
+  "title": "供应商评估流程",
+  "lanes": [
+    {
+      "dept": "采购部",
+      "roles": [
+        "采购员",
+        "采购经理"
+      ]
+    },
+    {
+      "dept": "品质部",
+      "roles": [
+        "质检员",
+        "品质部"
+      ]
+    },
+    {
+      "dept": "仓储部",
+      "roles": [
+        "仓管员",
+        "仓储部"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "采购部",
+      "role": "采购员",
+      "action": "制定评估计划",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "品质部",
+      "role": "品质部",
+      "action": "质量数据汇总",
+      "shape": "rect"
+    },
+    {
+      "id": "N3",
+      "dept": "仓储部",
+      "role": "仓储部",
+      "action": "交期数据汇总",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "采购部",
+      "role": "采购经理",
+      "action": "综合评分达标?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N5",
+      "dept": "采购部",
+      "role": "采购员",
+      "action": "整改要求下发",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "采购部",
+      "role": "采购员",
+      "action": "淘汰或降级处理",
+      "shape": "rect"
+    },
+    {
+      "id": "N7",
+      "dept": "采购部",
+      "role": "采购经理",
+      "action": "评估结果归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N7",
+      "label": "达标",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "不达标",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "供应商评估",
+      "供应商考核",
+      "srm"
+    ],
+    "tags": [
+      "供应链"
+    ]
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "type": "flowchart",
+  "title": "发票认证勾选流程",
+  "lanes": [
+    {
+      "dept": "财务部",
+      "roles": [
+        "发票会计",
+        "财务经理"
+      ]
+    },
+    {
+      "dept": "税务部",
+      "roles": [
+        "税务专员"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "财务部",
+      "role": "发票会计",
+      "action": "收到进项发票",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "财务部",
+      "role": "发票会计",
+      "action": "发票真伪查验",
+      "shape": "rect"
+    },
+    {
+      "id": "N3",
+      "dept": "财务部",
+      "role": "发票会计",
+      "action": "发票合规?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N4",
+      "dept": "税务部",
+      "role": "税务专员",
+      "action": "勾选认证",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "财务部",
+      "role": "财务经理",
+      "action": "进项抵扣确认",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "税务部",
+      "role": "税务专员",
+      "action": "认证结果归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "合规",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N1",
+      "label": "异常",
+      "reverse": true
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "发票认证",
+      "勾选认证",
+      "进项发票"
+    ],
+    "tags": [
+      "税务",
+      "财务"
+    ]
+  }
+}

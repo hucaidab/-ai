@@ -17,3 +17,12 @@ tmp/
 # 个人工作记忆不进仓库；项目级技能 .workbuddy/skills/ 需要进仓库（团队 WorkBuddy 共享）
 .workbuddy/memory/
 llm-verify-out/
+
+# ============ 可再生成产物（验收报告/生成器产物，跑一次就有） ============
+*.report.json
+templates/*.report.md
+gen-*.svg
+gen-*.req.json
+gen-*.report.md
+gen-*.mmd
+gen-*.pdf

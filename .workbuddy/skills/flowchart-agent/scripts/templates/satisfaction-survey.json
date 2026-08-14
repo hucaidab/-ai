@@ -1,0 +1,136 @@
+{
+  "type": "flowchart",
+  "title": "客户满意度回访流程",
+  "lanes": [
+    {
+      "dept": "客服部",
+      "roles": [
+        "回访专员",
+        "客服经理"
+      ]
+    },
+    {
+      "dept": "客户",
+      "roles": [
+        "客户"
+      ]
+    },
+    {
+      "dept": "业务部",
+      "roles": [
+        "业务负责人"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "客服部",
+      "role": "回访专员",
+      "action": "确定回访名单",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "客服部",
+      "role": "回访专员",
+      "action": "发起满意度调查",
+      "shape": "rect"
+    },
+    {
+      "id": "N3",
+      "dept": "客户",
+      "role": "客户",
+      "action": "满意度达标?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N4",
+      "dept": "客服部",
+      "role": "回访专员",
+      "action": "不满意原因收集",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "业务部",
+      "role": "业务负责人",
+      "action": "问题改进方案",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "客服部",
+      "role": "客服经理",
+      "action": "改进验证通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N7",
+      "dept": "客服部",
+      "role": "回访专员",
+      "action": "回访报告归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N7",
+      "label": "达标",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "不达标",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N5",
+      "label": "未通过",
+      "reverse": true
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "满意度",
+      "回访",
+      "调查问卷"
+    ],
+    "tags": [
+      "客服"
+    ]
+  }
+}

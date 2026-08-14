@@ -1,0 +1,129 @@
+{
+  "type": "flowchart",
+  "title": "企业所得税汇算清缴流程",
+  "lanes": [
+    {
+      "dept": "财务部",
+      "roles": [
+        "财务经理"
+      ]
+    },
+    {
+      "dept": "税务部",
+      "roles": [
+        "税务专员"
+      ]
+    },
+    {
+      "dept": "管理层",
+      "roles": [
+        "审批人"
+      ]
+    },
+    {
+      "dept": "税务局",
+      "roles": [
+        "税务机关"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "财务部",
+      "role": "财务经理",
+      "action": "年度账务整理",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "税务部",
+      "role": "税务专员",
+      "action": "纳税调整计算",
+      "shape": "rect"
+    },
+    {
+      "id": "N3",
+      "dept": "税务部",
+      "role": "税务专员",
+      "action": "汇算申报表编制完成?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N4",
+      "dept": "管理层",
+      "role": "审批人",
+      "action": "申报审批通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N5",
+      "dept": "税务局",
+      "role": "税务机关",
+      "action": "申报受理与缴款",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "税务部",
+      "role": "税务专员",
+      "action": "清缴资料归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "完成",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N2",
+      "label": "复核",
+      "reverse": true
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N3",
+      "label": "退回",
+      "reverse": true
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "汇算清缴",
+      "所得税",
+      "年度申报"
+    ],
+    "tags": [
+      "税务",
+      "财务"
+    ]
+  }
+}

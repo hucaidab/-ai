@@ -1,0 +1,128 @@
+{
+  "type": "flowchart",
+  "title": "物料退货流程",
+  "lanes": [
+    {
+      "dept": "品质部",
+      "roles": [
+        "质检员"
+      ]
+    },
+    {
+      "dept": "仓储部",
+      "roles": [
+        "仓管员"
+      ]
+    },
+    {
+      "dept": "采购部",
+      "roles": [
+        "采购员"
+      ]
+    },
+    {
+      "dept": "供应商",
+      "roles": [
+        "供应商"
+      ]
+    },
+    {
+      "dept": "财务部",
+      "roles": [
+        "采购会计"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "品质部",
+      "role": "质检员",
+      "action": "来料检验不合格",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "采购部",
+      "role": "采购员",
+      "action": "退货申请提交",
+      "shape": "rect"
+    },
+    {
+      "id": "N3",
+      "dept": "供应商",
+      "role": "供应商",
+      "action": "退货确认?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N4",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "退货出库",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "财务部",
+      "role": "采购会计",
+      "action": "退款或换货处理",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "采购部",
+      "role": "采购员",
+      "action": "退货记录归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "确认",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N2",
+      "label": "争议",
+      "reverse": true
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "物料退货",
+      "退货供应商",
+      "来料不良"
+    ],
+    "tags": [
+      "供应链"
+    ]
+  }
+}

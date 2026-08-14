@@ -1,0 +1,109 @@
+{
+  "type": "flowchart",
+  "title": "预算调整申请流程",
+  "lanes": [
+    {
+      "dept": "申请人",
+      "roles": [
+        "申请人"
+      ]
+    },
+    {
+      "dept": "财务部",
+      "roles": [
+        "预算会计"
+      ]
+    },
+    {
+      "dept": "管理层",
+      "roles": [
+        "审批人"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "申请人",
+      "role": "申请人",
+      "action": "提交预算调整申请",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "财务部",
+      "role": "预算会计",
+      "action": "调整必要性初审?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "财务部",
+      "role": "预算会计",
+      "action": "影响测算",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "管理层",
+      "role": "审批人",
+      "action": "预算调整审批通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N5",
+      "dept": "财务部",
+      "role": "预算会计",
+      "action": "预算更新发布",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "必要",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N1",
+      "label": "不必要",
+      "reverse": true
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N1",
+      "label": "驳回",
+      "reverse": true
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "预算调整",
+      "预算变更",
+      "追加预算"
+    ],
+    "tags": [
+      "财务"
+    ]
+  }
+}

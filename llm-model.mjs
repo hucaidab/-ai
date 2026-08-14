@@ -115,7 +115,87 @@ export function repairSchema(req) {
   return req
 }
 
-// ---------- 主入口（含降级链） ----------
+// ---------- 质量自检（M5：LLM 输出鲁棒性） ----------
+// 返回 { ok, errors: [], warnings: [] }
+// errors = 硬伤（缺起止/判断无标签）→ 触发 autoFix + 重试；warnings = 软问题不阻塞
+export function selfCheck(req) {
+  const errors = [], warnings = []
+  if (!req || !Array.isArray(req.nodes)) return { ok: false, errors: ['结构无效'], warnings: [] }
+  if (!req.nodes.some(n => n.shape === 'start')) errors.push('缺少开始节点')
+  if (!req.nodes.some(n => n.shape === 'end')) errors.push('缺少结束节点')
+  if (req.nodes.length < 4) warnings.push('节点数过少（' + req.nodes.length + '），需求可能描述不完整')
+  if (req.nodes.length > 30) warnings.push('节点数 ' + req.nodes.length + ' > 30，建议拆图（已自动处理）')
+  const idSet = new Set(req.nodes.map(n => n.id))
+  req.nodes.filter(n => n.shape === 'diamond').forEach(d => {
+    const outs = req.edges.filter(e => e.from === d.id && idSet.has(e.to))
+    if (outs.length < 2) errors.push('判断节点「' + d.action + '」只有 ' + outs.length + ' 个出口（需 ≥2 且带标签）')
+    else if (outs.some(e => !e.label)) errors.push('判断节点「' + d.action + '」有未带标签的出口')
+  })
+  const connected = new Set()
+  req.edges.forEach(e => { connected.add(e.from); connected.add(e.to) })
+  req.nodes.filter(n => n.shape !== 'start' && n.shape !== 'end').forEach(n => {
+    if (!connected.has(n.id)) warnings.push('节点「' + n.action + '」未与任何节点相连')
+  })
+  return { ok: errors.length === 0, errors, warnings }
+}
+
+// ---------- 规则自动修复 ----------
+// 修复缺起止/判断出口标签/孤立节点，返回 { req, fixed: [说明] }
+export function autoFix(req) {
+  const fixed = []
+  const idSet = new Set(req.nodes.map(n => n.id))
+  const hasStart = req.nodes.some(n => n.shape === 'start')
+  const hasEnd = req.nodes.some(n => n.shape === 'end')
+  const inDeg = {}, outDeg = {}
+  req.nodes.forEach(n => { inDeg[n.id] = 0; outDeg[n.id] = 0 })
+  req.edges.forEach(e => {
+    if (idSet.has(e.from) && idSet.has(e.to)) { outDeg[e.from]++; inDeg[e.to]++ }
+  })
+  const firstNode = req.nodes.find(n => inDeg[n.id] === 0 && n.shape !== 'start' && n.shape !== 'end') || req.nodes[0]
+  const lastNode = req.nodes.find(n => outDeg[n.id] === 0 && n.shape !== 'start' && n.shape !== 'end') || req.nodes[req.nodes.length - 1]
+  if (!hasStart && firstNode) {
+    const sn = { id: 'START', dept: firstNode.dept, role: firstNode.role, action: '开始：' + (req.title || '').replace(/流程$/, '') + '启动', shape: 'start' }
+    req.nodes.unshift(sn)
+    if (!req.edges.some(e => e.from === 'START')) req.edges.push({ from: 'START', to: firstNode.id, label: '', reverse: false })
+    fixed.push('补充开始节点')
+  }
+  if (!hasEnd && lastNode) {
+    const en = { id: 'END', dept: lastNode.dept, role: lastNode.role, action: '结束：' + (lastNode.action || '完成'), shape: 'end' }
+    req.nodes.push(en)
+    if (!req.edges.some(e => e.to === 'END')) req.edges.push({ from: lastNode.id, to: 'END', label: '', reverse: false })
+    fixed.push('补充结束节点')
+  }
+  // 判断节点：出口补标签 / 补驳回回边
+  req.nodes.filter(n => n.shape === 'diamond').forEach(d => {
+    const outs = req.edges.filter(e => e.from === d.id && idSet.has(e.to))
+    let i = 0
+    outs.forEach(e => { if (!e.label) { e.label = i++ === 0 ? '通过' : '驳回'; fixed.push('判断「' + d.action + '」出口补标签 ' + e.label) } })
+    if (outs.length <= 1) {
+      const back = req.edges.find(e => e.to === d.id)
+      if (back && !req.edges.some(e => e.from === d.id && e.to === back.from)) {
+        req.edges.push({ from: d.id, to: back.from, label: '驳回', reverse: true })
+        fixed.push('判断「' + d.action + '」补驳回回边')
+      }
+    }
+  })
+  // 孤立节点串联
+  const connected = new Set()
+  req.edges.forEach(e => { connected.add(e.from); connected.add(e.to) })
+  let prev = req.nodes.find(n => n.shape === 'start')?.id || req.nodes[0]?.id
+  req.nodes.forEach(n => {
+    if (n.shape === 'start') { prev = n.id; return }
+    if (n.id === 'END') return
+    if (!connected.has(n.id)) {
+      if (prev) req.edges.push({ from: prev, to: n.id, label: '', reverse: false })
+      if (!req.edges.some(e => e.to === 'END' && e.from === n.id)) req.edges.push({ from: n.id, to: 'END', label: '', reverse: false })
+      fixed.push('孤立节点「' + n.action + '」已串联')
+    }
+    prev = n.id
+  })
+  return { req, fixed }
+}
+
+// ---------- 主入口（含降级链 + 自检/修复/重试） ----------
 export async function llmModel(text, cfg) {
   const config = cfg || loadLLMConfig()
   // 1. LLM（配置了 key 才调用）
@@ -123,8 +203,35 @@ export async function llmModel(text, cfg) {
     try {
       const raw = await callLLM(text, config)
       const req = repairSchema(raw)
-      if (req) return { req, source: 'llm' }
-      console.warn('⚠️ LLM 输出未通过 schema 校验')
+      if (req) {
+        let chk = selfCheck(req)
+        if (!chk.ok) {
+          const fx = autoFix(req)
+          chk = selfCheck(fx.req)
+          if (fx.fixed.length) console.log('🔧 规则自动修复：' + fx.fixed.join('、'))
+          if (!chk.ok) {
+            // 重试一次：追加更严格指令
+            console.log('🔄 LLM 输出自检未通过（' + chk.errors.join('；') + '），重试一次')
+            try {
+              const raw2 = await callLLM(text + '\n（重要：上次输出不合格。必须包含 1 个 shape=start 的开始节点和 1 个 shape=end 的结束节点；每个 shape=diamond 判断节点必须带 ≥2 个带标签的出口边）', config)
+              const req2 = repairSchema(raw2)
+              if (req2) {
+                const chk2 = selfCheck(req2)
+                if (!chk2.ok) {
+                  const fx2 = autoFix(req2)
+                  if (fx2.fixed.length) console.log('🔧 重试后规则修复：' + fx2.fixed.join('、'))
+                  const chk3 = selfCheck(fx2.req)
+                  if (chk3.ok) return { req: fx2.req, source: 'llm' }
+                } else return { req: req2, source: 'llm' }
+              }
+            } catch (e) { console.warn('⚠️ LLM 重试失败:', e.message.slice(0, 80)) }
+          }
+        }
+        if (chk.ok) return { req, source: 'llm' }
+        console.warn('⚠️ LLM 输出自检最终未通过（' + chk.errors.join('；') + '），降级')
+      } else {
+        console.warn('⚠️ LLM 输出未通过 schema 校验')
+      }
     } catch (e) {
       console.warn('⚠️ LLM 调用失败，降级:', e.message.slice(0, 100))
     }
