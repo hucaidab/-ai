@@ -104,7 +104,16 @@ export function render() {
   lay.nodes.forEach(n => { S._nodeSize[n.id] = { w: n.w, h: n.h } })
   // 边 DOM 序 → req.edges 索引映射（键含 label，同 from→to 多边不串位）
   S._edgeMap = lay.edges.map(e => S.req.edges.findIndex(r => r.from === e.from && r.to === e.to && (r.label || '') === (e.label || '')))
-  // 边选中高亮 + 航点手柄 + 命中层（双击加航点）
+  // 边命中层：所有边常驻透明粗线（12px 命中区），未选中也能轻松点选/双击（选中事件灵敏度）
+  out.querySelectorAll('path[data-edge]').forEach(p => {
+    const ei = p.getAttribute('data-eidx')
+    const hit = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    hit.setAttribute('d', p.getAttribute('d'))
+    hit.setAttribute('class', 'edge-hit')
+    hit.setAttribute('data-eidx', ei)
+    p.parentNode.appendChild(hit)
+  })
+  // 边选中高亮 + 航点手柄（命中层已常驻，不再重复创建）
   if (S.selected && S.selected.kind === 'edge') {
     const ei = S._edgeMap.indexOf(S.selected.idx)
     if (ei >= 0) {
@@ -132,21 +141,11 @@ function parsePathPts(d) {
 }
 const pathFromPts = pts => 'M ' + pts.map(p => p[0] + ' ' + p[1]).join(' L ')
 
-// 选中边：渲染折点手柄（蓝方块，端点灰） + 透明粗命中层（双击加航点）
+// 选中边：渲染折点手柄（蓝方块，端点灰）——命中层已由 render() 常驻
 function _renderHandles(out, ei, pathEl) {
   const cv = out.querySelector('svg')
   const pts = parsePathPts(pathEl.getAttribute('d'))
   const NS = 'http://www.w3.org/2000/svg'
-  // 命中层：透明粗 stroke 便于双击（不影响视觉）
-  const hit = document.createElementNS(NS, 'path')
-  hit.setAttribute('d', pathEl.getAttribute('d'))
-  hit.setAttribute('stroke', 'transparent')
-  hit.setAttribute('stroke-width', '12')
-  hit.setAttribute('fill', 'none')
-  hit.setAttribute('pointer-events', 'stroke')
-  hit.setAttribute('class', 'edge-hit')
-  hit.setAttribute('data-eidx', ei)
-  cv.appendChild(hit)
   // 手柄（每个折点一个小方块）
   pts.forEach((pt, i) => {
     const h = document.createElementNS(NS, 'rect')
@@ -269,8 +268,8 @@ export function bindInteractions() {
     if (h) { _onHandleDown(e, h); return }
     const g = e.target.closest ? e.target.closest('g[data-id]') : null
     if (g) { _onNodeDown(e, g); return }
-    // 边
-    const p = e.target.closest ? e.target.closest('path[data-edge]') : null
+    // 边：优先命中层（12px 命中区，选中灵敏度），其次原细 path
+    const p = e.target.closest ? (e.target.closest('path.edge-hit') || e.target.closest('path[data-edge]')) : null
     if (p) { e.stopPropagation(); _selectEdge(p) }
   })
   cv.addEventListener('dblclick', e => {
