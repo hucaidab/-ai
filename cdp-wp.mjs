@@ -66,10 +66,12 @@ async function main() {
   })()`)
   console.log('② 手柄数:', JSON.stringify(handles))
 
-  // 4. 双击路径中点 → 加航点
-  await click(edgeInfo.x, edgeInfo.y, 1)
+  // 4. 拖线本体 → 接管折点为 wp（双击线语义已改为编辑标签，加航点由拖线接管承担）
+  await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: edgeInfo.x, y: edgeInfo.y, button: 'left', clickCount: 1 })
   await new Promise(r => setTimeout(r, 100))
-  await click(edgeInfo.x, edgeInfo.y, 2)
+  await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: edgeInfo.x + 20, y: edgeInfo.y + 10, button: 'left', buttons: 1 })
+  await new Promise(r => setTimeout(r, 100))
+  await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: edgeInfo.x + 20, y: edgeInfo.y + 10, button: 'left', clickCount: 1 })
   await new Promise(r => setTimeout(r, 400))
   const wpAfterAdd = await evalJs(`(() => {
     const s = window.__editor.S
@@ -77,7 +79,7 @@ async function main() {
     const e = s.req.edges[s.selected.idx]
     return JSON.stringify(e.wp || [])
   })()`)
-  console.log('③ 双击加航点后 wp:', wpAfterAdd)
+  console.log('③ 拖线接管后 wp:', wpAfterAdd)
 
   // 5. 拖第一个中间手柄 → 移动航点
   const hPos = await evalJs(`(() => {
@@ -88,7 +90,9 @@ async function main() {
   })()`)
   if (hPos) {
     await send('Input.dispatchMouseEvent', { type: 'mousePressed', x: hPos.x, y: hPos.y, button: 'left', clickCount: 1 })
+    await new Promise(r => setTimeout(r, 80))
     await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: hPos.x + 40, y: hPos.y + 20, button: 'left', buttons: 1 })
+    await new Promise(r => setTimeout(r, 80))
     await send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: hPos.x + 40, y: hPos.y + 20, button: 'left', clickCount: 1 })
     await new Promise(r => setTimeout(r, 300))
   }

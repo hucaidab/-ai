@@ -161,16 +161,18 @@ function parsePathPts(d) {
 const pathFromPts = pts => 'M ' + pts.map(p => p[0] + ' ' + p[1]).join(' L ')
 
 // 选中边：渲染折点手柄（蓝方块，端点灰）——命中层已由 render() 常驻
+// 手柄恒定屏幕尺寸（10/S.scale world 单位）：缩放后手柄视觉不变，否则缩小后难以点击（质检抓出）
 function _renderHandles(out, ei, pathEl) {
   const cv = out.querySelector('svg')
   const pts = parsePathPts(pathEl.getAttribute('d'))
   const NS = 'http://www.w3.org/2000/svg'
+  const hs = 10 / S.scale // 视觉恒定 10px
   // 手柄（每个折点一个小方块）
   pts.forEach((pt, i) => {
     const h = document.createElementNS(NS, 'rect')
-    h.setAttribute('x', pt[0] - 5); h.setAttribute('y', pt[1] - 5)
-    h.setAttribute('width', 10); h.setAttribute('height', 10)
-    h.setAttribute('rx', 2)
+    h.setAttribute('x', pt[0] - hs / 2); h.setAttribute('y', pt[1] - hs / 2)
+    h.setAttribute('width', hs); h.setAttribute('height', hs)
+    h.setAttribute('rx', 2 / S.scale)
     h.setAttribute('class', 'wp-handle')
     h.setAttribute('data-wp-i', i)
     h.setAttribute('fill', (i === 0 || i === pts.length - 1) ? '#6e7781' : '#0969da') // 端点灰（不可拖）
@@ -368,7 +370,14 @@ function _onNodeDown(e, g) {
   S.selected = { kind: 'node', id }
   document.querySelectorAll('#cv g[data-sel]').forEach(x => x.removeAttribute('data-sel'))
   g.setAttribute('data-sel', '1')
-  _renderPorts(g) // 连接锚点（拖线建边）
+  // 锚点延迟 250ms 渲染：立即渲染会修改 SVG DOM → 浏览器重置 dblclick 判定，
+  // 双击的第二次 click hit-test 变化 → dblclick 不生成 → 双击改字失效（质检抓出）
+  clearTimeout(S._portTimer)
+  S._portTimer = setTimeout(() => {
+    if (!(S.selected && S.selected.kind === 'node' && S.selected.id === id)) return
+    const curG = document.querySelector('g[data-id="' + id + '"]')
+    if (curG) _renderPorts(curG)
+  }, 250)
   _updatePanel()
   const startX = e.clientX, startY = e.clientY
   const origX = node.pos ? node.pos.x : 0, origY = node.pos ? node.pos.y : 0
@@ -381,11 +390,12 @@ function _onNodeDown(e, g) {
     _rerouteEdges(id) // 相连边实时跟随（松手后 render 用正式布局重路由）
     moved = true
   }
-  const up = () => {
+  const up = ev => {
     window.removeEventListener('pointermove', move)
     window.removeEventListener('pointerup', up)
-    if (moved) { S.dirty = true; pushHistory() }
-    render() // 提交：边重路由 + 高亮统一（拖动中只移了节点本身）
+    if (moved) { S.dirty = true; pushHistory(); render() } // 拖动了才提交重渲染
+    // 未拖动（单击/双击）不 render：render 全量重建 DOM → mouseup hit-test 失效 →
+    // click 事件不合成 → dblclick 不生成 → 双击改字失效（质检抓出；与双击线同机制）
   }
   window.addEventListener('pointermove', move)
   window.addEventListener('pointerup', up)
@@ -499,6 +509,8 @@ const PORT_DIRS = ['e', 'se', 's', 'sw', 'w', 'nw', 'n', 'ne']
 function _renderPorts(g) {
   const cv = document.getElementById('cv')
   if (!cv) return
+  // 清理旧锚点（切换选中节点时旧锚点残留 → querySelector 取到旧节点锚点 → 建边源错误——质检抓出）
+  cv.querySelectorAll('.node-port').forEach(c => c.remove())
   const NS = 'http://www.w3.org/2000/svg'
   const id = g.getAttribute('data-id')
   const n = S.req.nodes.find(x => x.id === id)
@@ -510,8 +522,8 @@ function _renderPorts(g) {
     const a = anchorPoint(obj, dir)
     const c = document.createElementNS(NS, 'circle')
     c.setAttribute('cx', a.x); c.setAttribute('cy', a.y)
-    c.setAttribute('r', 5)
-    c.setAttribute('fill', '#fff'); c.setAttribute('stroke', '#0969da'); c.setAttribute('stroke-width', 2)
+    c.setAttribute('r', 5 / S.scale) // 恒定屏幕尺寸：缩放后锚点视觉不变（否则缩小后难以点击——质检抓出）
+    c.setAttribute('fill', '#fff'); c.setAttribute('stroke', '#0969da'); c.setAttribute('stroke-width', 2 / S.scale)
     c.setAttribute('class', 'node-port'); c.setAttribute('data-node-port', id); c.setAttribute('data-port-dir', dir)
     c.setAttribute('cursor', 'crosshair')
     cv.appendChild(c)
@@ -542,14 +554,17 @@ function _onPortDown(e, port) {
     window.removeEventListener('pointerup', up)
     band.remove()
     // 命中目标节点（世界坐标 AABB，与框选命中同逻辑——elementsFromPoint 在此环境不可靠）
-    const wx = (ev.clientX - cvRect.left) / S.scale
-    const wy = (ev.clientY - cvRect.top) / S.scale
+    // 拖动中滚动会过期 → up 时重取 cvRect；pad 容差抗缩放取整误差（质检抓出）
+    const cur = document.getElementById('cv').getBoundingClientRect()
+    const wx = (ev.clientX - cur.left) / S.scale
+    const wy = (ev.clientY - cur.top) / S.scale
+    const PAD = 4 / S.scale
     let toId = null
     for (const n of S.req.nodes) {
       if (n.id === fromId) continue
       const sz = (S._nodeSize && S._nodeSize[n.id]) || { w: 180, h: 50 }
       const p = n.pos || { x: 0, y: 0 }
-      if (wx >= p.x && wx <= p.x + sz.w && wy >= p.y && wy <= p.y + sz.h) { toId = n.id; break }
+      if (wx >= p.x - PAD && wx <= p.x + sz.w + PAD && wy >= p.y - PAD && wy <= p.y + sz.h + PAD) { toId = n.id; break }
     }
     if (toId && !S.req.edges.some(r => r.from === fromId && r.to === toId)) {
       S.req.edges.push({ from: fromId, to: toId, label: '', reverse: false })
@@ -713,7 +728,20 @@ export function setTheme(t) {
 // ---------- 增删节点 ----------
 export function addNode() {
   const id = 'N' + (S.req.nodes.length + 1) + '_' + Date.now().toString(36).slice(-3)
-  S.req.nodes.push({ id, dept: '其他', role: '新增', action: '新节点', shape: 'rect' })
+  // 新节点必须有 pos（否则 layout 重排位置不稳定 + 用户找不到）：
+  // 有选中节点 → 右下偏移；否则 → 画布可视区中心
+  let x = 80, y = 80
+  if (S.selected && S.selected.kind === 'node') {
+    const sel = S.req.nodes.find(n => n.id === S.selected.id)
+    if (sel && sel.pos) { x = sel.pos.x + 220; y = sel.pos.y + 60 }
+  } else {
+    const cw = document.getElementById('canvasWrap')
+    if (cw) { x = Math.max(40, Math.round((cw.clientWidth / 2 - 90) / S.scale)); y = Math.max(40, Math.round((cw.clientHeight / 2 - 27) / S.scale)) }
+  }
+  S.req.nodes.push({ id, dept: '其他', role: '新增', action: '新节点', shape: 'rect', pos: { x, y } })
+  // 新节点 dept='其他' 必须并入 lanes（否则 reqToMermaid lanes 分支漏渲染——质检抓出）
+  if (!S.req.lanes) S.req.lanes = []
+  if (!S.req.lanes.some(l => l.dept === '其他')) S.req.lanes.push({ dept: '其他', roles: ['新增'] })
   S.dirty = true
   pushHistory()
   render()
@@ -776,6 +804,35 @@ function _updateStatus() {
 }
 
 // ---------- 初始化 ----------
+// 初始视图自适应：整个图 fit 到画布可视区（小窗口/大图全部可见可点，修复节点在滚动区外点不到）
+// 关键：svgHost transform scale 不参与布局 → 滚动区仍是原始尺寸会产生多余空白滚动区（视口坐标错乱）
+// 因此 scale 后必须同步 svgHost 宽高 = 缩放尺寸（滚动区=可视区）
+export function fitToView() {
+  const cw = document.getElementById('canvasWrap')
+  const svg = _svgHost ? _svgHost.querySelector('svg') : null
+  if (!cw || !svg) return
+  const vw = cw.clientWidth, vh = cw.clientHeight
+  const sw = parseFloat(svg.getAttribute('width') || 0), sh = parseFloat(svg.getAttribute('height') || 0)
+  if (!vw || !vh || !sw || !sh) return
+  const s = Math.min(vw / sw, vh / sh, 1.2)
+  S.scale = Math.round(Math.max(0.1, s) * 100) / 100
+  _applyScale()
+  _updateStatus()
+}
+
+// 应用缩放：svgHost transform + 尺寸同步（transform 不参与布局，宽高必须显式设置，
+// 否则 canvasWrap 滚动区=原始尺寸，出现空白滚动区且视口坐标错乱——质检抓出）
+function _applyScale() {
+  const host = _svgHost
+  if (!host) return
+  host.style.transform = 'scale(' + S.scale + ')'
+  const svg = host.querySelector('svg')
+  if (svg) {
+    host.style.width = Math.round(parseFloat(svg.getAttribute('width') || 0) * S.scale) + 'px'
+    host.style.height = Math.round(parseFloat(svg.getAttribute('height') || 0) * S.scale) + 'px'
+  }
+}
+
 export async function init(file, reqData) {
   S.file = file
   if (reqData) {
@@ -791,17 +848,18 @@ export async function init(file, reqData) {
   host.style.transform = 'scale(' + S.scale + ')'
   host.style.transformOrigin = '0 0'
   render()
+  fitToView() // 初始 fit：小窗口/大图时整个图可见可点
   bindInteractions()
   pushHistory() // 初始快照（撤销回到初始态）
   // 画布空白事件
   document.getElementById('canvasWrap').addEventListener('pointerdown', e => {
     if (e.target === host || e.target.id === 'canvasWrap') _onCanvasDown(e)
   })
-  // 滚轮缩放
+  // 滚轮缩放（缩放后同步 svgHost 尺寸，避免多余滚动区）
   document.getElementById('canvasWrap').addEventListener('wheel', e => {
     e.preventDefault()
     S.scale = Math.min(2.5, Math.max(0.3, S.scale * (e.deltaY < 0 ? 1.1 : 0.9)))
-    host.style.transform = 'scale(' + S.scale + ')'
+    _applyScale()
     _updateStatus()
   }, { passive: false })
   // 键盘
