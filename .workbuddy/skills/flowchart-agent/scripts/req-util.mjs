@@ -5,12 +5,14 @@
 
 export function reqToMermaid(req) {
   let s = `flowchart TD\n`
-  // 节点形状（diamond/stadium/data/rect）——兜底分支也复用
+  // 节点形状（diamond/stadium/cylinder/subroutine/data——兜底分支也复用）
+  // parse-flow 映射：{}=diamond, ([])=stadium, [( )]=cylinder, [[ ]]=subroutine
   const shapeOf = (n, roleLabel) => {
     const label = roleLabel && roleLabel !== n.dept ? roleLabel + '：' + n.action : n.action
     return n.shape === 'diamond' ? '{' + label + '}'
-      : n.shape === 'start' || n.shape === 'end' ? '([' + label + '])'
-      : n.shape === 'data' ? '[(' + label + ')]'
+      : n.shape === 'stadium' || n.shape === 'start' || n.shape === 'end' ? '([' + label + '])'
+      : n.shape === 'data' || n.shape === 'cylinder' ? '[(' + label + ')]'
+      : n.shape === 'subroutine' ? '[[' + label + ']]'
       : '[' + label + ']'
   }
   if (req.lanes) {

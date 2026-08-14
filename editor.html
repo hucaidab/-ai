@@ -68,7 +68,11 @@
   <button class="btn" onclick="window.__editor.undo()" title="Ctrl+Z">↩ 撤销</button>
   <button class="btn" onclick="window.__editor.redo()" title="Ctrl+Y">↪ 重做</button>
   <span class="sep"></span>
-  <button class="btn" onclick="window.__editor.addNode()">＋ 添加节点</button>
+  <button class="btn" onclick="window.__editor.addNode()" title="添加矩形节点">＋ 添加节点</button>
+  <button class="btn" onclick="window.__editor.addNode('diamond')" title="添加判断（菱形）">◆ 判断</button>
+  <button class="btn" onclick="window.__editor.addNode('stadium')" title="添加开始/结束（胶囊形）">◉ 起止</button>
+  <button class="btn" onclick="window.__editor.addNode('cylinder')" title="添加数据（圆柱形）">⬭ 数据</button>
+  <button class="btn" onclick="window.__editor.addNode('subroutine')" title="添加子流程（双竖线形）">⧉ 子流程</button>
   <button class="btn danger" onclick="window.__editor.delSelected()">🗑 删除选中</button>
   <span class="sep"></span>
   <select id="themeSel" onchange="window.__editor.setTheme(this.value)" title="主题">
@@ -107,7 +111,7 @@
     setTimeout(() => box.remove(), 8000)
     window.__diag && window.__diag('❌ 页面出错：' + (e.message || e))
   })
-  import * as editor from '/lib/editor-core.mjs?v=16'
+  import * as editor from '/lib/editor-core.mjs?v=17'
   window.__editor = editor
   const q = new URLSearchParams(location.search)
   const file = q.get('file')

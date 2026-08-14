@@ -844,7 +844,8 @@ export function setTheme(t) {
 }
 
 // ---------- 增删节点 ----------
-export function addNode() {
+// 添加节点（对标竞品形状工具栏：addNode('rect'|'diamond'|'stadium'|'cylinder'|'subroutine')）
+export function addNode(shape = 'rect') {
   const id = 'N' + (S.req.nodes.length + 1) + '_' + Date.now().toString(36).slice(-3)
   // 新节点必须有 pos（否则 layout 重排位置不稳定 + 用户找不到）：
   // 有选中节点 → 右下偏移；否则 → 画布可视区中心
@@ -856,7 +857,8 @@ export function addNode() {
     const cw = document.getElementById('canvasWrap')
     if (cw) { x = Math.max(40, Math.round((cw.clientWidth / 2 - 90) / S.scale)); y = Math.max(40, Math.round((cw.clientHeight / 2 - 27) / S.scale)) }
   }
-  S.req.nodes.push({ id, dept: '其他', role: '新增', action: '新节点', shape: 'rect', pos: { x, y } })
+  const label = shape === 'diamond' ? '新判断' : shape === 'stadium' ? '新开始' : shape === 'cylinder' ? '新数据' : shape === 'subroutine' ? '新子流程' : '新节点'
+  S.req.nodes.push({ id, dept: '其他', role: '新增', action: label, shape, pos: { x, y } })
   // 新节点 dept='其他' 必须并入 lanes（否则 reqToMermaid lanes 分支漏渲染——质检抓出）
   if (!S.req.lanes) S.req.lanes = []
   if (!S.req.lanes.some(l => l.dept === '其他')) S.req.lanes.push({ dept: '其他', roles: ['新增'] })
@@ -969,9 +971,11 @@ export async function init(file, reqData) {
   fitToView() // 初始 fit：小窗口/大图时整个图可见可点
   bindInteractions()
   pushHistory() // 初始快照（撤销回到初始态）
-  // 画布空白事件
+  // 画布空白事件：交互元素（节点/边/锚点/手柄/备注标签）已在 cv 委托中 stopPropagation，
+  // 能冒泡到这里的一定是空白——无条件触发（原条件 e.target===host 漏掉 SVG 内部空白 target=svg，
+  // 导致点画布空白不取消选中——用户反馈）
   document.getElementById('canvasWrap').addEventListener('pointerdown', e => {
-    if (e.target === host || e.target.id === 'canvasWrap') _onCanvasDown(e)
+    _onCanvasDown(e)
   })
   // 滚轮缩放（缩放后同步 svgHost 尺寸，避免多余滚动区）
   document.getElementById('canvasWrap').addEventListener('wheel', e => {
