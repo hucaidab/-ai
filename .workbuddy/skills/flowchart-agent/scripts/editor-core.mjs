@@ -27,6 +27,9 @@ const GRID = 8            // 网格吸附步长
 const MAX_HISTORY = 50    // 撤销栈上限
 const snap = v => Math.round(v / GRID) * GRID
 
+// HTML 转义四件套（& < > "）——面板/输出注入必须全量转义，只转引号是 XSS 陷阱（案例8）
+export const escHtml = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
 let _root = null, _svgHost = null
 
 // ---------- 快照 / 撤销重做 ----------
@@ -160,13 +163,19 @@ function _onDblClick(e, g) {
   input.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;font-size:13px;border:2px solid #0969da;border-radius:6px;padding:4px 8px;z-index:99;box-sizing:border-box`
   document.body.appendChild(input)
   input.focus(); input.select()
+  // cancelled 标志隔离事件链副作用：input.remove() 会触发 blur，若 blur 直接 commit，
+  // Escape 取消的修改会被保存（案例9）——取消路径必须与提交路径隔离
+  let cancelled = false
   const commit = () => {
     const v = input.value.trim()
-    if (v && v !== node.action) { node.action = v; S.dirty = true; pushHistory(); render() }
+    if (!cancelled && v && v !== node.action) { node.action = v; S.dirty = true; pushHistory(); render() }
     input.remove()
   }
-  input.addEventListener('keydown', ev => { if (ev.key === 'Enter') commit(); if (ev.key === 'Escape') input.remove() })
-  input.addEventListener('blur', commit)
+  input.addEventListener('keydown', ev => {
+    if (ev.key === 'Enter') commit()
+    if (ev.key === 'Escape') { cancelled = true; input.remove() }
+  })
+  input.addEventListener('blur', () => { if (!cancelled) commit() })
 }
 
 function _selectEdge(p) {
@@ -232,11 +241,11 @@ function _updatePanel() {
     const shapes = ['rect', 'diamond', 'stadium', 'cylinder', 'subroutine', 'circle']
     panel.innerHTML = `
       <div class="pt">节点属性</div>
-      <label>文本</label><input id="pText" value="${(n.action || '').replace(/"/g, '&quot;')}">
+      <label>文本</label><input id="pText" value="${escHtml(n.action)}">
       <label>形状</label><select id="pShape">${shapes.map(s => `<option ${s === n.shape ? 'selected' : ''}>${s}</option>`).join('')}</select>
-      <label>泳道(部门)</label><input id="pDept" value="${(n.dept || '').replace(/"/g, '&quot;')}">
-      <label>角色</label><input id="pRole" value="${(n.role || '').replace(/"/g, '&quot;')}">
-      <label>自定义填充色</label><input type="color" id="pFill" value="${n.fill || '#ddf4ff'}">
+      <label>泳道(部门)</label><input id="pDept" value="${escHtml(n.dept)}">
+      <label>角色</label><input id="pRole" value="${escHtml(n.role)}">
+      <label>自定义填充色</label><input type="color" id="pFill" value="${escHtml(n.fill)}">
       <button onclick="window.__editor.applyProps()">应用</button>`
     document.getElementById('pText').oninput = e => { n.action = e.target.value; S.dirty = true }
     document.getElementById('pShape').onchange = e => { n.shape = e.target.value; S.dirty = true }
@@ -248,7 +257,7 @@ function _updatePanel() {
     if (!e) return
     panel.innerHTML = `
       <div class="pt">连线属性</div>
-      <label>标签</label><input id="eLabel" value="${(e.label || '').replace(/"/g, '&quot;')}">
+      <label>标签</label><input id="eLabel" value="${escHtml(e.label)}">
       <label>线型</label><select id="eType"><option ${!e.reverse ? 'selected' : ''}>实线</option><option ${e.reverse ? 'selected' : ''}>虚线(逆向)</option></select>
       <button onclick="window.__editor.applyEdge()">应用</button>
       <button class="danger" onclick="window.__editor.delEdge()">删除此连线</button>`

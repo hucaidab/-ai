@@ -105,3 +105,12 @@ input.addEventListener('blur', () => { if (!cancelled) commit() })
 | 机械检查 | quick-lint 2 文件 ✅ / check-secrets ✅ |
 | 问题数 | 🔴2 / 🟡6 / 💭3 / ✅5 |
 | 新案例建议 | 2（#8 XSS 转义、#9 blur 副作用） |
+
+## 修复状态（复审确认 2026-08-14）
+
+| # | 状态 | 修复内容 | 验证 |
+|---|------|---------|------|
+| 🔴1 XSS 转义 | ✅ 已修复 | `escHtml` 四件套（`& < > "`）+ 面板 5 处替换（action/dept/role/fill/label） | 单测新增 escHtml 回归（16/16 全绿，含 `<img onerror>` 不注入断言） |
+| 🔴2 Escape 取消 | ✅ 已修复 | `cancelled` 标志隔离——blur 仅 `!cancelled` 时 commit，Escape 置位后移除不提交 | 自检页新增第 10 项（Escape 取消不保存，10/10 全绿）；CDP 真实交互回归（点击/拖拽/零异常） |
+
+> 🟡6 / 💭3 未在本轮处理，待作者排期（保存接口鉴权为内网部署前必办项）。

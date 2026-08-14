@@ -12,6 +12,18 @@ import { selfCheck, autoFix, repairSchema } from './llm-model.mjs'
 import { modelFromText } from './nlp-model.mjs'
 import { findTemplate } from './template-finder.mjs'
 import { reqToMermaid } from './req-util.mjs'
+import { escHtml } from './editor-core.mjs'
+
+// ---------- editor-core（浏览器模块的纯函数回归，顶层无 DOM 依赖） ----------
+test('editor-core escHtml: 四件套全量转义（回归 XSS 案例8）', () => {
+  assert.equal(escHtml('<img src=x onerror=alert(1)>'), '&lt;img src=x onerror=alert(1)&gt;', '尖括号必须转义')
+  assert.equal(escHtml('a & b "q"'), 'a &amp; b &quot;q&quot;', '& 与引号必须转义')
+  assert.equal(escHtml(null), '', 'null 安全')
+  assert.equal(escHtml(undefined), '', 'undefined 安全')
+  assert.equal(escHtml('正常文本'), '正常文本', '普通文本不变')
+  // 模拟 XSS payload 注入面板的完整链路：转义后不得出现可执行的 <img
+  assert.ok(!escHtml('<img src=x onerror=alert(1)>').includes('<img'), '转义后不得含可执行标签')
+})
 
 // ---------- parse-flow ----------
 test('parse: 常规图节点/边/形状', () => {

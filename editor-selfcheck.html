@@ -42,6 +42,17 @@ try {
   const hBefore = editor.S.historyIdx
   editor.undo()
   log('⑨ 撤销可用', editor.S.historyIdx === hBefore - 1, 'idx ' + hBefore + ' → ' + editor.S.historyIdx)
+  // ⑩ Escape 取消不保存（回归案例9：input.remove() 触发 blur 曾导致取消被保存）
+  const gEsc = document.querySelector('g[data-id]')
+  const escId = gEsc.getAttribute('data-id')
+  const escBefore = editor.S.req.nodes.find(n => n.id === escId).action
+  gEsc.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, cancelable: true }))
+  const escInput = document.querySelector('body > input')
+  escInput.value = '被取消的修改'
+  escInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+  const escAfter = editor.S.req.nodes.find(n => n.id === escId).action
+  const escRemoved = !document.querySelector('body > input')
+  log('⑩ Escape 取消不保存', escBefore === escAfter && escRemoved, escBefore + ' → ' + escAfter + (escRemoved ? '（input 已移除）' : '（input 残留）'))
 } catch (e) {
   log('❌ 异常中断', false, (e && e.message ? e.message : e) + ' @ ' + ((e && e.stack || '').split('\n')[1] || ''))
 }
