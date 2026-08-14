@@ -48,6 +48,10 @@
   #cv g[data-sel] > g{stroke-width:3.5}
   #cv g[data-sel]{filter:drop-shadow(0 0 5px rgba(9,105,218,.55))}
   #cv path[data-sel]{stroke:#cf222e!important;stroke-width:2.8!important}
+  /* 拖线建边目标提示：经过的节点高亮（draw.io：松手即连接） */
+  #cv g[data-hover] > g{stroke:#0969da;stroke-width:3.5}
+  #cv g[data-hover]{filter:drop-shadow(0 0 4px rgba(9,105,218,.5))}
+  #cv circle.target-port{fill:#fff;stroke:#0969da;stroke-width:2;cursor:crosshair;pointer-events:all}
   /* 边命中层（常驻透明粗线，12px 命中区）：悬停半透明蓝提示可点击 */
   #cv path.edge-hit{stroke:transparent;stroke-width:12;fill:none;pointer-events:stroke}
   #cv path.edge-hit:hover{stroke:rgba(9,105,218,.28)}
@@ -103,7 +107,7 @@
     setTimeout(() => box.remove(), 8000)
     window.__diag && window.__diag('❌ 页面出错：' + (e.message || e))
   })
-  import * as editor from '/lib/editor-core.mjs?v=14'
+  import * as editor from '/lib/editor-core.mjs?v=15'
   window.__editor = editor
   const q = new URLSearchParams(location.search)
   const file = q.get('file')

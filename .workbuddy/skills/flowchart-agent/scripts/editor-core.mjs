@@ -472,14 +472,16 @@ function _selectEdge(p) {
 
 function _onCanvasDown(e) {
   e.preventDefault() // 阻断浏览器默认文本选择/拖拽
-  // 空白处：框选
   const cv = document.getElementById('cv')
   const rect = cv.getBoundingClientRect()
   const x0 = e.clientX, y0 = e.clientY
+  // 点击空白（无位移）→ 取消选中（专业编辑器惯例）；拖拽空白 → 框选
+  let moved = false
   const box = document.createElement('div')
   box.style.cssText = 'position:fixed;border:1px dashed #0969da;background:rgba(9,105,218,.08);z-index:50;pointer-events:none'
   document.body.appendChild(box)
   const move = ev => {
+    if (Math.abs(ev.clientX - x0) + Math.abs(ev.clientY - y0) > 4) moved = true
     box.style.left = Math.min(x0, ev.clientX) + 'px'
     box.style.top = Math.min(y0, ev.clientY) + 'px'
     box.style.width = Math.abs(ev.clientX - x0) + 'px'
@@ -489,18 +491,29 @@ function _onCanvasDown(e) {
     window.removeEventListener('pointermove', move)
     window.removeEventListener('pointerup', up)
     box.remove()
-    // 命中检测（世界坐标 AABB）
+    if (!moved) {
+      // 点击空白：取消选中（清高亮/锚点/手柄；边 path 只移除属性不能删除本体）
+      if (S.selected) {
+        S.selected = null
+        cv.querySelectorAll('g[data-sel]').forEach(x => x.removeAttribute('data-sel'))
+        cv.querySelectorAll('path[data-sel]').forEach(x => x.removeAttribute('data-sel'))
+        cv.querySelectorAll('.node-port, .wp-handle').forEach(x => x.remove())
+        clearTimeout(S._portTimer)
+        _updatePanel()
+      }
+      return
+    }
+    // 拖拽：框选命中检测（世界坐标 AABB；当前为单选语义：框选多个时选中视觉最上层（数组末尾）的节点）
     const wx = (Math.min(x0, ev.clientX) - rect.left) / S.scale
     const wy = (Math.min(y0, ev.clientY) - rect.top) / S.scale
     const ww = Math.abs(ev.clientX - x0) / S.scale
     const wh = Math.abs(ev.clientY - y0) / S.scale
-    // 命中检测（世界坐标 AABB）；当前为单选语义：框选多个时选中视觉最上层（数组末尾）的节点
     const hit = S.req.nodes.filter(n => {
       const p = n.pos || { x: 0, y: 0 }
       const sz = (S._nodeSize && S._nodeSize[n.id]) || { w: 180, h: 54 }
       return p.x < wx + ww && p.x + sz.w > wx && p.y < wy + wh && p.y + sz.h > wy
     })
-    if (hit.length) { selectNode(hit[hit.length - 1].id) }
+    if (hit.length) selectNode(hit[hit.length - 1].id)
   }
   window.addEventListener('pointermove', move)
   window.addEventListener('pointerup', up)
@@ -533,6 +546,28 @@ function _renderPorts(g) {
   }
 }
 
+// 拖线建边目标提示：在 hover 节点上渲染连接锚点（.target-port，独立于选中锚点 .node-port——
+// 不清理源节点锚点，拖线过程中源/目标锚点并存）
+function _renderTargetPorts(g) {
+  const cv = document.getElementById('cv')
+  if (!cv) return
+  const NS = 'http://www.w3.org/2000/svg'
+  const id = g.getAttribute('data-id')
+  const n = S.req.nodes.find(x => x.id === id)
+  if (!n) return
+  const sz = (S._nodeSize && S._nodeSize[id]) || { w: 180, h: 50 }
+  const p = n.pos || { x: 0, y: 0 }
+  const obj = { id, x: p.x, y: p.y, w: sz.w, h: sz.h, pos: p }
+  for (const dir of PORT_DIRS) {
+    const a = anchorPoint(obj, dir)
+    const c = document.createElementNS(NS, 'circle')
+    c.setAttribute('cx', a.x); c.setAttribute('cy', a.y)
+    c.setAttribute('r', 8 / S.scale)
+    c.setAttribute('class', 'target-port')
+    cv.appendChild(c)
+  }
+}
+
 // 按下连接锚点 → 拖橡皮筋线到目标节点松手建边（未命中取消）
 function _onPortDown(e, port) {
   e.stopPropagation()
@@ -549,14 +584,45 @@ function _onPortDown(e, port) {
   cv.appendChild(band)
   const sx = (e.clientX - cvRect.left) / S.scale, sy = (e.clientY - cvRect.top) / S.scale
   band.setAttribute('d', `M ${sx} ${sy} L ${sx} ${sy}`)
+  // 目标节点 hover 提示（draw.io：拖线经过的节点高亮 + 显示连接锚点，松手即连接）
+  // 世界坐标命中（AABB），与 up 建边同逻辑
+  const hoverHit = (wx, wy) => {
+    const PAD = 4 / S.scale
+    for (const n of S.req.nodes) {
+      if (n.id === fromId) continue
+      const sz = (S._nodeSize && S._nodeSize[n.id]) || { w: 180, h: 50 }
+      const p = n.pos || { x: 0, y: 0 }
+      if (wx >= p.x - PAD && wx <= p.x + sz.w + PAD && wy >= p.y - PAD && wy <= p.y + sz.h + PAD) return n
+    }
+    return null
+  }
+  const clearHover = () => {
+    cv.querySelectorAll('g[data-hover]').forEach(g => g.removeAttribute('data-hover'))
+    cv.querySelectorAll('circle.target-port').forEach(c => c.remove())
+  }
   const move = ev => {
     const mx = (ev.clientX - cvRect.left) / S.scale, my = (ev.clientY - cvRect.top) / S.scale
     band.setAttribute('d', `M ${sx} ${sy} L ${mx} ${my}`)
+    // 目标节点 hover 提示
+    const hit = hoverHit(mx, my)
+    const cur = cv.querySelector('g[data-hover]')
+    if (cur && (!hit || cur.getAttribute('data-id') !== hit.id)) {
+      cur.removeAttribute('data-hover')
+      cv.querySelectorAll('circle.target-port').forEach(c => c.remove())
+    }
+    if (hit) {
+      const hg = cv.querySelector('g[data-id="' + hit.id + '"]')
+      if (hg && !hg.getAttribute('data-hover')) {
+        hg.setAttribute('data-hover', '1')
+        _renderTargetPorts(hg)
+      }
+    }
   }
   const up = ev => {
     window.removeEventListener('pointermove', move)
     window.removeEventListener('pointerup', up)
     band.remove()
+    clearHover()
     // 命中目标节点（世界坐标 AABB，与框选命中同逻辑——elementsFromPoint 在此环境不可靠）
     // 拖动中滚动会过期 → up 时重取 cvRect；pad 容差抗缩放取整误差（质检抓出）
     const cur = document.getElementById('cv').getBoundingClientRect()
