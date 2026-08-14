@@ -267,25 +267,32 @@ function avoidMiddle(pts, isH, boxes) {
 }
 
 // ---------- 航点路由（draw.io waypoints：用户手拖的必经折点） ----------
-// 两点间正交连接（单折点 L 型：水平优先或垂直优先取较短侧）
+// 两点间正交连接：共线（同 x 或同 y）直接直线（无中点），否则单 L 型（主轴折中）
 function orthoLink(ax, ay, bx, by) {
-  const dx = Math.abs(bx - ax), dy = Math.abs(by - ay)
-  if (dx >= dy) return [[ax, ay], [(ax + bx) / 2, ay], [(ax + bx) / 2, by], [bx, by]]
-  return [[ax, ay], [ax, (ay + by) / 2], [bx, (ay + by) / 2], [bx, by]]
+  if (ax === bx || ay === by) return [[ax, ay], [bx, by]] // 共线：直线
+  if (Math.abs(bx - ax) >= Math.abs(by - ay)) {
+    const midX = (ax + bx) / 2
+    return [[ax, ay], [midX, ay], [midX, by], [bx, by]]
+  }
+  const midY = (ay + by) / 2
+  return [[ax, ay], [ax, midY], [bx, midY], [bx, by]]
 }
 
-// 带航点路由：出口 → wp1 → wp2 → … → 入口（逐段正交连接）
+// 带航点路由：出口 → wp1 → wp2 → … → 入口（逐段正交连接，相邻重复点合并）
 export function routeWithWaypoints(p1, p2, wp) {
-  if (!wp || !wp.length) return orthoLink(p1.x, p1.y, p2.x, p2.y)
   const pts = [[p1.x, p1.y]]
   let prev = [p1.x, p1.y]
+  const append = seg => {
+    for (const pt of seg.slice(1)) {
+      const last = pts[pts.length - 1]
+      if (pt[0] !== last[0] || pt[1] !== last[1]) pts.push(pt) // 相邻去重
+    }
+  }
   for (const w of wp) {
-    const seg = orthoLink(prev[0], prev[1], w[0], w[1])
-    pts.push(...seg.slice(1)) // 跳过重复起点
+    append(orthoLink(prev[0], prev[1], w[0], w[1]))
     prev = [w[0], w[1]]
   }
-  const tail = orthoLink(prev[0], prev[1], p2.x, p2.y)
-  pts.push(...tail.slice(1))
+  append(orthoLink(prev[0], prev[1], p2.x, p2.y))
   return pts
 }
 
