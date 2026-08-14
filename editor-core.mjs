@@ -8,7 +8,7 @@
 // 注：锚点连边（拖出新连线）为 backlog 项，尚未实现
 // ============================================================
 import { parseFlow } from './parse-flow.mjs'
-import { layout, rerouteEdges } from './layout-grid.mjs'
+import { layout, rerouteEdges, routeEdgePoints } from './layout-grid.mjs'
 import { renderSVG } from './render-svg.mjs'
 import { reqToMermaid } from './req-util.mjs'
 
@@ -192,13 +192,15 @@ function _onDblClick(e, g) {
   input.addEventListener('blur', () => { if (!cancelled) commit() })
 }
 
-// 拖动中实时重路由相连边（简单正交 L 型；松手后 render 用正式布局重路由）
+// 拖动中实时重路由相连边（与 layout-grid 的 routeEdgePoints 同一算法——
+// 拖动中/松手 render/服务端保存三路路由一致；松手后 render 正式重路由）
 function _rerouteEdges(dragId) {
-  const anchor = nid => {
+  const nodeObj = nid => {
     const n = S.req.nodes.find(x => x.id === nid)
+    if (!n) return null
     const sz = (S._nodeSize && S._nodeSize[nid]) || { w: 180, h: 54 }
-    const p = (n && n.pos) || { x: 0, y: 0 }
-    return { x: p.x + sz.w / 2, y: p.y + sz.h / 2 }
+    const p = n.pos || { x: 0, y: 0 }
+    return { x: p.x, y: p.y, w: sz.w, h: sz.h, pos: p }
   }
   S.req.edges.forEach((e, i) => {
     if (e.from !== dragId && e.to !== dragId) return
@@ -206,9 +208,10 @@ function _rerouteEdges(dragId) {
     if (domIdx < 0) return
     const p = _svgHost.querySelector('path[data-eidx="' + domIdx + '"]')
     if (!p) return
-    const a = anchor(e.from), b = anchor(e.to)
-    const midX = (a.x + b.x) / 2
-    p.setAttribute('d', `M ${a.x} ${a.y} L ${midX} ${a.y} L ${midX} ${b.y} L ${b.x} ${b.y}`)
+    const a = nodeObj(e.from), b = nodeObj(e.to)
+    if (!a || !b) return
+    const pts = routeEdgePoints(a, b)
+    p.setAttribute('d', 'M ' + pts.map(pt => pt[0] + ' ' + pt[1]).join(' L '))
   })
 }
 

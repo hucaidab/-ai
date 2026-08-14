@@ -164,18 +164,60 @@ export function layout(nodes, edges, groups, declaredOrder, mode) {
     : layoutAuto(nodes, edges)
 }
 
-// 基于 lay.nodes 当前坐标（已含 pos 覆盖）重算边路由（正交 L 型）——
+// ---------- 锚点边路由（对齐 draw.io 锚点机制） ----------
+// 8 方向锚点（相对坐标 0-1，节点本地坐标系）：线从节点边界出发，杜绝穿节点
+const ANCHOR_REL = {
+  e: [1, 0.5], se: [1, 0.75], s: [0.5, 1], sw: [0, 0.75],
+  w: [0, 0.5], nw: [0, 0.25], n: [0.5, 0], ne: [1, 0.25],
+}
+const DIRS = ['e', 'se', 's', 'sw', 'w', 'nw', 'n', 'ne']
+
+// 节点当前坐标（pos 手动覆盖优先，无 pos 用布局坐标）——坐标源统一
+function nodeXY(n) {
+  return { x: n.pos ? n.pos.x : n.x, y: n.pos ? n.pos.y : n.y }
+}
+
+// 取节点某方向的锚点绝对坐标
+export function anchorPoint(n, dir) {
+  const [rx, ry] = ANCHOR_REL[dir] || ANCHOR_REL.e
+  const p = nodeXY(n)
+  return { x: p.x + rx * n.w, y: p.y + ry * n.h }
+}
+
+// 向量 (dx,dy) 归到最近 8 方向（角度 bucket，每 45°）
+function dirFromVector(dx, dy) {
+  let deg = Math.atan2(dy, dx) * 180 / Math.PI // -180~180，0=正右
+  if (deg < 0) deg += 360
+  return DIRS[Math.round(deg / 45) % 8]
+}
+
+// A→B 正交路由：出口=A 方向锚点，入口=B 反向锚点，Z 型（2 折点）
+export function routeEdgePoints(A, B) {
+  const ax = nodeXY(A).x, ay = nodeXY(A).y
+  const bx = nodeXY(B).x, by = nodeXY(B).y
+  const acx = ax + A.w / 2, acy = ay + A.h / 2
+  const bcx = bx + B.w / 2, bcy = by + B.h / 2
+  const dx = bcx - acx, dy = bcy - acy
+  if (dx === 0 && dy === 0) return [[acx, acy], [bcx, bcy]] // 重合退化：直接连接
+  const p1 = anchorPoint(A, dirFromVector(dx, dy))   // 出口
+  const p2 = anchorPoint(B, dirFromVector(-dx, -dy)) // 入口（反向）
+  // 主轴 Z 型：水平为主走 midX，垂直为主走 midY
+  if (Math.abs(dx) >= Math.abs(dy)) {
+    const midX = (p1.x + p2.x) / 2
+    return [[p1.x, p1.y], [midX, p1.y], [midX, p2.y], [p2.x, p2.y]]
+  }
+  const midY = (p1.y + p2.y) / 2
+  return [[p1.x, p1.y], [p1.x, midY], [p2.x, midY], [p2.x, p2.y]]
+}
+
+// 基于 lay.nodes 当前坐标（已含 pos 覆盖）重算全部边路由——
 // 节点被拖拽/pos 覆盖后边必须跟随，否则节点在 pos 边连旧位置（视觉断线）
 export function rerouteEdges(lay) {
   const byId = new Map(lay.nodes.map(n => [n.id, n]))
   lay.edges.forEach(e => {
     const a = byId.get(e.from), b = byId.get(e.to)
     if (!a || !b) return
-    // 坐标源统一：pos（手动覆盖）优先，无 pos 用布局坐标
-    const ax = (a.pos ? a.pos.x : a.x) + a.w / 2, ay = (a.pos ? a.pos.y : a.y) + a.h / 2
-    const bx = (b.pos ? b.pos.x : b.x) + b.w / 2, by = (b.pos ? b.pos.y : b.y) + b.h / 2
-    const midX = (ax + bx) / 2
-    e.points = [[ax, ay], [midX, ay], [midX, by], [bx, by]]
+    e.points = routeEdgePoints(a, b)
   })
   return lay
 }

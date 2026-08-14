@@ -7,12 +7,50 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { parseFlow } from './parse-flow.mjs'
-import { layout } from './layout-grid.mjs'
+import { layout, routeEdgePoints, rerouteEdges } from './layout-grid.mjs'
 import { selfCheck, autoFix, repairSchema } from './llm-model.mjs'
 import { modelFromText } from './nlp-model.mjs'
 import { findTemplate } from './template-finder.mjs'
 import { reqToMermaid } from './req-util.mjs'
 import { escHtml } from './editor-core.mjs'
+
+// ---------- 锚点边路由（对齐 draw.io：8 锚点 + 方向感知 Z 型） ----------
+test('routeEdgePoints: 出口/入口在节点边界上（不穿节点）+ 正交 Z 型', () => {
+  const A = { x: 100, y: 100, w: 180, h: 50 }, B = { x: 500, y: 300, w: 180, h: 50 }
+  const onBorder = (p, n) => (p[0] === n.x || p[0] === n.x + n.w || p[1] === n.y || p[1] === n.y + n.h)
+  // 水平为主：A 东出、B 西进
+  const h = routeEdgePoints(A, B)
+  assert.ok(onBorder(h[0], A), '出口在 A 边界上')
+  assert.ok(onBorder(h[h.length - 1], B), '入口在 B 边界上')
+  assert.ok(h[1][1] === h[0][1] && h[1][0] === h[2][0] && h[3][1] === h[2][1], '正交 Z 型（横平竖直）')
+  // 垂直为主：A 南出、B 北进
+  const C = { x: 100, y: 100, w: 180, h: 50 }, D = { x: 300, y: 500, w: 180, h: 50 }
+  const v = routeEdgePoints(C, D)
+  assert.ok(onBorder(v[0], C) && onBorder(v[v.length - 1], D), '垂直出口/入口在边界上')
+  assert.ok(v[1][0] === v[0][0] && v[1][1] === v[2][1] && v[3][0] === v[2][0], '垂直 Z 型正交')
+  // 斜向：角度 bucket 归 SE/NE 类角锚点（仍在边界上）
+  const E = { x: 100, y: 100, w: 180, h: 50 }, F = { x: 300, y: 200, w: 180, h: 50 }
+  const s = routeEdgePoints(E, F)
+  assert.ok(onBorder(s[0], E) && onBorder(s[s.length - 1], F), '斜向出口/入口在边界上')
+  // 退化：完全重合不崩溃
+  const same = routeEdgePoints(A, { ...A })
+  assert.ok(Array.isArray(same) && same.length >= 2, '重合退化安全')
+})
+
+test('rerouteEdges: pos 覆盖后边路由随节点新位置重算', () => {
+  const lay = {
+    nodes: [
+      { id: 'A', x: 100, y: 100, w: 180, h: 50, pos: { x: 300, y: 100 } },
+      { id: 'B', x: 500, y: 300, w: 180, h: 50 },
+    ],
+    edges: [{ from: 'A', to: 'B', points: [] }],
+  }
+  rerouteEdges(lay)
+  const pts = lay.edges[0].points
+  // A pos=(300,100)，出口在 A 新位置边界（x=480 或 x=300 或 y 边界）
+  const onNewBorder = pts[0][0] === 300 || pts[0][0] === 480 || pts[0][1] === 100 || pts[0][1] === 150
+  assert.ok(onNewBorder, '出口基于 pos 新位置（非旧布局坐标 100）')
+})
 
 // ---------- editor-core（浏览器模块的纯函数回归，顶层无 DOM 依赖） ----------
 test('editor-core escHtml: 四件套全量转义（回归 XSS 案例8）', () => {
