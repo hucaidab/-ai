@@ -70,12 +70,16 @@ export function render() {
   // 节点 g 加 data-id（通过文本定位太脆，直接在渲染后按顺序注入）
   const out = _svgHost
   out.innerHTML = doc
-  // 节点 g 加 data-id：顺序必须与 DOM 输出一致（lay.nodes 顺序 = render-svg 输出顺序，
-  // 布局会重排节点，不能用 parse 顺序否则点击错位"拖A动B"）
+  // 节点 g 加 data-id：标在**外层 translate g**（svg 直接子级）——包含形状+文字，
+  // 点击文字/形状任何位置 closest 都能命中（标 fill g 的话文字是兄弟节点会漏）
   const nodeOrder = lay.nodes.map(n => n.id)
   let gi = 0
-  out.querySelectorAll('svg g[fill]').forEach(g => {
-    if (gi < nodeOrder.length) g.setAttribute('data-id', nodeOrder[gi])
+  out.querySelectorAll('svg > g').forEach(g => {
+    if (gi < nodeOrder.length) {
+      g.setAttribute('data-id', nodeOrder[gi])
+      // 选中高亮（点击后视觉反馈）
+      if (S.selected && S.selected.kind === 'node' && S.selected.id === nodeOrder[gi]) g.setAttribute('data-sel', '1')
+    }
     gi++
   })
   // 记录节点真实尺寸（框选命中检测用）
@@ -85,7 +89,13 @@ export function render() {
   S._edgeMap = lay.edges.map(e => S.req.edges.findIndex(r => r.from === e.from && r.to === e.to))
   let ei = 0
   out.querySelectorAll('path').forEach(p => {
-    if (p.getAttribute('fill') === 'none') { p.setAttribute('data-edge', '1'); p.setAttribute('data-eidx', ei); ei++ }
+    if (p.getAttribute('fill') === 'none') {
+      p.setAttribute('data-edge', '1')
+      p.setAttribute('data-eidx', ei)
+      // 选中高亮
+      if (S.selected && S.selected.kind === 'edge' && S._edgeMap[ei] === S.selected.idx) p.setAttribute('data-sel', '1')
+      ei++
+    }
   })
   bindInteractions()
   _updateStatus()
@@ -344,11 +354,15 @@ function _updateStatus() {
 }
 
 // ---------- 初始化 ----------
-export async function init(file) {
+export async function init(file, reqData) {
   S.file = file
-  const r = await fetch('/file/' + encodeURIComponent(file))
-  if (!r.ok) { alert('加载失败：' + file); return }
-  S.req = await r.json()
+  if (reqData) {
+    S.req = reqData
+  } else {
+    const r = await fetch('/file/' + encodeURIComponent(file))
+    if (!r.ok) { alert('加载失败：' + file); return }
+    S.req = await r.json()
+  }
   S._firstLayout = true
   const host = document.getElementById('svgHost')
   _svgHost = host
