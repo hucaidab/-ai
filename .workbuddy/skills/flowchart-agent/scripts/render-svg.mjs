@@ -212,11 +212,12 @@ export function renderSVG(layout, { classDefs = {}, title = '', subtitle = '', t
   }
 
   // 边（先画）
-  edges.forEach(e => {
+  edges.forEach((e, i) => {
     if (!e.points.length) return
     const dash = e.style === 'dotted' || e.back ? ' stroke-dasharray="6 4"' : ''
     const sw = e.style === 'thick' ? 2.6 : 1.4
-    s += `<path d="${orthoPath(e.points)}" fill="none" stroke="${theme.edge}" stroke-width="${sw}"${dash} marker-end="url(#arr)"/>`
+    // data-edge/data-eidx：交互标记下沉到渲染层（编辑器直接消费，消除注入顺序依赖）
+    s += `<path d="${orthoPath(e.points)}" fill="none" stroke="${theme.edge}" stroke-width="${sw}"${dash} marker-end="url(#arr)" data-edge="1" data-eidx="${i}"/>`
     if (e.label) {
       const mid = e.points[Math.floor(e.points.length / 2)]
       s += `<text x="${mid[0]}" y="${mid[1] - 7}" text-anchor="middle" font-size="10.5" fill="${theme.edge}" paint-order="stroke" stroke="${theme.bg}" stroke-width="3">${esc(e.label)}</text>`
@@ -228,7 +229,8 @@ export function renderSVG(layout, { classDefs = {}, title = '', subtitle = '', t
     const st = resolveStyle(n, classDefs, nodeCol, mode === 'swimlane', theme)
     const dashAttr = st.dash ? ` stroke-dasharray="${st.dash}"` : ''
     const nn = n.pos ? { ...n, x: n.pos.x, y: n.pos.y, cx: n.pos.x + n.w / 2, cy: n.pos.y + n.h / 2 } : n
-    s += `<g transform="translate(0,0)">`
+    // data-id：渲染层直接输出节点 id（编辑器交互定位用，顺序天然与 DOM 一致）
+    s += `<g transform="translate(0,0)" data-id="${n.id}">`
     s += `<g fill="${st.fill}" stroke="${st.stroke}" stroke-width="${st.sw}"${dashAttr}>${shapeBody(nn)}</g>`
     s += shapeText(nn, st)
     s += `</g>`

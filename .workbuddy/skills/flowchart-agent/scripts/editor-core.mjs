@@ -3,8 +3,9 @@
 // 单一数据源：req.json（内存对象）→ 复用核心管线渲染 → 编辑写回 → 保存
 // 依赖：/lib/ 白名单模块（parse-flow/layout-grid/render-svg/req-util）
 // 能力：视口缩放平移 / 节点拖拽(网格吸附+边随动) / 框选 / 双击改文字
-//       锚点连边 / 增删节点 / 属性面板(形状/颜色/文本) / 撤销重做(快照栈)
+//       增删节点 / 属性面板(形状/颜色/文本) / 撤销重做(快照栈)
 //       主题切换 / 保存验收 / 导出 PNG/PDF
+// 注：锚点连边（拖出新连线）为 backlog 项，尚未实现
 // ============================================================
 import { parseFlow } from './parse-flow.mjs'
 import { layout } from './layout-grid.mjs'
@@ -44,6 +45,7 @@ export function undo() {
   S.historyIdx--
   S.req = JSON.parse(S.history[S.historyIdx])
   S.dirty = true
+  _reselect()
   render()
 }
 export function redo() {
@@ -51,7 +53,18 @@ export function redo() {
   S.historyIdx++
   S.req = JSON.parse(S.history[S.historyIdx])
   S.dirty = true
+  _reselect()
   render()
+}
+// undo/redo 替换 req 后，selected 可能失效（节点被删/边索引错位）——按标识重查
+function _reselect() {
+  if (!S.selected) return
+  if (S.selected.kind === 'node') {
+    if (!S.req.nodes.some(n => n.id === S.selected.id)) S.selected = null
+  } else if (S.selected.key) {
+    const idx = S.req.edges.findIndex(r => (r.from + '→' + r.to + '|' + (r.label || '')) === S.selected.key)
+    S.selected = idx >= 0 ? { kind: 'edge', idx, key: S.selected.key } : null
+  }
 }
 
 // ---------- 渲染（复用核心管线：req → mmd → parse → layout → svg） ----------
@@ -68,38 +81,29 @@ export function render() {
     S._firstLayout = false
   }
   const svg = renderSVG(lay, { classDefs: graph.classDefs, title: S.req.title || '', theme: S.theme })
-  // 注入交互属性
+  // 交互标记（data-id/data-edge/data-eidx）已由 render-svg 渲染层直接输出，
+  // 顺序天然与 DOM 一致——消除注入顺序依赖（案例3）；这里只做选中高亮
   let doc = svg.replace(/<svg /, '<svg id="cv" ')
-  // 节点 g 加 data-id（通过文本定位太脆，直接在渲染后按顺序注入）
   const out = _svgHost
   out.innerHTML = doc
-  // 节点 g 加 data-id：标在**外层 translate g**（svg 直接子级）——包含形状+文字，
-  // 点击文字/形状任何位置 closest 都能命中（标 fill g 的话文字是兄弟节点会漏）
-  const nodeOrder = lay.nodes.map(n => n.id)
-  let gi = 0
-  out.querySelectorAll('svg > g').forEach(g => {
-    if (gi < nodeOrder.length) {
-      g.setAttribute('data-id', nodeOrder[gi])
-      // 选中高亮（点击后视觉反馈）
-      if (S.selected && S.selected.kind === 'node' && S.selected.id === nodeOrder[gi]) g.setAttribute('data-sel', '1')
-    }
-    gi++
-  })
+  // 节点选中高亮
+  if (S.selected && S.selected.kind === 'node') {
+    const g = out.querySelector('g[data-id="' + S.selected.id + '"]')
+    if (g) g.setAttribute('data-sel', '1')
+  }
   // 记录节点真实尺寸（框选命中检测用）
   S._nodeSize = {}
   lay.nodes.forEach(n => { S._nodeSize[n.id] = { w: n.w, h: n.h } })
-  // 边 path 标记：按 DOM 顺序打 data-eidx，并记录 DOM 序 → req.edges 索引映射（布局重排边）
-  S._edgeMap = lay.edges.map(e => S.req.edges.findIndex(r => r.from === e.from && r.to === e.to))
-  let ei = 0
-  out.querySelectorAll('path').forEach(p => {
-    if (p.getAttribute('fill') === 'none') {
-      p.setAttribute('data-edge', '1')
-      p.setAttribute('data-eidx', ei)
-      // 选中高亮
-      if (S.selected && S.selected.kind === 'edge' && S._edgeMap[ei] === S.selected.idx) p.setAttribute('data-sel', '1')
-      ei++
+  // 边 DOM 序 → req.edges 索引映射（键含 label，同 from→to 多边不串位）
+  S._edgeMap = lay.edges.map(e => S.req.edges.findIndex(r => r.from === e.from && r.to === e.to && (r.label || '') === (e.label || '')))
+  // 边选中高亮（data-eidx 来自渲染层）
+  if (S.selected && S.selected.kind === 'edge') {
+    const ei = S._edgeMap.indexOf(S.selected.idx)
+    if (ei >= 0) {
+      const p = out.querySelector('path[data-eidx="' + ei + '"]')
+      if (p) p.setAttribute('data-sel', '1')
     }
-  })
+  }
   bindInteractions()
   _updateStatus()
 }
@@ -135,17 +139,18 @@ function _onNodeDown(e, g) {
   _updatePanel()
   const startX = e.clientX, startY = e.clientY
   const origX = node.pos ? node.pos.x : 0, origY = node.pos ? node.pos.y : 0
+  let moved = false // 无位移不入撤销栈（避免空快照污染 undo 历史）
   // 拖动中：直接 transform 移动节点（零重建，绝对跟手；边随动在松手提交时统一重路由）
   const move = ev => {
     const dx = snap((ev.clientX - startX) / S.scale), dy = snap((ev.clientY - startY) / S.scale)
     node.pos = { x: origX + dx, y: origY + dy }
     g.setAttribute('transform', 'translate(' + node.pos.x + ',' + node.pos.y + ')')
+    moved = true
   }
   const up = () => {
     window.removeEventListener('pointermove', move)
     window.removeEventListener('pointerup', up)
-    S.dirty = true
-    pushHistory()
+    if (moved) { S.dirty = true; pushHistory() }
     render() // 提交：边重路由 + 高亮统一（拖动中只移了节点本身）
   }
   window.addEventListener('pointermove', move)
@@ -184,7 +189,8 @@ function _selectEdge(p) {
   const realIdx = S._edgeMap && S._edgeMap[eidx] !== undefined && S._edgeMap[eidx] >= 0 ? S._edgeMap[eidx] : eidx
   const edge = S.req.edges[realIdx]
   if (!edge) return
-  S.selected = { kind: 'edge', idx: realIdx }
+  // 存 from→to+label 标识：undo/redo 替换 req 后按标识重查（#5）
+  S.selected = { kind: 'edge', idx: realIdx, key: edge.from + '→' + edge.to + '|' + (edge.label || '') }
   render()
   _updatePanel()
 }
@@ -212,6 +218,7 @@ function _onCanvasDown(e) {
     const wy = (Math.min(y0, ev.clientY) - rect.top) / S.scale
     const ww = Math.abs(ev.clientX - x0) / S.scale
     const wh = Math.abs(ev.clientY - y0) / S.scale
+    // 命中检测（世界坐标 AABB）；当前为单选语义：框选多个时选中视觉最上层（数组末尾）的节点
     const hit = S.req.nodes.filter(n => {
       const p = n.pos || { x: 0, y: 0 }
       const sz = (S._nodeSize && S._nodeSize[n.id]) || { w: 180, h: 54 }
@@ -335,7 +342,8 @@ export async function save() {
   if (btn) { btn.disabled = true; btn.textContent = '保存中…' }
   try {
     const r = await fetch('/api/editor/save', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(localStorage.getItem('editor_token') ? { 'x-editor-token': localStorage.getItem('editor_token') } : {}) },
       body: JSON.stringify({ file: S.file, req: S.req, theme: S.theme }),
     })
     const d = await r.json()
@@ -349,6 +357,7 @@ export async function save() {
       st.textContent = '❌ ' + (d.error || '保存失败')
       st.className = 'err'
     }
+    return d // 供导出使用（svgFile 由服务端回传，消除前端文件名推导假设）
   } catch (e) {
     const st = document.getElementById('saveStatus')
     st.textContent = '❌ 保存失败：' + e.message
@@ -357,9 +366,9 @@ export async function save() {
   if (btn) { btn.disabled = false; btn.textContent = '💾 保存' }
 }
 
-// ---------- 导出（保存后调现有接口） ----------
-export async function exportPng() { await save(); const f = S.file.replace(/\.req\.json$/, '.svg'); window.open('/api/png?file=' + encodeURIComponent(f)) }
-export async function exportPdf() { await save(); const f = S.file.replace(/\.req\.json$/, '.svg'); window.open('/api/pdf?file=' + encodeURIComponent(f)) }
+// ---------- 导出（保存后调现有接口；svg 文件名由服务端回传，不自行推导） ----------
+export async function exportPng() { const d = await save(); const f = (d && d.svgFile) || S.file.replace(/\.req\.json$/, '.svg'); window.open('/api/png?file=' + encodeURIComponent(f)) }
+export async function exportPdf() { const d = await save(); const f = (d && d.svgFile) || S.file.replace(/\.req\.json$/, '.svg'); window.open('/api/pdf?file=' + encodeURIComponent(f)) }
 
 // ---------- 状态栏 ----------
 function _updateStatus() {
@@ -403,6 +412,6 @@ export async function init(file, reqData) {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo() }
     else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); redo() }
-    else if (e.key === 'Delete' || e.key === 'Backspace') delSelected()
+    else if (e.key === 'Delete') delSelected() // 只保留 Delete；Backspace 有浏览器导航/误删风险
   })
 }

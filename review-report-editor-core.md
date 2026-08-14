@@ -114,3 +114,21 @@ input.addEventListener('blur', () => { if (!cancelled) commit() })
 | 🔴2 Escape 取消 | ✅ 已修复 | `cancelled` 标志隔离——blur 仅 `!cancelled` 时 commit，Escape 置位后移除不提交 | 自检页新增第 10 项（Escape 取消不保存，10/10 全绿）；CDP 真实交互回归（点击/拖拽/零异常） |
 
 > 🟡6 / 💭3 未在本轮处理，待作者排期（保存接口鉴权为内网部署前必办项）。
+
+## 整改完成（2026-08-14，开发侧全量整改 11/11）
+
+| # | 级别 | 整改内容 | 验证 |
+|---|------|---------|------|
+| 🔴1 XSS 转义 | ✅ | escHtml 四件套（上轮已修） | 单测 16/16 |
+| 🔴2 Escape 取消 | ✅ | cancelled 标志（上轮已修） | 自检 ⑩ 10/10 |
+| 🟡3 边映射键 | ✅ | `_edgeMap` 键含 label（同 from→to 多边不串位） | 单测 + 模板回归 |
+| 🟡4 空快照 | ✅ | `moved` 标志——无位移不入撤销栈 | 自检 ⑨ |
+| 🟡5 selected 失效 | ✅ | `_reselect()`——undo/redo 后节点按 id / 边按 `from→to+label` 重查；`_selectEdge` 存 key | 自检 ⑨ |
+| 🟡6 导出文件名 | ✅ | 服务端回传 `svgFile`，前端不再自行推导 | 保存接口实测 svgFile 正确 |
+| 🟡7 Backspace | ✅ | 只保留 Delete（消除浏览器导航/误删风险） | 语法 + 交互回归 |
+| 🟡8 保存接口 | ✅ | theme 白名单（坏主题回退）+ data 过 `repairSchema`（非法 400）+ **可选鉴权**（`EDITOR_TOKEN` 环境变量启用；前端 `localStorage.editor_token` 自动带 `x-editor-token` 头） | 400×2 + 鉴权 403/403/200 实测 |
+| 💭9 注释 backlog | ✅ | 文件头标注"锚点连边为 backlog 项" | 语法 |
+| 💭10 框选语义 | ✅ | 注释明确"单选语义：框选多个选视觉最上层" | 交互回归 |
+| 💭11 svg>g 假设 | ✅ | **架构正解**：render-svg 渲染层直接输出 `data-id`/`data-edge`/`data-eidx`（单一职责下沉），editor 移除注入逻辑 | **模板 100/100 + 自检 10/10 + CDP 真实交互**（渲染器核心改动零回归） |
+
+**整改总结**：#11 是架构级改进——交互标记从"编辑器注入"下沉到"渲染层输出"，彻底消除注入顺序依赖（案例3 根治），编辑器/CLI/网页三路共用同一渲染产物。

@@ -523,6 +523,9 @@ const server = http.createServer(async (req, res) => {
   }
   if (p === '/api/editor/save' && req.method === 'POST') {
     // 画布编辑器保存：写回 req.json + 重新验收
+    // 鉴权：设置 EDITOR_TOKEN 环境变量后启用（部署到内网/公网必设）；默认本地不启用
+    const TOKEN = process.env.EDITOR_TOKEN || ''
+    if (TOKEN && (req.headers['x-editor-token'] || '') !== TOKEN) return send(403, JSON.stringify({ ok: false, error: '未授权：缺少或错误的 x-editor-token' }))
     let body = ''
     for await (const c of req) body += c
     let payload = {}
@@ -533,12 +536,20 @@ const server = http.createServer(async (req, res) => {
     const fp = path.join(DIR, file)
     if (!fp.startsWith(DIR)) return send(400, JSON.stringify({ ok: false, error: '路径越界' }))
     try {
-      fs.writeFileSync(fp, JSON.stringify(data, null, 2), 'utf-8')
+      // data schema 校验与修复（非法结构返回 400，避免垃圾数据落盘）
+      const { repairSchema } = await import('./llm-model.mjs')
+      const fixed = repairSchema(typeof data === 'object' ? JSON.parse(JSON.stringify(data)) : null)
+      if (!fixed) return send(400, JSON.stringify({ ok: false, error: '流程数据格式不合法（缺 nodes/edges）' }))
+      // theme 白名单（未知主题回退默认）
+      const THEMES = ['github-light', 'github-dark', 'enterprise-blue', 'bpmn']
+      const theme = THEMES.includes(payload.theme) ? payload.theme : 'github-light'
+      fs.writeFileSync(fp, JSON.stringify(fixed, null, 2), 'utf-8')
       // 重新渲染 + 验收（复用管线）
       const { renderOne } = await import('./split-graph.mjs')
       const base = fp.replace(/\.req\.json$/, '')
-      const r = renderOne(data, base, false, 3, payload.theme || 'github-light')
-      return send(200, JSON.stringify({ ok: true, pass: r.pass, summary: r.summary, fixed: r.fixed, fixLog: r.fixLog || [] }), 'application/json')
+      const r = renderOne(fixed, base, false, 3, theme)
+      // svgFile 回传（前端导出不再自行推导文件名）
+      return send(200, JSON.stringify({ ok: true, pass: r.pass, summary: r.summary, fixed: r.fixed, fixLog: r.fixLog || [], svgFile: path.basename(base + '.svg') }), 'application/json')
     } catch (e) {
       return send(500, JSON.stringify({ ok: false, error: '保存失败：' + e.message.slice(0, 120) }))
     }
