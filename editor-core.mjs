@@ -125,18 +125,25 @@ function _onNodeDown(e, g) {
   const id = g.getAttribute('data-id')
   const node = S.req.nodes.find(n => n.id === id)
   if (!node) return
-  selectNode(id)
+  // 轻量选择：直接操作 DOM 高亮（不重建，保持 g 引用有效供拖拽）
+  S.selected = { kind: 'node', id }
+  document.querySelectorAll('#cv g[data-sel]').forEach(x => x.removeAttribute('data-sel'))
+  g.setAttribute('data-sel', '1')
+  _updatePanel()
   const startX = e.clientX, startY = e.clientY
   const origX = node.pos ? node.pos.x : 0, origY = node.pos ? node.pos.y : 0
+  // 拖动中：直接 transform 移动节点（零重建，绝对跟手；边随动在松手提交时统一重路由）
   const move = ev => {
-    const dx = (ev.clientX - startX) / S.scale, dy = (ev.clientY - startY) / S.scale
-    node.pos = { x: snap(origX + dx), y: snap(origY + dy) }
-    render()
+    const dx = snap((ev.clientX - startX) / S.scale), dy = snap((ev.clientY - startY) / S.scale)
+    node.pos = { x: origX + dx, y: origY + dy }
+    g.setAttribute('transform', 'translate(' + node.pos.x + ',' + node.pos.y + ')')
   }
   const up = () => {
     window.removeEventListener('pointermove', move)
     window.removeEventListener('pointerup', up)
+    S.dirty = true
     pushHistory()
+    render() // 提交：边重路由 + 高亮统一（拖动中只移了节点本身）
   }
   window.addEventListener('pointermove', move)
   window.addEventListener('pointerup', up)

@@ -97,7 +97,7 @@
     setTimeout(() => box.remove(), 8000)
     window.__diag && window.__diag('❌ 页面出错：' + (e.message || e))
   })
-  import * as editor from '/lib/editor-core.mjs?v=7'
+  import * as editor from '/lib/editor-core.mjs?v=8'
   window.__editor = editor
   const q = new URLSearchParams(location.search)
   const file = q.get('file')
