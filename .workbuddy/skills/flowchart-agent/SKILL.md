@@ -20,22 +20,33 @@ agent_created: true
 6. **自动化验收**：每次交付跑 10 项检查（起止/判断分支/泳道不重叠/逆向虚线/标签/复杂度/配色/箭头/尺寸/结构），不过不放行
 7. **密钥安全**：LLM 用环境变量 `LLM_API_KEY`（团队规范见 references/LLM_CONFIG.md），key 禁止写入代码库
 
-## 工作流（一句话 → 交付）
+## 工作流（一句话 → 交付，P0 交互增强）
 
 ```
 输入：自然语言需求 / DSL 文本 / req.json
-  ↓ ① 建模  llm-model.mjs（LLM → DSL → 模板三级降级）
-  ↓ ② 渲染  split-graph.mjs（≤30 直接渲染；>30 自动拆图）
+  ↓ ⓪ 补全引导  llm-model.analyzeNeed（严重缺角色/步骤 → 先反问用户补充，不硬画）
+  ↓ ① 建模  llm-model.mjs（模板命中≤25字直出；LLM → DSL → 模板降级；selfCheck+autoFix+重试）
+  ↓ ② 渲染  split-graph.mjs（≤30 直接渲染；>30 自动拆图；验收失败自动修复循环 ≤3 轮）
   ↓ ③ 验收  validate.mjs（10 项自动检查）
   ↓ ④ 交付  SVG + 验收报告 + 源码（req.json/mmd）
-  ↓ ⑤ 预览  preview-server.mjs（本地在线预览 + PNG 导出）
+  ↓ ⑤ 迭代  agent-flow --edit [req.json] "修改描述"（自动接续最新一版，多轮对话式改图）
+  ↓ ⑥ 预览  preview-server.mjs（在线预览 + 历史记录改一版 + PNG/PDF/Mermaid 导出）
 ```
+
+**P0 交互原则**：需求不完整先引导补齐（不猜）；改图自动接续上一版（多轮）；验收失败自动修复循环（每轮输出修复说明）。
 
 ## 命令速查（在 scripts/ 目录执行）
 
 ```bash
 # ★ 单命令智能体（最常用）：一句话 → 出图
 node agent-flow.mjs "画一个采购到付款流程，涉及采购员、采购经理、供应商、仓库、质检、应付会计、出纳" --out 输出前缀
+
+# ★ 对话式改图（多轮：不带文件名自动接续最新一版）
+node agent-flow.mjs --edit "把驳回改成红色虚线"
+node agent-flow.mjs --edit req.json "去掉确认订单，发货后加客户签收"
+
+# 需求不完整时引导（exit 3，按提示补充角色/步骤后再试）
+node agent-flow.mjs "画个流程"
 
 # LLM 自由自然语言建模（配了 LLM_API_KEY 才走 LLM，否则降级）
 node llm-model.mjs "自然语言需求" --out req.json

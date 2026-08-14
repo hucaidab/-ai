@@ -172,7 +172,8 @@ export function parseFlow(src) {
       groups.push(g)
       continue
     }
-    if (lower.startsWith('end')) {
+    // subgraph 结束：独立 `end` 行（精确匹配，避免误吞节点 id 如 END([...])）
+    if (lower === 'end') {
       if (stack.length) stack.pop()
       continue
     }

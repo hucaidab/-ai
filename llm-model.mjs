@@ -195,9 +195,36 @@ export function autoFix(req) {
   return { req, fixed }
 }
 
-// ---------- 主入口（含降级链 + 自检/修复/重试） ----------
+// ---------- 需求完整性检测（P0：补全引导） ----------
+// 返回 { ok, severe: [], optional: [] }
+// severe = 严重缺失（描述过短/无角色/步骤<2）→ 先引导用户补充再出图
+// optional = 可选补充（如判断分支）→ 不阻塞
+const ROLE_RE = /(部|员|岗|经理|主管|专员|会计|出纳|hr|客服|仓库|物流|车间|质检|采购|销售|财务|系统)/
+const ACT_WORDS = ['提交', '申请', '审批', '审核', '打款', '发货', '收货', '验收', '入库', '出库', '下单', '备案', '确认', '检查', '测试', '检验', '离职', '入职', '报销', '请假', '采购', '销售', '付款', '对账', '归档', '登记', '签发', '签署', '发放', '盘点', '考核', '录用', '变更']
+const JUDGE_RE = /(如果|是否|通过|驳回|退回|不合格|异常|失败|成功|超限|不足|齐全|合格|批准)/
+export function analyzeNeed(text) {
+  const t = (text || '').trim()
+  const severe = [], optional = []
+  if (t.length < 12) severe.push('描述太简短了，请补充流程名称和主要内容，例如：画一个采购审批流程，采购员提交申请，采购经理审批')
+  if (!ROLE_RE.test(t)) severe.push('请补充涉及的角色/部门（例如：员工提交、部门经理审批、出纳打款）')
+  const actCount = (t.match(new RegExp(ACT_WORDS.join('|'), 'g')) || []).length
+  if (actCount < 2) severe.push('请描述至少 2-3 个流程步骤（例如：提交申请 → 经理审批 → 出纳打款）')
+  if (!JUDGE_RE.test(t)) optional.push('可选：如果流程有判断/审批分支请说明（例如：审批不通过退回修改）')
+  return { ok: severe.length === 0, severe, optional }
+}
+
+// ---------- 主入口（含降级链 + 自检/修复/重试 + 补全引导） ----------
 export async function llmModel(text, cfg) {
   const config = cfg || loadLLMConfig()
+  const t = (text || '').trim()
+  // 0. 模板优先：简短需求（≤25 字，即"提个名字"型）直接命中模板，不被引导拦截
+  const hit = findTemplate(text)
+  if (hit && (t.length <= 25 || !config.api_key)) {
+    return { req: applyOverrides(hit.template, text), source: 'template:' + hit.name }
+  }
+  // 0.5 补全引导：严重信息缺失 → 返回引导问题（三个入口统一消费）
+  const need = analyzeNeed(text)
+  if (!need.ok) return { needMore: true, questions: need.severe, req: null, source: 'none' }
   // 1. LLM（配置了 key 才调用）
   if (config.api_key) {
     try {
@@ -241,8 +268,7 @@ export async function llmModel(text, cfg) {
   // 2. 降级：DSL 建模
   const dsl = modelFromText(text)
   if (dsl.nodes.length) return { req: dsl, source: 'dsl' }
-  // 3. 降级：模板匹配
-  const hit = findTemplate(text)
+  // 3. 降级：模板匹配（复用开头已查的命中，避免重复扫描）
   if (hit) return { req: applyOverrides(hit.template, text), source: 'template:' + hit.name }
   return { req: null, source: 'none' }
 }

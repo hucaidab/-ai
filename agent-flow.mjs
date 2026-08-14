@@ -20,8 +20,9 @@ const outBase = getOpt('--out', 'flow')
 const maxNodes = parseInt(getOpt('--max', '30'), 10)
 const reqFile = getOpt('--req', '')
 const editIdx = args.indexOf('--edit')
-const editFile = editIdx >= 0 && args[editIdx + 1] ? args[editIdx + 1] : ''
-const editText = editIdx >= 0 && args[editIdx + 2] ? args[editIdx + 2] : ''
+const editNext = editIdx >= 0 ? args[editIdx + 1] : ''
+const editFile = editIdx >= 0 && editNext && editNext.endsWith('.json') ? editNext : ''
+const editText = editIdx >= 0 ? args[editIdx + (editFile ? 2 : 1)] || '' : ''
 const wantMmd = args.includes('--mmd')
 const wantPdf = args.includes('--pdf')
 const text = (editFile || reqFile) ? '' : args[0]
@@ -31,21 +32,42 @@ let req, source = ''
 if (reqFile) {
   req = JSON.parse(fs.readFileSync(reqFile, 'utf-8'))
   source = 'req.json'
-} else if (editFile) {
-  // M5 对话式编辑：基于原图上下文 + 修改描述重新建模
-  if (!editText) { console.error('用法: node agent-flow.mjs --edit req.json "修改描述"'); process.exit(1) }
-  const base = JSON.parse(fs.readFileSync(editFile, 'utf-8'))
+} else if (editIdx >= 0) {
+  // M5/M6 对话式编辑：自动接续最新一版 req.json（P0 多轮修改）
+  let baseFile = editFile
+  if (!baseFile) {
+    // --edit "修改描述"（不带文件名）→ 自动找最近生成的 req.json
+    const candidates = fs.readdirSync('.').filter(f => f.endsWith('.req.json') && !f.includes('.report.') && !f.startsWith('.workbuddy') && !f.startsWith('templates/') && !f.startsWith('llm-verify'))
+    if (candidates.length) {
+      candidates.sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs)
+      baseFile = candidates[0]
+      console.log('🔗 未指定文件，自动接续最近一版：' + baseFile)
+    }
+  }
+  if (!baseFile) { console.error('❌ 找不到可编辑的 req.json（先出图一次，或用 --edit <文件>）'); process.exit(1) }
+  if (!editText) { console.error('用法: node agent-flow.mjs --edit [req.json] "修改描述"'); process.exit(1) }
+  const base = JSON.parse(fs.readFileSync(baseFile, 'utf-8'))
   const summary = '现有流程图标题：' + (base.title || '未命名') + '\n' +
     '现有节点：' + base.nodes.map(n => n.id + '(' + (n.dept || '') + '/' + (n.role || '') + '/' + (n.action || '') + '/' + (n.shape || 'rect') + ')').join('、') + '\n' +
     '现有边：' + base.edges.map(e => e.from + '→' + e.to + (e.label ? '(' + e.label + ')' : '') + (e.reverse ? '[逆向]' : '')).join('、')
-  console.log('✏️ 编辑模式：基于 ' + editFile + ' 应用修改「' + editText + '」')
-  const r = await llmModel(summary + '\n用户修改要求：' + editText + '\n（严格按修改要求执行：要求删除/去掉的节点和边必须移除，不能保留；要求新增的环节必须出现；其余原有流程骨架保持不变）')
+  console.log('✏️ 编辑模式：基于 ' + baseFile + ' 应用修改「' + editText + '」')
+  const r = await llmModel(summary + '\n用户修改要求：' + editText + '\n（严格按修改要求执行：要求删除/去掉的节点和边必须移除；要求新增的环节必须出现；其余原有流程骨架保持不变）')
+  if (r.needMore) {
+    console.log('📝 修改要求不完整，请补充后再试：')
+    r.questions.forEach(q => console.log('   • ' + q))
+    process.exit(3)
+  }
   if (!r.req) { console.error('❌ 编辑建模失败'); process.exit(1) }
   req = r.req
   source = 'edit:' + r.source
 } else {
   if (!text) { console.error('用法: node agent-flow.mjs "自然语言需求" [--out 前缀] [--req req.json] [--edit req.json 修改] [--mmd] [--pdf]'); process.exit(1) }
   const r = await llmModel(text)
+  if (r.needMore) {
+    console.log('📝 需求信息不完整，请补充后再试：')
+    r.questions.forEach(q => console.log('   • ' + q))
+    process.exit(3)
+  }
   if (!r.req) { console.error('❌ 建模失败'); process.exit(1) }
   req = r.req
   source = r.source
@@ -81,5 +103,6 @@ if (result.subs.length === 0) {
   console.log(`  📊 图索引 → ${result.indexFile}`)
 }
 console.log(`  💡 在线预览: node preview-server.mjs 8080 .  →  http://localhost:8080`)
+console.log(`  🔄 继续修改: node agent-flow.mjs --edit "${outBase}.req.json" "想改什么"`)
 
 if (!result.pass) process.exit(2)

@@ -99,32 +99,74 @@ function buildSubReq(req, entry, ids) {
   return sub
 }
 
-// ---------- 单图渲染 + 验收 ----------
-export function renderOne(req, outBase, autoOnly = false) {
-  const src = reqToMermaid(req)
+// ---------- 单图渲染 + 验收（P0-3：失败自动修复循环 ≤3 轮） ----------
+export function renderOne(req, outBase, autoOnly = false, maxFixRounds = 3) {
+  let curReq = req
+  let fixLog = []
+  for (let round = 0; round <= maxFixRounds; round++) {
+    const src = reqToMermaid(curReq)
+    const graph = parseFlow(src)
+    // 拆分后的主图/子图强制 auto 线性布局（不保留泳道分组）
+    const lay = autoOnly
+      ? layoutAuto(graph.nodes, graph.edges)
+      : layout(graph.nodes, graph.edges, graph.groups, graph.declaredOrder, 'auto')
+    const svg = renderSVG(lay, { classDefs: graph.classDefs, title: curReq.title || '' })
+    const expectText = autoOnly
+      ? curReq.nodes.filter(n => n.shape === 'start' || n.shape === 'end').map(n => n.action)
+      : (curReq.lanes || []).map(l => l.dept).concat(curReq.nodes.filter(n => n.shape === 'start' || n.shape === 'end').map(n => n.action))
+    const entityNodeCount = graph.nodes.filter(n => n.shape !== 'subroutine').length
+    const report = validateSVG(svg, {
+      nodeCount: graph.nodes.length,
+      entityNodeCount,
+      edgeCount: graph.edges.length,
+      diamondCount: graph.nodes.filter(n => n.shape === 'diamond').length,
+      diamondLabeledCount: graph.edges.filter(e => graph.nodes.find(n => n.id === e.from && n.shape === 'diamond') && e.label).length,
+      reverseCount: curReq.edges.filter(e => e.reverse).length,
+      expectText, expectColors: [], mode: lay.mode,
+    })
+    if (report.pass || round === maxFixRounds) {
+      fs.writeFileSync(outBase + '.svg', svg, 'utf-8')
+      fs.writeFileSync(outBase + '.req.json', JSON.stringify(curReq, null, 2), 'utf-8')
+      let fixNote = fixLog.length ? '\n- 自动修复：' + fixLog.join('；') : ''
+      fs.writeFileSync(outBase + '.report.md', `# ${curReq.title}\n\n- 模式：${lay.mode}，节点 ${graph.nodes.length}，边 ${graph.edges.length}\n- 结论：${report.pass ? '✅ 通过' : '❌ ' + report.summary}${fixNote}\n`, 'utf-8')
+      const fixed = fixLog.length > 0
+      if (fixed) console.log(`🔧 自动修复 ${fixLog.length} 处后通过：${fixLog.join('、')}`)
+      return { title: curReq.title, pass: report.pass, summary: report.summary, nodes: graph.nodes.length, file: path.basename(outBase) + '.svg', fixed, fixLog }
+    }
+    // 失败 → 按失败项针对性修复
+    if (round < maxFixRounds) {
+      const failedNames = report.checks.filter(c => !c.pass).map(c => c.name)
+      const { req: nextReq, fixes } = applyReportFix(curReq, failedNames)
+      if (!fixes.length) break // 无法继续修复
+      fixLog.push(...fixes)
+      curReq = nextReq
+    }
+  }
+  // 最终兜底：最后一次渲染结果（未通过也落盘）
+  const src = reqToMermaid(curReq)
   const graph = parseFlow(src)
-  // 拆分后的主图/子图强制 auto 线性布局（不保留泳道分组）
-  const lay = autoOnly
-    ? layoutAuto(graph.nodes, graph.edges)
-    : layout(graph.nodes, graph.edges, graph.groups, graph.declaredOrder, 'auto')
-  const svg = renderSVG(lay, { classDefs: graph.classDefs, title: req.title || '' })
-  const expectText = autoOnly
-    ? req.nodes.filter(n => n.shape === 'start' || n.shape === 'end').map(n => n.action)
-    : (req.lanes || []).map(l => l.dept).concat(req.nodes.filter(n => n.shape === 'start' || n.shape === 'end').map(n => n.action))
-  const entityNodeCount = graph.nodes.filter(n => n.shape !== 'subroutine').length
-  const report = validateSVG(svg, {
-    nodeCount: graph.nodes.length,
-    entityNodeCount,
-    edgeCount: graph.edges.length,
-    diamondCount: graph.nodes.filter(n => n.shape === 'diamond').length,
-    diamondLabeledCount: graph.edges.filter(e => graph.nodes.find(n => n.id === e.from && n.shape === 'diamond') && e.label).length,
-    reverseCount: req.edges.filter(e => e.reverse).length,
-    expectText, expectColors: [], mode: lay.mode,
-  })
+  const lay = layout(graph.nodes, graph.edges, graph.groups, graph.declaredOrder, 'auto')
+  const svg = renderSVG(lay, { classDefs: graph.classDefs, title: curReq.title || '' })
+  const report = validateSVG(svg, { nodeCount: graph.nodes.length, edgeCount: graph.edges.length })
   fs.writeFileSync(outBase + '.svg', svg, 'utf-8')
-  fs.writeFileSync(outBase + '.req.json', JSON.stringify(req, null, 2), 'utf-8')
-  fs.writeFileSync(outBase + '.report.md', `# ${req.title}\n\n- 模式：${lay.mode}，节点 ${graph.nodes.length}，边 ${graph.edges.length}\n- 结论：${report.pass ? '✅ 通过' : '❌ ' + report.summary}\n`, 'utf-8')
-  return { title: req.title, pass: report.pass, summary: report.summary, nodes: graph.nodes.length, file: path.basename(outBase) + '.svg' }
+  fs.writeFileSync(outBase + '.req.json', JSON.stringify(curReq, null, 2), 'utf-8')
+  fs.writeFileSync(outBase + '.report.md', `# ${curReq.title}\n\n- 节点 ${graph.nodes.length}，边 ${graph.edges.length}\n- 结论：❌ ${report.summary}\n`, 'utf-8')
+  return { title: curReq.title, pass: false, summary: report.summary, nodes: graph.nodes.length, file: path.basename(outBase) + '.svg', fixed: fixLog.length > 0, fixLog }
+}
+
+// 按验收失败项应用修复（P0-3）
+import { autoFix } from './llm-model.mjs'
+function applyReportFix(req, failedNames) {
+  const fixes = []
+  const next = JSON.parse(JSON.stringify(req))
+  const modelFix = failedNames.some(n => n.includes('起止') || n.includes('开始/结束') || n.includes('判断'))
+  if (modelFix) {
+    const fx = autoFix(next)
+    fixes.push(...fx.fixed)
+  }
+  // 泳道不重叠失败 → 记录降级提示（由外层 autoOnly 处理）
+  if (failedNames.some(n => n.includes('泳道'))) fixes.push('泳道布局异常，建议切换线性布局')
+  return { req: fixes.length ? next : req, fixes: [...new Set(fixes)] }
 }
 
 // ---------- 拆分主流程（可复用：agent-flow 调用） ----------

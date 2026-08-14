@@ -181,6 +181,25 @@ test('template-finder: 末尾模板不因 bestScore 恒 0 误胜出（回归 #43
   assert.equal(hit.name, 'onboarding.json', '入职命中 onboarding，实际 ' + hit.name)
 })
 
+test('parse: 节点 id 为 END/START 不与 subgraph end 关键字冲突（回归 P0-3）', () => {
+  const src = `flowchart TD
+    subgraph L0["A"]
+        direction LR
+        START([开始：启动])
+        N1[处理]
+        END([结束：完成])
+    end
+    START --> N1
+    N1 --> END`
+  const g = parseFlow(src)
+  const end = g.nodes.find(n => n.id === 'END')
+  const start = g.nodes.find(n => n.id === 'START')
+  assert.ok(end, 'END 节点被解析')
+  assert.equal(end.shape, 'stadium', 'END 形状保留，实际 ' + end.shape)
+  assert.equal(start.shape, 'stadium')
+  assert.equal(g.edges.length, 2, '边完整')
+})
+
 // ---------- req-util ----------
 test('reqToMermaid: 中文 subgraph id 用安全索引（回归 L_MFA 服务 bug）', () => {
   const req = {

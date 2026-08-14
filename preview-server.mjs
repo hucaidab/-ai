@@ -182,6 +182,11 @@ document.getElementById('go').onclick = async () => {
   try {
     const r = await fetch('/api/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({text, reqFile: curReq || ''}) });
     const d = await r.json();
+    if(d.needMore){
+      st.innerHTML='';
+      res.innerHTML='<div class="err"><b>📝 再补充一点信息就能画得更好</b>' + d.questions.map(q=>'<div style="margin-top:6px">• '+q+'</div>').join('') + '</div>';
+      return;
+    }
     if(!d.ok){ st.innerHTML=''; res.innerHTML='<div class="err"><b>😅 没生成成功</b>'+d.error+'</div>'; return; }
     cur = d.file; curReq = d.reqFile;
     st.textContent = '✅ 完成（来源：' + d.source + (d.edited ? ' · 编辑模式' : '') + '）';
@@ -338,6 +343,9 @@ const server = http.createServer(async (req, res) => {
         r = await llmModel(summary + '\n用户修改要求：' + text + '\n（严格按修改要求执行：要求删除/去掉的节点和边必须移除；要求新增的环节必须出现；其余骨架保持不变）')
       } else {
         r = await llmModel(text)
+      }
+      if (r.needMore) {
+        return send(200, JSON.stringify({ ok: false, needMore: true, questions: r.questions }))
       }
       if (!r.req) return send(200, JSON.stringify({ ok: false, error: '没看懂你的需求，请说得更具体些，例如：员工提交申请，经理审批（驳回退回），出纳打款' }))
       const stamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14)
