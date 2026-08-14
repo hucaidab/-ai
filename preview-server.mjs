@@ -517,7 +517,9 @@ const server = http.createServer(async (req, res) => {
     if (!whitelist.includes(name)) return send(404, 'not found')
     const fp = path.join(import.meta.dirname, name)
     if (!fs.existsSync(fp)) return send(404, 'not found')
-    return send(200, fs.readFileSync(fp), 'text/javascript; charset=utf-8')
+    // 防缓存：模块更新即时生效（编辑器迭代期）
+    res.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store' })
+    return res.end(fs.readFileSync(fp))
   }
   if (p === '/api/editor/save' && req.method === 'POST') {
     // 画布编辑器保存：写回 req.json + 重新验收

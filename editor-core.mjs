@@ -85,23 +85,26 @@ export function render() {
   out.querySelectorAll('path').forEach(p => {
     if (p.getAttribute('fill') === 'none') { p.setAttribute('data-edge', '1'); p.setAttribute('data-eidx', ei); ei++ }
   })
-  _bindInteractions()
+  bindInteractions()
   _updateStatus()
 }
 
-// ---------- 交互绑定 ----------
-let _drag = null
-function _bindInteractions() {
+// ---------- 交互绑定（事件委托：svg 根一次绑定，不受 innerHTML 重建影响） ----------
+export function bindInteractions() {
   const cv = document.getElementById('cv')
-  if (!cv) return
-  cv.querySelectorAll('g[data-id]').forEach(g => {
-    g.style.cursor = 'move'
-    g.addEventListener('pointerdown', e => _onNodeDown(e, g))
-    g.addEventListener('dblclick', e => _onDblClick(e, g))
+  if (!cv || cv._bound) return
+  cv._bound = true
+  // 节点：pointerdown 拖动 / dblclick 改文字（通过 closest 定位，点文字/形状都命中）
+  cv.addEventListener('pointerdown', e => {
+    const g = e.target.closest ? e.target.closest('g[data-id]') : null
+    if (g) { _onNodeDown(e, g); return }
+    // 边
+    const p = e.target.closest ? e.target.closest('path[data-edge]') : null
+    if (p) { e.stopPropagation(); _selectEdge(p) }
   })
-  cv.querySelectorAll('path[data-edge]').forEach(p => {
-    p.style.cursor = 'pointer'
-    p.addEventListener('click', e => { e.stopPropagation(); _selectEdge(p) })
+  cv.addEventListener('dblclick', e => {
+    const g = e.target.closest ? e.target.closest('g[data-id]') : null
+    if (g) _onDblClick(e, g)
   })
 }
 
@@ -311,6 +314,7 @@ export async function init(file) {
   host.style.transform = 'scale(' + S.scale + ')'
   host.style.transformOrigin = '0 0'
   render()
+  bindInteractions()
   pushHistory() // 初始快照（撤销回到初始态）
   // 画布空白事件
   document.getElementById('canvasWrap').addEventListener('pointerdown', e => {
