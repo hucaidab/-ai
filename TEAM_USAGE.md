@@ -22,14 +22,11 @@ git clone git@github.com:hucaidab/-ai.git
 
 > 没有 GitHub 账号的同学：注册后把 SSH 公钥发给你，或直接走 `LLM_CONFIG.md` 里的环境变量方案。
 
-### ② 给成员开 LLM 权限（可选，但推荐）
+### ② 告知成员：key 自己配（无需你发）
 
-没有 API key 也能用（自动降级到模板/DSL），但**配了 key 才能解析任意自然语言**（质量最好）。分配方式：
+没有 API key 也能用（自动降级到模板/DSL），但**配了 key 才能解析任意自然语言**（质量最好）。
 
-```bash
-# 成员在自己电脑上执行（key 各自保管，不共享）
-setx LLM_API_KEY "sk-xxx"        # Windows，重开终端生效
-```
+**你只需要在群里说一句**：去 DeepSeek 开放平台（platform.deepseek.com）注册申请 API key，在自己电脑上 `setx LLM_API_KEY "sk-xxx"`。key 各自保管、禁止共享、禁止发群里。
 
 ### ③ 把 WorkBuddy 技能包同步给成员（可选，对话式使用）
 
@@ -44,9 +41,11 @@ git clone git@github.com:hucaidab/-ai.git && cd -ai
 # 2. 确认 Node 环境
 node -v        # 需要 v18+（推荐 22）
 
-# 3.（可选）配 LLM key
-setx LLM_API_KEY "sk-xxx"   # Windows
+# 3.（可选）配自己的 LLM key
+# 去 platform.deepseek.com 注册 → 创建 API key → 在自己电脑上执行：
+setx LLM_API_KEY "sk-xxx"   # Windows（重开终端生效）
 export LLM_API_KEY="sk-xxx" # macOS/Linux
+# key 自己保管，禁止共享/发群里/提交代码库
 
 # 4. 验证
 node agent-flow.mjs "请假审批流程：员工提交申请，直属经理审批，HR 核对额度备案" --out test-flow
@@ -92,6 +91,7 @@ node agent-flow.mjs "请假审批流程：员工提交申请，直属经理审�
 
 - **产物命名**：`<项目>-<流程>.svg`（如 `mes-生产制造.svg`），`--out` 指定，便于检索
 - **需求源文件**：DSL 文本（`.txt`）与 req.json 一起保留，图可复现
+- **LLM key 各自管理**：只在自己机器上 `setx`/`export`，严禁共享、严禁发到群里或提交到任何仓库
 - **模板扩充**：新流程稳定后可存为模板（`templates/xxx.json` + 触发词），按 `gen-more-templates.mjs` 的写法批量加，加完跑 `node agent-batch.mjs --dir templates` 验收
 - **代码更新**：`git pull` 拉最新（脚本/模板会持续更新）
 
@@ -100,7 +100,8 @@ node agent-flow.mjs "请假审批流程：员工提交申请，直属经理审�
 | 问题 | 解决 |
 |------|------|
 | 没配 key 能用吗？ | 能。自动降级：LLM → DSL → 50 模板兜底 |
+| key 从哪来？ | 自己注册 DeepSeek 开放平台（platform.deepseek.com）创建，**别问同事要，别发群里** |
 | 出图验收没过？ | 看 `xxx.report.md` 哪项失败，最常见是缺起止节点/判断缺出口标签 |
 | 图太长？ | 自动拆图（>30 节点），或手动 `split-graph.mjs --max 30` |
-| 想用别的模型？ | `setx LLM_BASE_URL "https://..."` + `setx LLM_MODEL "模型名"` |
-| key 泄露了？ | GitHub 吊销 key 重新发一个，`LLM_CONFIG.md` 有安全红线说明 |
+| 想用别的模型？ | 自己配 `setx LLM_BASE_URL "https://..."` + `setx LLM_MODEL "模型名"` |
+| key 泄露了？ | 到平台吊销重建一个，`LLM_CONFIG.md` 有安全红线说明 |
