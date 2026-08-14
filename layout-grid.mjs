@@ -192,7 +192,8 @@ function dirFromVector(dx, dy) {
 }
 
 // A→B 正交路由：出口=A 方向锚点，入口=B 反向锚点，Z 型（2 折点）
-export function routeEdgePoints(A, B) {
+// obstacles：其他节点列表（自动过滤 A/B），Z 型中段碰撞时偏移绕行（避障）
+export function routeEdgePoints(A, B, obstacles = []) {
   const ax = nodeXY(A).x, ay = nodeXY(A).y
   const bx = nodeXY(B).x, by = nodeXY(B).y
   const acx = ax + A.w / 2, acy = ay + A.h / 2
@@ -201,23 +202,79 @@ export function routeEdgePoints(A, B) {
   if (dx === 0 && dy === 0) return [[acx, acy], [bcx, bcy]] // 重合退化：直接连接
   const p1 = anchorPoint(A, dirFromVector(dx, dy))   // 出口
   const p2 = anchorPoint(B, dirFromVector(-dx, -dy)) // 入口（反向）
-  // 主轴 Z 型：水平为主走 midX，垂直为主走 midY
-  if (Math.abs(dx) >= Math.abs(dy)) {
-    const midX = (p1.x + p2.x) / 2
-    return [[p1.x, p1.y], [midX, p1.y], [midX, p2.y], [p2.x, p2.y]]
+  // 障碍物（按 id 排除 A/B 自身，坐标统一 pos 优先）
+  const obsBoxes = obstacles
+    .filter(o => !o.id || (o.id !== A.id && o.id !== B.id))
+    .map(o => { const p = nodeXY(o); return { x: p.x, y: p.y, w: o.w, h: o.h } })
+  // 主轴候选 + 备选主轴（主轴避不开时切换另一主轴，处理水平段被挡场景）
+  const horizontal = Math.abs(dx) >= Math.abs(dy)
+  const builds = horizontal
+    ? [[p1, p2, true], [p1, p2, false]]
+    : [[p1, p2, false], [p1, p2, true]]
+  for (const [a, b, isH] of builds) {
+    const mid = isH ? (a.x + b.x) / 2 : (a.y + b.y) / 2
+    let pts = isH
+      ? [[a.x, a.y], [mid, a.y], [mid, b.y], [b.x, b.y]]
+      : [[a.x, a.y], [a.x, mid], [b.x, mid], [b.x, b.y]]
+    if (obsBoxes.length) pts = avoidMiddle(pts, isH, obsBoxes)
+    if (!routeHits(pts, obsBoxes)) return pts
   }
-  const midY = (p1.y + p2.y) / 2
-  return [[p1.x, p1.y], [p1.x, midY], [p2.x, midY], [p2.x, p2.y]]
+  // 双主轴都避不开：返回主轴原始路由（保底）
+  const mid = horizontal ? (p1.x + p2.x) / 2 : (p1.y + p2.y) / 2
+  return horizontal
+    ? [[p1.x, p1.y], [mid, p1.y], [mid, p2.y], [p2.x, p2.y]]
+    : [[p1.x, p1.y], [p1.x, mid], [p2.x, mid], [p2.x, p2.y]]
+}
+
+const GAP = 16 // 绕行间隙
+
+// 线段与 AABB 相交（轴对齐线段）
+function segHitsBox(x0, y0, x1, y1, box) {
+  const minX = Math.min(x0, x1), maxX = Math.max(x0, x1)
+  const minY = Math.min(y0, y1), maxY = Math.max(y0, y1)
+  return maxX >= box.x && minX <= box.x + box.w && maxY >= box.y && minY <= box.y + box.h
+}
+
+// 折线是否与任一障碍相交
+function routeHits(pts, boxes) {
+  for (let i = 0; i < pts.length - 1; i++) {
+    for (const o of boxes) {
+      if (segHitsBox(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1], o)) return true
+    }
+  }
+  return false
+}
+
+// 中段避障：水平 Z 型把垂直段 x=mid 偏移绕行；垂直 Z 型把水平段 y=mid 偏移（迭代≤3 轮）
+function avoidMiddle(pts, isH, boxes) {
+  let out = pts
+  for (let round = 0; round < 3; round++) {
+    // 中段 = out[1]→out[2]（垂直段或水平段）
+    const x0 = out[1][0], y0 = out[1][1], x1 = out[2][0], y1 = out[2][1]
+    const hit = boxes.filter(o => segHitsBox(x0, y0, x1, y1, o))
+    if (!hit.length) return out
+    let m = isH ? x0 : y0
+    for (const o of hit) {
+      const lo = (isH ? o.x : o.y) - GAP
+      const hi = (isH ? o.x + o.w : o.y + o.h) + GAP
+      m = Math.abs(m - lo) <= Math.abs(m - hi) ? lo : hi
+    }
+    out = isH
+      ? [[out[0][0], out[0][1]], [m, out[0][1]], [m, out[3][1]], [out[3][0], out[3][1]]]
+      : [[out[0][0], out[0][1]], [out[0][0], m], [out[3][0], m], [out[3][0], out[3][1]]]
+  }
+  return out
 }
 
 // 基于 lay.nodes 当前坐标（已含 pos 覆盖）重算全部边路由——
 // 节点被拖拽/pos 覆盖后边必须跟随，否则节点在 pos 边连旧位置（视觉断线）
+// 其余节点作为障碍参与避障（不穿其他节点）
 export function rerouteEdges(lay) {
   const byId = new Map(lay.nodes.map(n => [n.id, n]))
   lay.edges.forEach(e => {
     const a = byId.get(e.from), b = byId.get(e.to)
     if (!a || !b) return
-    e.points = routeEdgePoints(a, b)
+    e.points = routeEdgePoints(a, b, lay.nodes)
   })
   return lay
 }

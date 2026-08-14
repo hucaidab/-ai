@@ -37,6 +37,27 @@ test('routeEdgePoints: 出口/入口在节点边界上（不穿节点）+ 正交
   assert.ok(Array.isArray(same) && same.length >= 2, '重合退化安全')
 })
 
+test('routeEdgePoints: 障碍绕行——中段穿障时偏移避开（不穿其他节点）', () => {
+  const A = { id: 'A', x: 100, y: 100, w: 180, h: 50 }
+  const B = { id: 'B', x: 500, y: 300, w: 180, h: 50 }
+  const O = { id: 'O', x: 300, y: 150, w: 180, h: 50 } // 正好挡在 Z 型中段
+  const pts = routeEdgePoints(A, B, [A, B, O])
+  const segHit = (x0, y0, x1, y1) => {
+    const mnX = Math.min(x0, x1), mxX = Math.max(x0, x1), mnY = Math.min(y0, y1), mxY = Math.max(y0, y1)
+    return mxX >= O.x && mnX <= O.x + O.w && mxY >= O.y && mnY <= O.y + O.h
+  }
+  let hit = false
+  for (let i = 0; i < pts.length - 1; i++) if (segHit(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1])) hit = true
+  assert.ok(!hit, '绕行后不穿障碍（midX 偏移到 ' + pts[1][0] + '）')
+  // 无障碍时行为不变（回归：midX 居中）
+  const plain = routeEdgePoints(A, B)
+  const expMid = (plain[0][0] + plain[3][0]) / 2
+  assert.equal(plain[1][0], expMid, '无障碍时 midX 居中（出口/入口之间）')
+  // 排除端点：A/B 自身不作为障碍
+  const pts2 = routeEdgePoints(A, B, [A, B])
+  assert.equal(pts2[1][0], expMid, 'A/B 自身不参与避障')
+})
+
 test('rerouteEdges: pos 覆盖后边路由随节点新位置重算', () => {
   const lay = {
     nodes: [

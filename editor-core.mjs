@@ -200,17 +200,19 @@ function _rerouteEdges(dragId) {
     if (!n) return null
     const sz = (S._nodeSize && S._nodeSize[nid]) || { w: 180, h: 54 }
     const p = n.pos || { x: 0, y: 0 }
-    return { x: p.x, y: p.y, w: sz.w, h: sz.h, pos: p }
+    return { id: nid, x: p.x, y: p.y, w: sz.w, h: sz.h, pos: p }
   }
+  // 全部节点（含 id，供避障按 id 排除端点）
+  const allNodes = S.req.nodes.map(n => nodeObj(n.id)).filter(Boolean)
   S.req.edges.forEach((e, i) => {
     if (e.from !== dragId && e.to !== dragId) return
     const domIdx = S._edgeMap.indexOf(i)
     if (domIdx < 0) return
     const p = _svgHost.querySelector('path[data-eidx="' + domIdx + '"]')
     if (!p) return
-    const a = nodeObj(e.from), b = nodeObj(e.to)
+    const a = allNodes.find(n => n.id === e.from), b = allNodes.find(n => n.id === e.to)
     if (!a || !b) return
-    const pts = routeEdgePoints(a, b)
+    const pts = routeEdgePoints(a, b, allNodes)
     p.setAttribute('d', 'M ' + pts.map(pt => pt[0] + ' ' + pt[1]).join(' L '))
   })
 }
