@@ -219,13 +219,14 @@ export function renderSVG(layout, { classDefs = {}, title = '', subtitle = '', t
     }
   })
 
-  // 节点
+  // 节点（编辑器模式：pos 覆盖自动布局位置）
   nodes.forEach(n => {
     const st = resolveStyle(n, classDefs, nodeCol, mode === 'swimlane', theme)
     const dashAttr = st.dash ? ` stroke-dasharray="${st.dash}"` : ''
+    const nn = n.pos ? { ...n, x: n.pos.x, y: n.pos.y, cx: n.pos.x + n.w / 2, cy: n.pos.y + n.h / 2 } : n
     s += `<g transform="translate(0,0)">`
-    s += `<g fill="${st.fill}" stroke="${st.stroke}" stroke-width="${st.sw}"${dashAttr}>${shapeBody(n)}</g>`
-    s += shapeText(n, st)
+    s += `<g fill="${st.fill}" stroke="${st.stroke}" stroke-width="${st.sw}"${dashAttr}>${shapeBody(nn)}</g>`
+    s += shapeText(nn, st)
     s += `</g>`
   })
 

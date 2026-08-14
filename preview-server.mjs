@@ -111,10 +111,26 @@ const GEN_PAGE = `<!DOCTYPE html>
   .hist-empty{color:var(--muted);font-size:12.5px;padding:8px 2px}
   .edit-tip{display:none;background:#fff8c5;border:1px solid #d4a72c;color:#633c01;border-radius:8px;padding:8px 14px;font-size:12.5px;margin-bottom:12px}
   .edit-tip.show{display:block}
+  .tpl-search{margin-top:14px}
+  .tpl-search input{width:100%;padding:9px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none}
+  .tpl-search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(9,105,218,.15)}
+  .tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:12px;max-height:420px;overflow:auto}
+  .tpl-card{border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;background:#fafbfc;transition:border-color .15s,box-shadow .15s}
+  .tpl-card:hover{border-color:var(--accent);box-shadow:0 2px 10px rgba(9,105,218,.12)}
+  .tpl-card .tt{font-size:13px;font-weight:700;margin-bottom:4px}
+  .tpl-card .meta{font-size:11px;color:var(--muted)}
+  .tpl-card .tag{display:inline-block;background:var(--accent);color:#fff;font-size:10px;padding:1px 8px;border-radius:10px;margin:6px 4px 0 0}
+  .tpl-empty{color:var(--muted);font-size:12.5px;padding:16px;text-align:center}
 </style></head>
 <body>
 <header><h1>✏️ 流程图生成器</h1><a href="/">查看已有图 →</a></header>
 <div class="wrap">
+  <div class="card tpl-search">
+    <h2>📚 从模板开始（100 个常用流程，点一下直接出图）</h2>
+    <p class="sub">搜索或浏览模板，点击即生成；也可以跳过模板，直接在下面输入你的需求</p>
+    <input id="tplQ" placeholder="搜索模板，如：报销 / 离职 / 盘点 / 合同…" oninput="renderTpl()">
+    <div class="tpl-grid" id="tplGrid"></div>
+  </div>
   <div class="edit-tip" id="editTip">✏️ 编辑模式：正在修改 <b id="editName"></b> —— 在下面描述你想改什么（例：去掉确认订单，发货后加客户签收）</div>
   <div class="card">
     <h2>用一句话描述你的流程</h2>
@@ -131,6 +147,7 @@ const GEN_PAGE = `<!DOCTYPE html>
         <button class="dl-btn" id="dlSvg">⬇ SVG</button>
         <button class="dl-btn" id="dlPdf">⬇ PDF</button>
         <button class="dl-btn" id="dlMmd">⬇ Mermaid</button>
+        <button class="dl-btn" id="dlEdit" style="border-color:var(--accent);color:var(--accent)">✏️ 画布编辑</button>
       </div>
       <div class="canvas" id="canvas"></div>
       <div class="report" id="report"></div>
@@ -146,7 +163,51 @@ const GEN_PAGE = `<!DOCTYPE html>
 const EXAMPLES = ${JSON.stringify(EXAMPLES)};
 document.getElementById('chips').innerHTML = EXAMPLES.map(e=>'<button class="chip" onclick="fill(\\''+e.label+'\\')">'+e.label+'</button>').join('');
 function fill(k){ const e=EXAMPLES.find(x=>x.label===k); document.getElementById('in').value=e.text; }
-let cur = null, curReq = null;
+let cur = null, curReq = null, tpls = [];
+async function loadTemplates(){
+  try {
+    const r = await fetch('/api/templates');
+    tpls = await r.json();
+    renderTpl();
+  } catch(e){}
+}
+function renderTpl(){
+  const q = (document.getElementById('tplQ').value || '').trim().toLowerCase();
+  const list = q
+    ? tpls.filter(t => (t.title + ' ' + t.triggers.join(' ') + ' ' + t.tags.join(' ')).toLowerCase().includes(q))
+    : tpls;
+  const box = document.getElementById('tplGrid');
+  if (!list.length) { box.innerHTML = '<div class="tpl-empty">没有匹配的模板，试试其他关键词，或直接输入需求生成</div>'; return; }
+  box.innerHTML = list.map(t =>
+    '<div class="tpl-card" onclick="useTpl(\\'' + t.file + '\\')">' +
+    '<div class="tt">' + t.title + '</div>' +
+    '<div class="meta">' + t.nodes + ' 节点 · ' + t.lanes + ' 部门</div>' +
+    t.tags.slice(0, 3).map(x => '<span class="tag">' + x + '</span>').join('') +
+    '</div>').join('');
+}
+async function useTpl(file){
+  const st = document.getElementById('status'), res = document.getElementById('res');
+  const btn = document.getElementById('go'); btn.disabled = true;
+  st.textContent = '⏳ 正在生成模板流程图…';
+  res.classList.remove('show');
+  try {
+    const r = await fetch('/api/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({template: file}) });
+    const d = await r.json();
+    if(!d.ok){ st.innerHTML=''; res.innerHTML='<div class="err"><b>😅 没生成成功</b>'+d.error+'</div>'; return; }
+    cur = d.file; curReq = d.reqFile;
+    st.textContent = '✅ 完成（模板：' + file + '）——可点「改一版」继续定制';
+    res.classList.add('show');
+    document.getElementById('badge').textContent = d.pass ? '✓ 验收通过' : '⚠ 有 1 项未达标';
+    document.getElementById('badge').className = 'badge ' + (d.pass ? 'b-ok' : 'b-no');
+    document.getElementById('rt').textContent = d.title + '（' + d.nodes + ' 节点 · ' + d.lanes + ' 个部门泳道）';
+    document.getElementById('canvas').innerHTML = d.svg;
+    document.getElementById('report').innerHTML = '<b>验收报告</b><pre>' + d.reportMd.replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</pre>';
+    document.getElementById('editTip').classList.remove('show');
+    document.getElementById('go').textContent = '⚡ 生成流程图';
+    loadHistory();
+  } catch(e){ st.innerHTML=''; res.innerHTML='<div class="err"><b>😅 服务出错</b>'+e.message+'</div>'; }
+  finally { btn.disabled = false; }
+}
 async function loadHistory(){
   try {
     const r = await fetch('/api/history');
@@ -214,6 +275,8 @@ document.getElementById('dlPng').onclick = () => { if(cur) dlFile('png', cur); }
 document.getElementById('dlSvg').onclick = () => { if(cur) dlFile('svg', cur); };
 document.getElementById('dlPdf').onclick = () => { if(cur) dlFile('pdf', cur); };
 document.getElementById('dlMmd').onclick = () => { if(curReq) dlFile('mmd', curReq); };
+document.getElementById('dlEdit').onclick = () => { if(curReq) location.href = '/editor?file=' + encodeURIComponent(curReq); };
+loadTemplates();
 loadHistory();
 </script></body></html>`
 
@@ -306,6 +369,33 @@ const server = http.createServer(async (req, res) => {
 
   if (p === '/') return send(200, PAGE, 'text/html; charset=utf-8')
   if (p === '/generate') return send(200, GEN_PAGE, 'text/html; charset=utf-8')
+  if (p === '/editor') {
+    const fp = path.join(import.meta.dirname, 'editor.html')
+    return send(200, fs.readFileSync(fp, 'utf-8'), 'text/html; charset=utf-8')
+  }
+  if (p === '/api/templates') {
+    // 模板库列表（模板浏览器数据源）
+    const tplDir = path.join(DIR, 'templates')
+    const items = []
+    if (fs.existsSync(tplDir)) {
+      for (const f of fs.readdirSync(tplDir)) {
+        if (!f.endsWith('.json') || f.includes('.report.')) continue
+        try {
+          const req = JSON.parse(fs.readFileSync(path.join(tplDir, f), 'utf-8'))
+          items.push({
+            file: f,
+            title: req.title || f.replace(/\.json$/, ''),
+            triggers: (req.meta && req.meta.triggers) || [],
+            tags: (req.meta && req.meta.tags) || [],
+            nodes: req.nodes.length,
+            lanes: (req.lanes || []).length,
+          })
+        } catch { /* 跳过损坏 */ }
+      }
+    }
+    items.sort((a, b) => a.title.localeCompare(b.title, 'zh'))
+    return send(200, JSON.stringify(items), 'application/json')
+  }
   if (p === '/api/history') {
     // 历史生成记录：gen-*.req.json 列表（按时间倒序）
     const items = []
@@ -328,11 +418,18 @@ const server = http.createServer(async (req, res) => {
     try { payload = JSON.parse(body || '{}') } catch { return send(400, '参数格式错误') }
     const text = (payload.text || '').trim()
     const editReqFile = payload.reqFile || ''
-    if (!text) return send(400, JSON.stringify({ ok: false, error: '需求不能为空，先写一句话再点生成～' }))
+    const templateFile = payload.template || ''
+    if (!text && !templateFile) return send(400, JSON.stringify({ ok: false, error: '需求不能为空，先写一句话再点生成～' }))
     try {
       const { llmModel, splitAndRender } = await loadGen()
       let r
-      if (editReqFile) {
+      if (templateFile) {
+        // 模板直接出图（模板浏览器入口）
+        const tp = path.join(DIR, 'templates', templateFile)
+        if (!fs.existsSync(tp)) return send(400, JSON.stringify({ ok: false, error: '找不到模板：' + templateFile }))
+        const tpl = JSON.parse(fs.readFileSync(tp, 'utf-8'))
+        r = { req: tpl, source: 'template:' + templateFile }
+      } else if (editReqFile) {
         // 编辑重生成：基于历史 req.json + 修改描述
         const fp = path.join(DIR, editReqFile)
         if (!fs.existsSync(fp)) return send(400, JSON.stringify({ ok: false, error: '找不到源需求文件：' + editReqFile }))
@@ -413,8 +510,41 @@ const server = http.createServer(async (req, res) => {
     } catch (e) { send(500, 'Mermaid 导出失败: ' + e.message.slice(0, 120)) }
     return
   }
+  if (p.startsWith('/lib/')) {
+    // 编辑器浏览器模块白名单（仅核心 5 模块，防目录遍历）
+    const name = p.slice(5)
+    const whitelist = ['parse-flow.mjs', 'layout-grid.mjs', 'render-svg.mjs', 'validate.mjs', 'req-util.mjs', 'editor-core.mjs']
+    if (!whitelist.includes(name)) return send(404, 'not found')
+    const fp = path.join(import.meta.dirname, name)
+    if (!fs.existsSync(fp)) return send(404, 'not found')
+    return send(200, fs.readFileSync(fp), 'text/javascript; charset=utf-8')
+  }
+  if (p === '/api/editor/save' && req.method === 'POST') {
+    // 画布编辑器保存：写回 req.json + 重新验收
+    let body = ''
+    for await (const c of req) body += c
+    let payload = {}
+    try { payload = JSON.parse(body || '{}') } catch { return send(400, '参数格式错误') }
+    const file = payload.file || ''
+    const data = payload.req
+    if (!file || !data || !/^[\w.-]+\.req\.json$/.test(file)) return send(400, JSON.stringify({ ok: false, error: '文件名不合法' }))
+    const fp = path.join(DIR, file)
+    if (!fp.startsWith(DIR)) return send(400, JSON.stringify({ ok: false, error: '路径越界' }))
+    try {
+      fs.writeFileSync(fp, JSON.stringify(data, null, 2), 'utf-8')
+      // 重新渲染 + 验收（复用管线）
+      const { renderOne } = await import('./split-graph.mjs')
+      const base = fp.replace(/\.req\.json$/, '')
+      const r = renderOne(data, base, false, 3, payload.theme || 'github-light')
+      return send(200, JSON.stringify({ ok: true, pass: r.pass, summary: r.summary, fixed: r.fixed, fixLog: r.fixLog || [] }), 'application/json')
+    } catch (e) {
+      return send(500, JSON.stringify({ ok: false, error: '保存失败：' + e.message.slice(0, 120) }))
+    }
+  }
   if (p.startsWith('/file/')) {
     const name = decodeURIComponent(p.slice(6))
+    // 安全：禁止访问敏感文件（密钥/配置）
+    if (/^llm\.config\.json$|\.local\.json$|^\.env|\.git/i.test(name)) return send(403, 'forbidden')
     const fp = path.join(DIR, name)
     if (!fp.startsWith(DIR) || !fs.existsSync(fp) || fs.statSync(fp).isDirectory()) return send(404, 'not found')
     const ext = path.extname(fp).toLowerCase()
