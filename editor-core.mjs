@@ -70,8 +70,9 @@ export function render() {
   // 节点 g 加 data-id（通过文本定位太脆，直接在渲染后按顺序注入）
   const out = _svgHost
   out.innerHTML = doc
-  // 节点 g 加 data-id：只标记带 fill 属性的内层形状 g（外层 translate g 无 fill，避免双层错位）
-  const nodeOrder = graph.nodes.map(n => n.id)
+  // 节点 g 加 data-id：顺序必须与 DOM 输出一致（lay.nodes 顺序 = render-svg 输出顺序，
+  // 布局会重排节点，不能用 parse 顺序否则点击错位"拖A动B"）
+  const nodeOrder = lay.nodes.map(n => n.id)
   let gi = 0
   out.querySelectorAll('svg g[fill]').forEach(g => {
     if (gi < nodeOrder.length) g.setAttribute('data-id', nodeOrder[gi])
@@ -80,7 +81,8 @@ export function render() {
   // 记录节点真实尺寸（框选命中检测用）
   S._nodeSize = {}
   lay.nodes.forEach(n => { S._nodeSize[n.id] = { w: n.w, h: n.h } })
-  // 边 path 标记（按渲染顺序打 data-eidx，供点击选中）
+  // 边 path 标记：按 DOM 顺序打 data-eidx，并记录 DOM 序 → req.edges 索引映射（布局重排边）
+  S._edgeMap = lay.edges.map(e => S.req.edges.findIndex(r => r.from === e.from && r.to === e.to))
   let ei = 0
   out.querySelectorAll('path').forEach(p => {
     if (p.getAttribute('fill') === 'none') { p.setAttribute('data-edge', '1'); p.setAttribute('data-eidx', ei); ei++ }
@@ -152,9 +154,11 @@ function _onDblClick(e, g) {
 
 function _selectEdge(p) {
   const eidx = parseInt(p.getAttribute('data-eidx') || '0', 10)
-  const edge = S.req.edges[eidx]
+  // DOM 顺序（lay.edges）→ req.edges 索引映射，避免布局重排错位
+  const realIdx = S._edgeMap && S._edgeMap[eidx] !== undefined && S._edgeMap[eidx] >= 0 ? S._edgeMap[eidx] : eidx
+  const edge = S.req.edges[realIdx]
   if (!edge) return
-  S.selected = { kind: 'edge', idx: eidx }
+  S.selected = { kind: 'edge', idx: realIdx }
   render()
   _updatePanel()
 }
