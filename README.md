@@ -10,6 +10,7 @@
 | **自研渲染管线** | 解析 → 布局 → SVG 渲染，**零外部依赖**（不依赖 Mermaid/ELK/Graphviz），泳道网格布局不重叠 |
 | **自动拆图** | 节点 >30 自动拆为主流程 + 子流程，链式分段 + 折叠子流程符号 + 图索引页 |
 | **自动验收** | 10 项检查：起止节点 / 判断双出口 / 泳道不重叠 / 逆向虚线 / 颜色语义 / 复杂度等 |
+| **网页版生成器** | `node preview-server.mjs 8080 .` → 员工浏览器打开 `http://localhost:8080/generate`，一句话生成、零命令行 |
 | **在线预览** | 本地 server，SVG 预览 + 验收报告 + PNG 导出 |
 
 ## 🚀 快速开始
@@ -47,8 +48,10 @@ node agent-batch.mjs --dir templates
 # 自动拆图（>30 节点）
 node split-graph.mjs req-lifecycle.json lifecycle --max 30
 
-# 在线预览 + PNG 导出
+# 在线预览 + 一句话生成（员工零命令行入口）
 node preview-server.mjs 8080 .
+#   → 生成器（推荐员工用）: http://localhost:8080/generate
+#   → 文件预览 + PNG 导出: http://localhost:8080
 ```
 
 ## 🗂 目录结构

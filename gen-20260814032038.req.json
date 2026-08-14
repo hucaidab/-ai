@@ -1,0 +1,139 @@
+{
+  "type": "flowchart",
+  "title": "报销流程",
+  "lanes": [
+    {
+      "dept": "员工",
+      "roles": [
+        "报销申请人"
+      ]
+    },
+    {
+      "dept": "部门经理",
+      "roles": [
+        "部门经理"
+      ]
+    },
+    {
+      "dept": "财务部",
+      "roles": [
+        "财务审核员",
+        "出纳"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "员工",
+      "role": "报销申请人",
+      "action": "开始：提交报销申请",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "员工",
+      "role": "报销申请人",
+      "action": "填写报销单并附票据",
+      "shape": "rect"
+    },
+    {
+      "id": "N3",
+      "dept": "部门经理",
+      "role": "部门经理",
+      "action": "审批通过？",
+      "shape": "diamond"
+    },
+    {
+      "id": "N4",
+      "dept": "财务部",
+      "role": "财务审核员",
+      "action": "审核票据合规性",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "财务部",
+      "role": "财务审核员",
+      "action": "票据合规？",
+      "shape": "diamond"
+    },
+    {
+      "id": "N6",
+      "dept": "财务部",
+      "role": "出纳",
+      "action": "打款",
+      "shape": "rect"
+    },
+    {
+      "id": "N7",
+      "dept": "员工",
+      "role": "报销申请人",
+      "action": "确认收款",
+      "shape": "rect"
+    },
+    {
+      "id": "N8",
+      "dept": "员工",
+      "role": "报销申请人",
+      "action": "结束：报销完成",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "提交",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N2",
+      "label": "驳回",
+      "reverse": true
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "合规",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N4",
+      "label": "不合规",
+      "reverse": true
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "打款",
+      "reverse": false
+    },
+    {
+      "from": "N7",
+      "to": "N8",
+      "label": "",
+      "reverse": false
+    }
+  ]
+}

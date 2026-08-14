@@ -22,6 +22,16 @@ git clone git@github.com:hucaidab/-ai.git
 
 > 没有 GitHub 账号的同学：注册后把 SSH 公钥发给你，或直接走 `LLM_CONFIG.md` 里的环境变量方案。
 
+### ② 告诉员工：最省事的方式是网页版（零命令行）
+
+在项目机器上启动一次（你或维护者执行）：
+
+```bash
+node preview-server.mjs 8080 .
+```
+
+然后员工**打开浏览器访问** http://localhost:8080/generate —— 输入一句话 → 点「生成流程图」→ 预览 + 下载 PNG，**全程不碰命令行**。示例：请假 / 报销 / 采购 / 入职 / MES 生产（页面上有按钮一键填入）。
+
 ### ② 告知成员：key 自己配（无需你发）
 
 没有 API key 也能用（自动降级到模板/DSL），但**配了 key 才能解析任意自然语言**（质量最好）。
@@ -52,11 +62,12 @@ node agent-flow.mjs "请假审批流程：员工提交申请，直属经理审�
 # → 看到 12/12 即成功，打开 test-flow.svg 查看
 ```
 
-## 3. 日常使用（命令行）
+## 3. 日常使用
 
-| 需求 | 命令 |
+| 场景 | 方式 |
 |------|------|
-| **一句话出图**（推荐） | `node agent-flow.mjs "采购到付款流程，要体现审批驳回" --out xxx` |
+| **员工（非技术）** | 浏览器打开 `http://localhost:8080/generate`，一句话生成，零命令行 ⭐ |
+| **一句话出图**（命令行） | `node agent-flow.mjs "采购到付款流程，要体现审批驳回" --out xxx` |
 | **用 DSL 精确控制** | 写 `req.txt`（见 §5），`node nlp-model.mjs req.txt req.json && node agent-flow.mjs "标题" --req req.json --out xxx` |
 | **批量出图** | 把多个需求 json 放一个目录，`node agent-batch.mjs --dir ./需求目录` |
 | **在线预览/导出 PNG** | `node preview-server.mjs 8080 .` → 浏览器打开 http://localhost:8080 |
