@@ -70,15 +70,16 @@ export function render() {
   // 节点 g 加 data-id（通过文本定位太脆，直接在渲染后按顺序注入）
   const out = _svgHost
   out.innerHTML = doc
-  const nodeGs = out.querySelectorAll('g[fill]')
+  // 节点 g 加 data-id：只标记带 fill 属性的内层形状 g（外层 translate g 无 fill，避免双层错位）
   const nodeOrder = graph.nodes.map(n => n.id)
   let gi = 0
-  out.querySelectorAll('svg g').forEach(g => {
-    if (g.querySelector('polygon, rect, circle, path')) {
-      if (gi < nodeOrder.length) g.setAttribute('data-id', nodeOrder[gi])
-      gi++
-    }
+  out.querySelectorAll('svg g[fill]').forEach(g => {
+    if (gi < nodeOrder.length) g.setAttribute('data-id', nodeOrder[gi])
+    gi++
   })
+  // 记录节点真实尺寸（框选命中检测用）
+  S._nodeSize = {}
+  lay.nodes.forEach(n => { S._nodeSize[n.id] = { w: n.w, h: n.h } })
   // 边 path 标记（按渲染顺序打 data-eidx，供点击选中）
   let ei = 0
   out.querySelectorAll('path').forEach(p => {
@@ -180,7 +181,8 @@ function _onCanvasDown(e) {
     const wh = Math.abs(ev.clientY - y0) / S.scale
     const hit = S.req.nodes.filter(n => {
       const p = n.pos || { x: 0, y: 0 }
-      return p.x < wx + ww && p.x + 180 > wx && p.y < wy + wh && p.y + 54 > wy
+      const sz = (S._nodeSize && S._nodeSize[n.id]) || { w: 180, h: 54 }
+      return p.x < wx + ww && p.x + sz.w > wx && p.y < wy + wh && p.y + sz.h > wy
     })
     if (hit.length) { selectNode(hit[hit.length - 1].id) }
   }

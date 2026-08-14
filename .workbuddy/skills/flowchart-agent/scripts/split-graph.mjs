@@ -110,6 +110,13 @@ export function renderOne(req, outBase, autoOnly = false, maxFixRounds = 3, them
     const lay = autoOnly
       ? layoutAuto(graph.nodes, graph.edges)
       : layout(graph.nodes, graph.edges, graph.groups, graph.declaredOrder, 'auto')
+    // 手动布局优先：req 中节点带 pos → 覆盖自动布局位置（编辑器保存/渲染一致性）
+    if (curReq.nodes) {
+      lay.nodes.forEach(n => {
+        const rn = curReq.nodes.find(x => x.id === n.id)
+        if (rn && rn.pos) n.pos = rn.pos
+      })
+    }
     const svg = renderSVG(lay, { classDefs: graph.classDefs, title: curReq.title || '', theme })
     const expectText = autoOnly
       ? curReq.nodes.filter(n => n.shape === 'start' || n.shape === 'end').map(n => n.action)

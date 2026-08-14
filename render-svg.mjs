@@ -113,6 +113,10 @@ function resolveStyle(node, classDefs, nodeCol, paletteActive, theme) {
       dash: cd['stroke-dasharray'] || '',
     }
   }
+  // 节点级自定义颜色（编辑器属性面板设置，最高优先）
+  if (node.fill) {
+    return { fill: node.fill, stroke: node.stroke || base.stroke, color: node.color || base.color, sw: base.sw, dash: node.dash || '' }
+  }
   if (paletteActive && nodeCol.has(node.id)) {
     const p = getPalette(theme)[nodeCol.get(node.id) % getPalette(theme).length]
     // 起止/判断保留语义色（绿/黄）
