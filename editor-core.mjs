@@ -71,7 +71,7 @@ function _reselect() {
 export function render() {
   const src = reqToMermaid(S.req)
   const graph = parseFlow(src)
-  const lay = layout(graph.nodes, graph.edges, graph.groups, graph.declaredOrder, 'auto')
+  const lay = layout(graph.nodes, graph.edges, graph.groups, graph.declaredOrder, 'auto', S.req.lanes, S.req.nodes)
   // 编辑器自动布局结果固化 pos（首次打开），之后 pos 由拖拽维护
   if (S._firstLayout) {
     lay.nodes.forEach(n => {
@@ -121,6 +121,8 @@ export function render() {
   // 记录节点真实尺寸（框选命中检测用）
   S._nodeSize = {}
   lay.nodes.forEach(n => { S._nodeSize[n.id] = { w: n.w, h: n.h } })
+  // 泳道树（布局后几何：节点归位/泳道选中命中检测用）
+  S._laneTree = lay.cols && lay.cols.length ? lay.cols : null
   // 边 DOM 序 → req.edges 索引映射（键含 label，同 from→to 多边不串位）
   S._edgeMap = lay.edges.map(e => S.req.edges.findIndex(r => r.from === e.from && r.to === e.to && (r.label || '') === (e.label || '')))
   // 边命中层：所有边常驻透明粗线（12px 命中区），未选中也能轻松点选/双击（选中事件灵敏度）
@@ -366,6 +368,13 @@ export function bindInteractions() {
     if (port) { _onPortDown(e, port); return }
     const h = e.target.closest ? e.target.closest('.wp-handle') : null
     if (h) { _onHandleDown(e, h); return }
+    // 泳道容器（头部/背景）→ 选中泳道（编辑 dept/roles/子泳道）
+    const laneEl = e.target.closest ? e.target.closest('[data-lane]') : null
+    if (laneEl) {
+      // 泳道头部（y < lane.y + HEAD_H 区域）才选中；内容区空白留给节点/空白处理
+      const dept = laneEl.getAttribute('data-lane')
+      if (dept && _findLane(S.req.lanes, dept)) { e.stopPropagation(); selectLane(dept); return }
+    }
     const g = e.target.closest ? e.target.closest('g[data-id]') : null
     if (g) { _onNodeDown(e, g); return }
     // 边：优先命中层（12px 命中区，选中灵敏度），其次原细 path
@@ -470,7 +479,10 @@ function _onNodeDown(e, g) {
   const up = ev => {
     window.removeEventListener('pointermove', move)
     window.removeEventListener('pointerup', up)
-    if (moved) { S.dirty = true; pushHistory(); render() } // 拖动了才提交重渲染
+    if (moved) {
+      _reparentNode(node) // 拖入其他泳道/角色栏 → 归位 dept/role（泳道图）
+      S.dirty = true; pushHistory(); render() // 拖动了才提交重渲染
+    }
     // 未拖动（单击/双击）不 render：render 全量重建 DOM → mouseup hit-test 失效 →
     // click 事件不合成 → dblclick 不生成 → 双击改字失效（质检抓出；与双击线同机制）
   }
@@ -766,6 +778,11 @@ export function selectNode(id) {
   render()
   _updatePanel()
 }
+// 选中泳道（点击泳道头部）→ 面板编辑 dept/roles/子泳道
+export function selectLane(dept) {
+  S.selected = { kind: 'lane', dept }
+  _updatePanel()
+}
 
 // ---------- 属性面板 ----------
 function _updatePanel() {
@@ -789,6 +806,28 @@ function _updatePanel() {
     document.getElementById('pDept').oninput = e => { n.dept = e.target.value; S.dirty = true }
     document.getElementById('pRole').oninput = e => { n.role = e.target.value; S.dirty = true }
     document.getElementById('pFill').oninput = e => { n.fill = e.target.value; S.dirty = true }
+  } else if (S.selected.kind === 'lane') {
+    const lane = _findLane(S.req.lanes, S.selected.dept)
+    if (!lane) return
+    const escRole = r => escHtml(String(r || ''))
+    const roleInputs = (lane.roles || []).map((r, i) =>
+      `<div style="display:flex;gap:6px;margin:4px 0"><input id="role${i}" value="${escRole(r)}" style="flex:1"><button class="danger" onclick="window.__editor.delLaneRole('${escHtml(S.selected.dept)}', ${i})" title="删除角色">✕</button></div>`).join('')
+    const childList = (lane.children || []).map(c =>
+      `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px"><span>⧉ ${escHtml(c.dept)}</span><button class="danger" onclick="window.__editor.delLane('${escHtml(c.dept)}')" title="删除子泳道">✕</button></div>`).join('')
+    panel.innerHTML = `
+      <div class="pt">泳道属性</div>
+      <label>泳道名称（部门）</label><input id="lName" value="${escHtml(lane.dept)}">
+      <label>角色分栏</label>
+      ${roleInputs || '<div style="color:var(--muted);font-size:12px">暂无角色</div>'}
+      <button onclick="window.__editor.addLaneRole('${escHtml(S.selected.dept)}')">＋ 添加角色</button>
+      ${lane.children && lane.children.length ? `<label>子泳道（多层）</label>${childList}` : ''}
+      <button onclick="window.__editor.addChildLane('${escHtml(S.selected.dept)}')">⧉ 添加子泳道</button>
+      <button onclick="window.__editor.applyLane()">应用</button>`
+    document.getElementById('lName').oninput = e => { lane._newDept = e.target.value; S.dirty = true }
+    ;(lane.roles || []).forEach((_, i) => {
+      const el = document.getElementById('role' + i)
+      if (el) el.oninput = ev => { lane.roles[i] = ev.target.value; S.dirty = true }
+    })
   } else if (S.selected.kind === 'edge') {
     const e = S.req.edges[S.selected.idx]
     if (!e) return
@@ -838,6 +877,74 @@ export function delEdge() {
   pushHistory()
   render()
 }
+// 泳道面板应用：改名（同步节点 dept）+ 角色更新
+export function applyLane() {
+  if (!S.selected || S.selected.kind !== 'lane') return
+  const lane = _findLane(S.req.lanes, S.selected.dept)
+  if (!lane) return
+  const nameEl = document.getElementById('lName')
+  const newName = nameEl ? nameEl.value.trim() : ''
+  if (newName && newName !== lane.dept) {
+    const old = lane.dept
+    lane.dept = newName
+    // 同步该泳道下节点 dept（含子泳道）
+    S.req.nodes.forEach(n => { if (n.dept === old) n.dept = newName })
+    S.selected.dept = newName
+  }
+  lane.roles = (lane.roles || []).filter(r => String(r || '').trim())
+  S.dirty = true
+  pushHistory()
+  render()
+}
+export function addLaneRole(dept) {
+  const lane = _findLane(S.req.lanes, dept)
+  if (!lane) return
+  if (!lane.roles) lane.roles = []
+  lane.roles.push('新角色' + (lane.roles.length + 1))
+  S.dirty = true
+  pushHistory()
+  render()
+  fitToView() // 结构变化后重新适配视图（泳道新增/扩展时 svg 变宽，否则新泳道在可视区外点不到）
+}
+export function delLaneRole(dept, idx) {
+  const lane = _findLane(S.req.lanes, dept)
+  if (!lane || !lane.roles) return
+  const role = lane.roles[idx]
+  lane.roles.splice(idx, 1)
+  S.req.nodes.forEach(n => { if (n.dept === dept && n.role === role) n.role = (lane.roles[0] || '默认') })
+  S.dirty = true
+  pushHistory()
+  render()
+}
+export function delLane(dept) {
+  const remove = (lanes, d) => {
+    for (let i = 0; i < lanes.length; i++) {
+      if (lanes[i].dept === d) { lanes.splice(i, 1); return true }
+      if (lanes[i].children && remove(lanes[i].children, d)) return true
+    }
+    return false
+  }
+  if (!_isChildLane(dept)) { alert('顶层泳道不能直接删除（请先删除其中节点）'); return }
+  S.req.nodes = S.req.nodes.filter(n => n.dept !== dept)
+  remove(S.req.lanes, dept)
+  S.selected = null
+  S.dirty = true
+  pushHistory()
+  render()
+  fitToView() // 结构变化后重新适配视图（泳道新增/扩展时 svg 变宽，否则新泳道在可视区外点不到）
+}
+function _isChildLane(dept) {
+  for (const l of S.req.lanes || []) {
+    if ((l.children || []).some(c => c.dept === dept)) return true
+    for (const c of l.children || []) if (_isChildLaneRec(c, dept)) return true
+  }
+  return false
+}
+function _isChildLaneRec(lane, dept) {
+  if ((lane.children || []).some(c => c.dept === dept)) return true
+  return (lane.children || []).some(c => _isChildLaneRec(c, dept))
+}
+
 export function setTheme(t) {
   S.theme = t || 'github-light'
   render()
@@ -865,7 +972,66 @@ export function addNode(shape = 'rect') {
   S.dirty = true
   pushHistory()
   render()
+  fitToView() // 结构变化后重新适配视图（泳道新增/扩展时 svg 变宽，否则新泳道在可视区外点不到）
 }
+
+// ---------- 泳道管理（新增/子泳道/查找/命中/归位） ----------
+// 递归查找泳道（按 dept，任意深度）
+function _findLane(lanes, dept) {
+  for (const l of lanes || []) {
+    if (l.dept === dept) return l
+    const r = _findLane(l.children, dept)
+    if (r) return r
+  }
+  return null
+}
+// 新增泳道（顶层）
+export function addLane() {
+  if (!S.req.lanes) S.req.lanes = []
+  const name = '新泳道' + (S.req.lanes.length + 1)
+  S.req.lanes.push({ dept: name, roles: ['角色'] })
+  S.dirty = true
+  pushHistory()
+  render()
+  fitToView() // 结构变化后重新适配视图（泳道新增/扩展时 svg 变宽，否则新泳道在可视区外点不到）
+}
+// 新增子泳道（多层：挂在指定泳道下）
+export function addChildLane(parentDept) {
+  const parent = _findLane(S.req.lanes, parentDept)
+  if (!parent) return
+  if (!parent.children) parent.children = []
+  parent.children.push({ dept: '子泳道' + (parent.children.length + 1), roles: ['角色'] })
+  S.dirty = true
+  pushHistory()
+  render()
+  fitToView() // 结构变化后重新适配视图（泳道新增/扩展时 svg 变宽，否则新泳道在可视区外点不到）
+}
+// 世界坐标命中泳道/角色栏（递归取最深命中；返回 {lane, role} 或 null）
+function _laneHitAt(wx, wy) {
+  const find = lanes => {
+    for (const l of lanes || []) {
+      if (wx >= l.x && wx <= l.x + l.w && wy >= l.y && wy <= l.y + l.h) {
+        const c = find(l.children) // 子泳道更深优先（统一返回对象/null，递归可迭代性 bug——质检抓出）
+        if (c) return c
+        for (const rc of l.roleCols || []) {
+          if (wx >= rc.x && wx <= rc.x + rc.w && wy >= rc.y && wy <= rc.y + rc.h) return { lane: l.label, role: rc.label }
+        }
+        return { lane: l.label, role: null }
+      }
+    }
+    return null
+  }
+  return find(S._laneTree)
+}
+// 节点归位：拖入其他泳道/角色栏 → 改 dept/role
+function _reparentNode(node) {
+  if (!S._laneTree) return
+  const hit = _laneHitAt(node.pos.x + (S._nodeSize[node.id]?.w || 90) / 2, node.pos.y + (S._nodeSize[node.id]?.h || 27) / 2)
+  if (!hit) return
+  if (hit.lane && hit.lane !== node.dept) { node.dept = hit.lane; if (hit.role) node.role = hit.role }
+  else if (hit.role && hit.role !== node.role) node.role = hit.role
+}
+
 export function delSelected() {
   if (!S.selected) return
   if (S.selected.kind === 'node') {

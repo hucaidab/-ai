@@ -68,11 +68,8 @@
   <button class="btn" onclick="window.__editor.undo()" title="Ctrl+Z">↩ 撤销</button>
   <button class="btn" onclick="window.__editor.redo()" title="Ctrl+Y">↪ 重做</button>
   <span class="sep"></span>
-  <button class="btn" onclick="window.__editor.addNode()" title="添加矩形节点">＋ 添加节点</button>
-  <button class="btn" onclick="window.__editor.addNode('diamond')" title="添加判断（菱形）">◆ 判断</button>
-  <button class="btn" onclick="window.__editor.addNode('stadium')" title="添加开始/结束（胶囊形）">◉ 起止</button>
-  <button class="btn" onclick="window.__editor.addNode('cylinder')" title="添加数据（圆柱形）">⬭ 数据</button>
-  <button class="btn" onclick="window.__editor.addNode('subroutine')" title="添加子流程（双竖线形）">⧉ 子流程</button>
+  <button class="btn" onclick="document.getElementById('shapeModal').style.display='flex'" title="添加节点（选择形状）">＋ 添加节点</button>
+  <button class="btn" onclick="window.__editor.addLane()" title="添加泳道容器（角色横向分栏）">▦ 添加泳道</button>
   <button class="btn danger" onclick="window.__editor.delSelected()">🗑 删除选中</button>
   <span class="sep"></span>
   <select id="themeSel" onchange="window.__editor.setTheme(this.value)" title="主题">
@@ -94,6 +91,20 @@
   <span id="zoomStatus">100%</span>
   <span class="hint">编辑自动写回 req.json（单一数据源），保存时重新渲染 + 10 项验收</span>
 </footer>
+<!-- 添加节点：形状选择弹窗（对标竞品形状库） -->
+<div id="shapeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:900;align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
+  <div style="background:#fff;border-radius:10px;padding:20px 24px;min-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.18)">
+    <div style="font-weight:700;font-size:14.5px;margin-bottom:14px">添加节点 — 选择形状</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+      <button class="btn" onclick="window.__editor.addNode('rect');document.getElementById('shapeModal').style.display='none'" title="普通步骤">▭<br>矩形</button>
+      <button class="btn" onclick="window.__editor.addNode('diamond');document.getElementById('shapeModal').style.display='none'" title="判断/审批">◆<br>判断</button>
+      <button class="btn" onclick="window.__editor.addNode('stadium');document.getElementById('shapeModal').style.display='none'" title="开始/结束">◉<br>起止</button>
+      <button class="btn" onclick="window.__editor.addNode('cylinder');document.getElementById('shapeModal').style.display='none'" title="数据对象">⬭<br>数据</button>
+      <button class="btn" onclick="window.__editor.addNode('subroutine');document.getElementById('shapeModal').style.display='none'" title="子流程">⧉<br>子流程</button>
+    </div>
+    <button class="btn" style="margin-top:14px;width:100%" onclick="document.getElementById('shapeModal').style.display='none'">取消</button>
+  </div>
+</div>
 <script>
   // 环境诊断条（普通脚本，最先执行）：模块加载失败/沙箱限制时也能看到状态
   const diag = document.createElement('div')
@@ -111,7 +122,7 @@
     setTimeout(() => box.remove(), 8000)
     window.__diag && window.__diag('❌ 页面出错：' + (e.message || e))
   })
-  import * as editor from '/lib/editor-core.mjs?v=17'
+  import * as editor from '/lib/editor-core.mjs?v=20'
   window.__editor = editor
   const q = new URLSearchParams(location.search)
   const file = q.get('file')

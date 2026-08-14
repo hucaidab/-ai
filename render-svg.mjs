@@ -195,20 +195,35 @@ export function renderSVG(layout, { classDefs = {}, title = '', subtitle = '', t
   s += `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" style="background:${theme.bg};font-family:'Microsoft YaHei',system-ui,sans-serif">`
   s += `<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${theme.edge}"/></marker></defs>`
 
-  // 泳道模式：组列背景 + 组头（按部门色板着色）
+  // 泳道模式：树形容器渲染（draw.io 风格——空泳道保留/角色横向分栏/任意深度嵌套）
+  // lay.cols 为泳道树（layout-grid 产出，含几何 x/y/w/h + children + roleCols）
   if (mode === 'swimlane' && cols) {
-    cols.forEach((c, i) => c.nodeIds.forEach(id => nodeCol.set(id, i)))
-    const laneH = H - 50 * 2
-    const colXMap = {}
-    let acc = 50
-    cols.forEach((c, i) => { colXMap[i] = acc; acc += 260 + 84 })
-    cols.forEach((c, i) => {
-      const x = colXMap[i]
-      const pc = P[i % P.length]
-      s += `<rect x="${x}" y="50" width="${260}" height="${laneH}" fill="${theme.bg}" stroke="${theme.edge}" stroke-width="1" opacity="0.55"/>`
-      s += `<rect x="${x}" y="50" width="${260}" height="${44}" fill="${pc.color}"/>`
-      s += `<text x="${x + 130}" y="${78}" text-anchor="middle" font-size="13.5" font-weight="700" fill="${theme.laneHeaderText}">${esc(c.label)}</text>`
-    })
+    const LANE_HEAD = 44 // 与 layout-grid HEAD_H 一致
+    const renderLane = (lane, depth, idx) => {
+      const pc = P[(depth + idx) % P.length]
+      // 容器包进 g[data-lane]（点击文字/背景任何位置 closest 都能命中——text 与 rect 平级会漏，同节点 data-id 教训）
+      s += `<g data-lane="${esc(lane.label)}" data-lane-depth="${depth}">`
+      // 容器背景
+      s += `<rect x="${lane.x}" y="${lane.y}" width="${lane.w}" height="${lane.h}" fill="${theme.bg}" stroke="${theme.edge}" stroke-width="1" opacity="0.55"/>`
+      // 泳道头部（色板按层级+索引）
+      s += `<rect x="${lane.x}" y="${lane.y}" width="${lane.w}" height="${LANE_HEAD}" fill="${pc.color}"/>`
+      s += `<text x="${lane.x + lane.w / 2}" y="${lane.y + LANE_HEAD / 2 + 4}" text-anchor="middle" font-size="13.5" font-weight="700" fill="${theme.laneHeaderText}">${esc(lane.label)}</text>`
+      // 角色分栏（横向并排）：分隔线 + 角色标签（栏顶部）
+      lane.roleCols.forEach(rc => {
+        s += `<rect x="${rc.x}" y="${rc.y}" width="${rc.w}" height="${rc.h}" fill="transparent" stroke="${theme.edge}" stroke-width="0.8" stroke-dasharray="4 3" opacity="0.45" data-lane-role="${esc(rc.label)}"/>`
+        s += `<text x="${rc.x + rc.w / 2}" y="${rc.y + 15}" text-anchor="middle" font-size="10.5" font-weight="600" fill="${theme.muted}">${esc(rc.label)}</text>`
+      })
+      // 子泳道递归（多层）
+      lane.children.forEach((c, j) => renderLane(c, depth + 1, j))
+      s += `</g>`
+    }
+    cols.forEach((c, i) => renderLane(c, 0, i))
+    // 泳道色板映射节点（递归收集子泳道/角色栏内节点，统一取顶层泳道色）
+    const collect = (lane, ci) => {
+      lane.roleCols.forEach(rc => rc.nodeIds.forEach(id => nodeCol.set(id, ci)))
+      lane.children.forEach(c => collect(c, ci))
+    }
+    cols.forEach((c, ci) => collect(c, ci))
   }
 
   // 边（先画）

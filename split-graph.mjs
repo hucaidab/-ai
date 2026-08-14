@@ -109,7 +109,7 @@ export function renderOne(req, outBase, autoOnly = false, maxFixRounds = 3, them
     // 拆分后的主图/子图强制 auto 线性布局（不保留泳道分组）
     const lay = autoOnly
       ? layoutAuto(graph.nodes, graph.edges)
-      : layout(graph.nodes, graph.edges, graph.groups, graph.declaredOrder, 'auto')
+      : layout(graph.nodes, graph.edges, graph.groups, graph.declaredOrder, 'auto', curReq.lanes, curReq.nodes)
     // 手动布局优先：req 中节点带 pos → 覆盖自动布局位置（编辑器保存/渲染一致性）
     // 有 pos 或任一边带 wp（航点）时重算边路由（否则 wp 不生效/边连旧位置）
     const hasPos = (curReq.nodes || []).some(n => n.pos)
@@ -158,7 +158,7 @@ export function renderOne(req, outBase, autoOnly = false, maxFixRounds = 3, them
   // 最终兜底：最后一次渲染结果（未通过也落盘）
   const src = reqToMermaid(curReq)
   const graph = parseFlow(src)
-  const lay = layout(graph.nodes, graph.edges, graph.groups, graph.declaredOrder, 'auto')
+  const lay = layout(graph.nodes, graph.edges, graph.groups, graph.declaredOrder, 'auto', curReq.lanes, curReq.nodes)
   const svg = renderSVG(lay, { classDefs: graph.classDefs, title: curReq.title || '', theme })
   const report = validateSVG(svg, { nodeCount: graph.nodes.length, edgeCount: graph.edges.length })
   fs.writeFileSync(outBase + '.svg', svg, 'utf-8')

@@ -71,6 +71,36 @@ test('edgeOffsets/routeEdgePoints: 双向边平行偏移（提交/驳回不重�
   assert.equal(edgeOffsets([{ from: 'A', to: 'B' }]).size, 0, '单边不偏移')
 })
 
+test('泳道树布局：多层嵌套 + 角色横向分栏 + 空泳道保留（V10 泳道容器）', () => {
+  const req = {
+    lanes: [
+      { dept: '集团', roles: ['总裁'], children: [
+        { dept: '财务部', roles: ['审核员', '出纳'] },
+      ]},
+      { dept: '空泳道', roles: ['待定'] },
+    ],
+    nodes: [
+      { id: 'A', dept: '财务部', role: '审核员', action: '审核', shape: 'rect' },
+      { id: 'B', dept: '财务部', role: '出纳', action: '打款', shape: 'rect' },
+    ],
+    edges: [{ from: 'A', to: 'B', label: '', reverse: false }],
+  }
+  const g = parseFlow(reqToMermaid(req))
+  const lay = layout(g.nodes, g.edges, g.groups, g.declaredOrder, 'auto', req.lanes, req.nodes)
+  assert.equal(lay.mode, 'swimlane', '泳道模式')
+  // 空泳道保留
+  assert.ok(lay.cols.some(c => c.label === '空泳道' && c.w > 0), '空泳道容器保留')
+  // 多层：集团含财务部子泳道
+  const group = lay.cols.find(c => c.label === '集团')
+  assert.equal(group.children.length, 1, '集团含子泳道')
+  // 角色横向分栏：财务部 2 角色栏
+  assert.equal(group.children[0].roleCols.length, 2, '财务部 2 角色分栏')
+  // 节点归位到角色栏（世界坐标命中）
+  const rc = group.children[0].roleCols.find(r => r.label === '审核员')
+  const a = lay.nodes.find(n => n.id === 'A')
+  assert.ok(Math.abs(a.x - rc.x) < rc.w, '节点 A 在审核员栏内')
+})
+
 test('rerouteEdges: pos 覆盖后边路由随节点新位置重算', () => {
   const lay = {
     nodes: [

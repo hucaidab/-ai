@@ -98,21 +98,118 @@ export function layoutAuto(nodes, edges) {
   return { nodes: nodes.map(n => ({ ...n, ...pos[n.id] })), edges: routed, width: maxW, height, mode: 'auto' }
 }
 
-// ---------- 模式二：泳道（列=组） ----------
-export function layoutSwimlane(nodes, edges, groups, declaredOrder) {
-  // 组内节点按声明顺序；未分组节点放独立"未分组"列
+// ---------- 模式二：泳道（树形容器：角色横向分栏 + 任意深度嵌套，draw.io 风格） ----------
+// lanes = req.lanes（{dept, roles[], children[]}）——单一数据源（groups 只有 label/nodeIds，无 roles/层级语义）
+const MIN_LANE_W = 220   // 空泳道最小宽
+const MIN_LANE_H = 110   // 空泳道最小高
+const ROLE_GAP = 10      // 泳道内角色栏间距
+
+export function layoutSwimlane(nodes, edges, groups, declaredOrder, lanes, reqNodes) {
+  // reqNodes 可选：注入 dept/role（parse 节点无这些语义字段，源在 req.nodes——单一数据源）
+  if (reqNodes && reqNodes.length) {
+    nodes = nodes.map(n => { const rn = reqNodes.find(x => x.id === n.id); return rn ? { ...n, dept: rn.dept, role: rn.role } : n })
+  }
+  if (!lanes || !lanes.length) return legacySwimlane(nodes, edges, groups, declaredOrder) // mmd 直渲（无 req）fallback
+  const byId = new Map(nodes.map(n => [n.id, n]))
+  // 递归布局泳道树：返回 { id, label, x, y, w, h, children[], roleCols[], nodeIds[] }
+  const layoutLane = (lane, depth, offsetX, offsetY) => {
+    const children = (lane.children || []).map(cl => layoutLane(cl, depth + 1, 0, 0))
+    // 本层节点（dept 精确匹配当前泳道，且不属子泳道）
+    const laneNodes = nodes.filter(n => n.dept === lane.dept && !(lane.children || []).some(c => c.dept === n.dept))
+    // 角色栏：roles 声明驱动（横向并排），栏内节点垂直堆叠
+    const roles = lane.roles && lane.roles.length ? lane.roles : ['默认']
+    let roleCols = roles.map(role => {
+      const ns = laneNodes.filter(n => (n.role || '默认') === role)
+      const maxH = Math.max(...ns.map(n => nodeSize(n)[1]), 0)
+      const colH = Math.max(HEAD_H + ns.length * SROW_H + 20, maxH + 40, MIN_LANE_H)
+      // 栏内节点定位（垂直堆叠，居中）
+      ns.forEach((n, ri) => {
+        const [w, h] = nodeSize(n)
+        pos[n.id] = { x: 0, y: 0, cx: 0, cy: 0, w, h, _role: role, _lane: lane.dept } // x/y 待列偏移后定
+        rowOrder.push({ id: n.id, role, ri })
+      })
+      return { kind: 'role', label: role, nodeIds: ns.map(n => n.id), w: COL_W, h: colH }
+    })
+    // 内容区：子泳道 + 角色栏 横向并排
+    const parts = [...children, ...roleCols]
+    const contentW = parts.length ? parts.reduce((a, c) => a + c.w, 0) + (parts.length - 1) * ROLE_GAP : MIN_LANE_W
+    const contentH = parts.length ? Math.max(...parts.map(c => c.h)) : MIN_LANE_H
+    const w = Math.max(contentW, MIN_LANE_W)
+    const h = HEAD_H + contentH
+    return { id: lane.dept, label: lane.dept, x: 0, y: 0, w, h, children, roleCols, nodeIds: laneNodes.map(n => n.id) }
+  }
+  const pos = {}, rowOrder = []
+  const lanesTree = lanes.map((l, i) => layoutLane(l, 0, 0, 0))
+  // 拼接 x/y（顶层横向；泳道内 children+roleCols 横向；栏内节点垂直）
+  const placeLane = (node, x0, y0) => {
+    node.x = x0; node.y = y0
+    let accX = x0 + ROLE_GAP
+    node.children.forEach(c => { placeLane(c, accX, y0 + HEAD_H); accX += c.w + ROLE_GAP })
+    node.roleCols.forEach(rc => {
+      rc.x = accX; rc.y = y0 + HEAD_H
+      // 栏内节点垂直堆叠（按 rowOrder 顺序）
+      const ns = rc.nodeIds.map(id => byId.get(id)).filter(Boolean)
+      ns.forEach((n, ri) => {
+        const p = pos[n.id]
+        const cx = rc.x + rc.w / 2
+        const y = rc.y + HEAD_H + ri * SROW_H + (SROW_H - p.h) / 2
+        p.x = cx - p.w / 2; p.y = y; p.cx = cx; p.cy = y + p.h / 2
+      })
+      accX += rc.w + ROLE_GAP
+    })
+  }
+  let accX = MARGIN
+  lanesTree.forEach(t => { placeLane(t, accX, MARGIN); accX += t.w + COL_GAP })
+  const width = accX - COL_GAP + MARGIN
+  const height = Math.max(...lanesTree.map(t => t.y + t.h), MARGIN * 2) + 20
+  // 节点 pos 应用（x/y 已在上方计算）
+  const placed = nodes.map(n => ({ ...n, ...pos[n.id] }))
+  // 边路由：按节点所在顶层泳道列索引（跨列走通道；同列垂直）
+  const topIndexOf = n => {
+    for (let i = 0; i < lanesTree.length; i++) if (containsLane(lanesTree[i], n.dept)) return i
+    return 0
+  }
+  const colX = []
+  let acc = MARGIN
+  lanesTree.forEach(t => { colX.push(acc); acc += t.w + COL_GAP })
+  const routed = edges.map(e => {
+    const A = pos[e.from], B = pos[e.to]
+    if (!A || !B) return { ...e, points: [], back: false }
+    const ai = topIndexOf(byId.get(e.from)), bi = topIndexOf(byId.get(e.to))
+    let pts
+    if (ai === bi) {
+      if (B.cy > A.cy) pts = [[A.cx, A.y + A.h], [A.cx, B.y]]
+      else pts = [[A.cx, A.y], [A.cx, B.y + B.h]]
+    } else if (bi > ai) {
+      const chX = colX[ai] + lanesTree[ai].w + COL_GAP / 2
+      pts = [[A.x + A.w, A.cy], [chX, A.cy], [chX, B.cy], [B.x, B.cy]]
+    } else {
+      const chX = colX[ai] - COL_GAP / 2
+      pts = [[A.x, A.cy], [chX, A.cy], [chX, B.cy], [B.x + B.w, B.cy]]
+    }
+    return { ...e, points: pts, back: bi < ai }
+  })
+  return { nodes: placed, edges: routed, width, height, mode: 'swimlane', cols: lanesTree }
+}
+
+// 泳道树是否包含指定 dept（任意深度）
+function containsLane(lane, dept) {
+  if (lane.label === dept) return true
+  return (lane.children || []).some(c => containsLane(c, dept))
+}
+
+// 旧扁平泳道布局（无 req.lanes 时的 mmd 直渲 fallback：列=组，组内节点垂直堆叠）
+function legacySwimlane(nodes, edges, groups, declaredOrder) {
   const groupIds = groups.map(g => g.id)
   const grouped = new Set()
   groups.forEach(g => g.nodeIds.forEach(id => grouped.add(id)))
   const ungrouped = nodes.filter(n => !grouped.has(n.id))
   const cols = groups.map(g => ({ id: g.id, label: g.label, nodeIds: g.nodeIds.filter(id => nodes.some(n => n.id === id)) }))
   if (ungrouped.length) cols.push({ id: '__free__', label: '未分组', nodeIds: ungrouped.map(n => n.id) })
-  // 列 x
   const colX = []
   let acc = MARGIN
   cols.forEach((c, i) => { colX.push(acc); acc += COL_W + COL_GAP })
   const width = acc - COL_GAP + MARGIN
-  // 行 y（组内按声明顺序）
   const pos = {}
   let maxRows = 0
   cols.forEach((c, ci) => {
@@ -126,14 +223,12 @@ export function layoutSwimlane(nodes, edges, groups, declaredOrder) {
     })
   })
   const height = MARGIN * 2 + HEAD_H + maxRows * SROW_H + 20
-  // 组 id → 列下标
   const colOf = {}
   cols.forEach((c, ci) => colOf[c.id] = ci)
   const colIndexOfNode = n => {
     const g = groups.find(g => g.nodeIds.includes(n.id))
     return g ? colOf[g.id] : colOf['__free__']
   }
-  // 边路由：同列垂直；跨列走通道（顺流右、回流左）
   const routed = edges.map(e => {
     const A = pos[e.from], B = pos[e.to]
     if (!A || !B) return { ...e, points: [], back: false }
@@ -152,15 +247,25 @@ export function layoutSwimlane(nodes, edges, groups, declaredOrder) {
     }
     return { ...e, points: pts, back: bi < ai }
   })
-  return { nodes: nodes.map(n => ({ ...n, ...pos[n.id] })), edges: routed, width, height, mode: 'swimlane', cols }
+  // 输出兼容新树形结构的 cols（render-svg 统一渲染：每列 = 泳道，roleCols 默认一栏）
+  const treeCols = cols.map((c, ci) => {
+    const h = MARGIN * 2 + HEAD_H + c.nodeIds.length * SROW_H + 20
+    return {
+      id: c.id, label: c.label, x: colX[ci], y: MARGIN, w: COL_W, h,
+      children: [],
+      roleCols: c.nodeIds.length ? [{ label: c.label, x: colX[ci], y: MARGIN + HEAD_H, w: COL_W, h: h - HEAD_H, nodeIds: c.nodeIds }] : [],
+      nodeIds: c.nodeIds,
+    }
+  })
+  return { nodes: nodes.map(n => ({ ...n, ...pos[n.id] })), edges: routed, width, height, mode: 'swimlane', cols: treeCols }
 }
 
 // ---------- 模式自动选择 ----------
-export function layout(nodes, edges, groups, declaredOrder, mode) {
+export function layout(nodes, edges, groups, declaredOrder, mode, lanes, reqNodes) {
   const hasGroups = groups.some(g => g.nodeIds.length >= 2)
-  const useSwim = mode === 'swimlane' || (mode === 'auto' && hasGroups)
+  const useSwim = mode === 'swimlane' || (mode === 'auto' && (hasGroups || (lanes && lanes.length)))
   return useSwim
-    ? layoutSwimlane(nodes, edges, groups, declaredOrder)
+    ? layoutSwimlane(nodes, edges, groups, declaredOrder, lanes, reqNodes)
     : layoutAuto(nodes, edges)
 }
 

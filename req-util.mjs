@@ -15,17 +15,27 @@ export function reqToMermaid(req) {
       : n.shape === 'subroutine' ? '[[' + label + ']]'
       : '[' + label + ']'
   }
-  if (req.lanes) {
-    const laneDepts = new Set(req.lanes.map(l => l.dept))
-    req.lanes.forEach((l, i) => {
-      s += `    subgraph L${i}["${l.dept}"]\n        direction LR\n`
-      req.nodes.filter(n => n.dept === l.dept).forEach(n => {
-        s += `        ${n.id}${shapeOf(n, n.role)}\n`
-      })
-      s += `    end\n`
+  // 递归输出泳道树（多层嵌套 subgraph；空泳道也输出——容器式保留显示）
+  // 返回已输出的 dept 集合（避免兜底段重复）
+  const allDepts = new Set()
+  const emitLane = (lane, depth, idx) => {
+    const id = 'L' + depth + '_' + idx
+    const pad = '    '.repeat(depth + 1)
+    allDepts.add(lane.dept)
+    s += `${pad}subgraph ${id}["${lane.dept}"]\n${pad}    direction LR\n`
+    if (lane.children && lane.children.length) {
+      lane.children.forEach((c, j) => emitLane(c, depth + 1, j))
+    }
+    // 本层节点（dept 精确匹配当前泳道，子泳道节点已在递归中输出）
+    req.nodes.filter(n => n.dept === lane.dept && !(lane.children || []).some(c => c.dept === n.dept)).forEach(n => {
+      s += `${pad}    ${n.id}${shapeOf(n, n.role)}\n`
     })
+    s += `${pad}end\n`
+  }
+  if (req.lanes) {
+    req.lanes.forEach((l, i) => emitLane(l, 0, i))
     // 兜底：dept 不在任何 lane 的节点（如编辑器 addNode 的'其他'）必须输出，否则渲染丢失（质检抓出）
-    req.nodes.filter(n => !laneDepts.has(n.dept)).forEach(n => {
+    req.nodes.filter(n => !allDepts.has(n.dept)).forEach(n => {
       s += `    ${n.id}${shapeOf(n, n.role)}\n`
     })
   } else {

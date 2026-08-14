@@ -167,7 +167,9 @@ export function parseFlow(src) {
         gid = m[1]
         label = m[2] ? m[2].replace(/^['"]|['"]$/g, '') : gid
       }
-      const g = { id: gid, label, nodeIds: [], direction: null }
+      const g = { id: gid, label, nodeIds: [], direction: null, depth: stack.length, parent: stack.length ? stack[stack.length - 1].id : null, children: [] }
+      // 挂到父 group 的 children（多层泳道层级树——布局/渲染按树递归）
+      if (stack.length) stack[stack.length - 1].children.push(g.id)
       stack.push(g)
       groups.push(g)
       continue
