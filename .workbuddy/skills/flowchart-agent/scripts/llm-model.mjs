@@ -24,7 +24,7 @@ export function loadLLMConfig() {
   }
 }
 
-// ---------- 系统提示词（JSON Schema + few-shot） ----------
+// ---------- 系统提示词（JSON Schema + few-shot，P1 扩展） ----------
 const SYSTEM = `你是业务流程建模专家。把用户的自然语言需求转换为结构化 JSON，用于绘制流程图。
 必须严格输出 JSON（不要任何多余文字），结构如下：
 {
@@ -40,12 +40,14 @@ const SYSTEM = `你是业务流程建模专家。把用户的自然语言需求�
 }
 规则：
 1. 开始节点 1 个（shape=start），结束节点 1 个（shape=end），动作以"开始："开头/含"结束"字样。
-2. 判断/审批类节点用 shape=diamond（动作通常以？结尾），其每个出口边必须带标签（如"通过/驳回"）。
+2. 判断/审批类节点用 shape=diamond（动作以？结尾），其每个出口边必须带标签（通过/驳回）。
 3. 驳回、退货、退回、不通过、逾期、催收等"逆向/异常"流转，其边 reverse=true（渲染为虚线）。
 4. 每个节点必须属于某个 dept（lanes 里要有该部门），role 是该部门的岗位。
 5. 单图节点 ≤30；若超过，明确告诉用户"建议拆分为多张图"并在 title 中标注。
 6. 所有 id 用 N1、N2… 递增。
-示例（采购审批，仅演示格式）：
+7. 多个部门时 lanes 按流程顺序排列，节点 dept 必须与 lanes 中部门一致。
+8. 判断节点被驳回时，reverse=true 的边指向"上一个可重做的节点"（如申请/填写环节），形成闭环。
+示例1（采购审批，单部门+逆向驳回）：
 {
   "type": "flowchart", "title": "采购审批流程",
   "lanes": [ { "dept": "采购部", "roles": ["采购员","采购经理"] } ],
@@ -60,6 +62,30 @@ const SYSTEM = `你是业务流程建模专家。把用户的自然语言需求�
     { "from": "N2", "to": "N3", "label": "提交", "reverse": false },
     { "from": "N3", "to": "N4", "label": "通过", "reverse": false },
     { "from": "N3", "to": "N2", "label": "驳回", "reverse": true }
+  ]
+}
+示例2（跨部门泳道，多判断+多逆向）：
+{
+  "type": "flowchart", "title": "报销审批流程",
+  "lanes": [
+    { "dept": "员工", "roles": ["申请人"] },
+    { "dept": "部门经理", "roles": ["经理"] },
+    { "dept": "财务部", "roles": ["会计","出纳"] }
+  ],
+  "nodes": [
+    { "id": "N1", "dept": "员工", "role": "申请人", "action": "开始：提交报销单", "shape": "start" },
+    { "id": "N2", "dept": "部门经理", "role": "经理", "action": "审批通过?", "shape": "diamond" },
+    { "id": "N3", "dept": "财务部", "role": "会计", "action": "审核票据合规?", "shape": "diamond" },
+    { "id": "N4", "dept": "财务部", "role": "出纳", "action": "打款", "shape": "rect" },
+    { "id": "N5", "dept": "员工", "role": "申请人", "action": "结束：收到款项", "shape": "end" }
+  ],
+  "edges": [
+    { "from": "N1", "to": "N2", "label": "", "reverse": false },
+    { "from": "N2", "to": "N3", "label": "通过", "reverse": false },
+    { "from": "N2", "to": "N1", "label": "驳回", "reverse": true },
+    { "from": "N3", "to": "N4", "label": "合规", "reverse": false },
+    { "from": "N3", "to": "N1", "label": "不合规", "reverse": true },
+    { "from": "N4", "to": "N5", "label": "", "reverse": false }
   ]
 }`
 
@@ -89,7 +115,7 @@ async function callLLM(text, cfg) {
   return JSON.parse(content.slice(start, end + 1))
 }
 
-// ---------- Schema 校验与修复 ----------
+// ---------- Schema 校验与修复（P1：建模质量强化） ----------
 export function repairSchema(req) {
   if (!req || typeof req !== 'object') return null
   if (!Array.isArray(req.nodes) || !Array.isArray(req.edges)) return null
@@ -104,6 +130,11 @@ export function repairSchema(req) {
     if (!n.action) n.action = n.id
     if (!n.dept) n.dept = n.role || '其他'
     if (!n.role) n.role = n.dept
+    // P1：判断节点 action 统一补"?"（渲染为菱形时语义更清晰）
+    if (n.shape === 'diamond' && n.action && !/[？?]/.test(n.action)) n.action = n.action + '?'
+    // P1：role 去尾"人员/专员"类冗余（如"采购专员"→保留，"人员"→精简）——仅去空泛后缀
+    n.role = (n.role || '').replace(/(人员|岗位)$/, '')
+    // P1：dept 去重时保持首现顺序（泳道稳定）
     if (!lanes.some(l => l.dept === n.dept)) lanes.push({ dept: n.dept, roles: [n.role] })
     else if (!lanes.find(l => l.dept === n.dept).roles.includes(n.role)) lanes.find(l => l.dept === n.dept).roles.push(n.role)
   })
@@ -111,6 +142,13 @@ export function repairSchema(req) {
   req.edges.forEach(e => {
     if (e.reverse === undefined) e.reverse = false
     if (!e.label) e.label = ''
+    // P1：判断出口标签统一（"是/否" → "通过/驳回" 风格归一）
+    const fromNode = req.nodes.find(n => n.id === e.from)
+    if (fromNode && fromNode.shape === 'diamond' && e.label) {
+      const l = e.label.trim()
+      if (l === '是' || l === '同意' || l === '批准') e.label = '通过'
+      else if (l === '否' || l === '不同意' || l === '拒绝' || l === '不通过') e.label = '驳回'
+    }
   })
   return req
 }

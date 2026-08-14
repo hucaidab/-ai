@@ -1,0 +1,35 @@
+# ============================================================
+# CI — flowchart-agent 自动化验收（P2 工程健壮性）
+# 触发: push / PR → 单测 14 项 + 100 模板批量验收 + 冒烟
+# ============================================================
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: 单元测试（node --test）
+        run: node --test test-core.mjs
+
+      - name: 100 模板批量验收（每模板 10 项全过才通过）
+        run: node agent-batch.mjs --dir templates
+
+      - name: 模板匹配冒烟
+        run: |
+          node template-finder.mjs "请假流程" | grep -q "leave.json" && echo "✅ 请假命中 leave"
+          node template-finder.mjs "报销流程" | grep -q "expense.json" && echo "✅ 报销命中 expense"
+          node template-finder.mjs "退货退款" | grep -q "return-refund.json" && echo "✅ 退货命中 return-refund"
+
+      - name: 渲染管线冒烟（登录流程图 → 验收通过）
+        run: node agent-orchestrator.mjs diagram-login-auth.mmd /tmp/ci-login.svg --expect-text "开始：用户访问登录页,结束：登录成功"

@@ -14,6 +14,18 @@ import { llmModel } from './llm-model.mjs'
 import { splitAndRender, renderOne } from './split-graph.mjs'
 import { exportMermaid, svgToPdf } from './lib-export.mjs'
 
+// ---------- P2：全局错误兜底（未捕获异常 → 友好提示而非崩溃堆栈） ----------
+process.on('uncaughtException', e => {
+  console.error('😅 出错了：' + (e.message || e))
+  console.error('   这是异常情况，请把上面这行发给维护者排查（附带操作步骤更容易定位）')
+  process.exit(1)
+})
+process.on('unhandledRejection', e => {
+  console.error('😅 出错了：' + (e && e.message ? e.message : e))
+  console.error('   这是异常情况，请把上面这行发给维护者排查')
+  process.exit(1)
+})
+
 const args = process.argv.slice(2)
 const getOpt = (name, def) => { const i = args.indexOf(name); return i >= 0 && args[i + 1] ? args[i + 1] : def }
 const outBase = getOpt('--out', 'flow')

@@ -149,6 +149,29 @@ test('repairSchema: id 去重/形状合法/泳道归位', () => {
   assert.ok(req.lanes.some(l => l.dept === '其他'), '缺 dept 归位')
 })
 
+test('repairSchema: P1 强化——判断补?/标签归一/role 精简', () => {
+  const req = repairSchema({
+    nodes: [
+      { id: 'N1', action: '开始：启动', shape: 'start' },
+      { id: 'N2', action: '审批通过', shape: 'diamond', dept: '经理部', role: '经理人员' },
+      { id: 'N3', action: '处理', shape: 'rect' },
+      { id: 'N4', action: '结束：完成', shape: 'end' },
+    ],
+    edges: [
+      { from: 'N1', to: 'N2', label: '' },
+      { from: 'N2', to: 'N3', label: '是' },
+      { from: 'N2', to: 'N1', label: '否', reverse: true },
+    ],
+  })
+  const d = req.nodes.find(n => n.id === 'N2')
+  assert.equal(d.action, '审批通过?', '判断节点自动补?')
+  assert.equal(d.role, '经理', 'role 精简"人员"后缀')
+  const yes = req.edges.find(e => e.from === 'N2' && e.to === 'N3')
+  const no = req.edges.find(e => e.from === 'N2' && e.to === 'N1')
+  assert.equal(yes.label, '通过', '是→通过 归一')
+  assert.equal(no.label, '驳回', '否→驳回 归一')
+})
+
 // ---------- nlp-model ----------
 test('nlp: DSL 建模（部门/判断/逆向）', () => {
   const text = `标题: 测试
