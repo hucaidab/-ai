@@ -46,9 +46,14 @@ async function main() {
   })()`)
   console.log('①b 探针注入:', probeInjected)
 
-  // 3. 取第一个节点的屏幕坐标（真实渲染位置）
+  // 3. 取可视区内的第一个节点（fitToView 可能滚动居中，DOM 首个节点可能在视口外点不到）
   const rect = await evalJs(`(() => {
-    const g = document.querySelector('g[data-id]')
+    const cw = document.getElementById('canvasWrap').getBoundingClientRect()
+    const g = [...document.querySelectorAll('g[data-id]')].find(g => {
+      const r = g.getBoundingClientRect()
+      const cx = r.x + r.width / 2, cy = r.y + r.height / 2
+      return cx > cw.left + 20 && cx < cw.right - 20 && cy > cw.top + 20 && cy < cw.bottom - 20
+    })
     if (!g) return null
     const r = g.getBoundingClientRect()
     return { x: r.x + r.width / 2, y: r.y + r.height / 2, id: g.getAttribute('data-id') }

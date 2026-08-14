@@ -36,7 +36,9 @@ async function main() {
   }
 
   // 2. 选中一条边（找有折角的边：折点不全共线，便于双击路径/拖折点）
+  //    仅取可视区内的边（fitToView 可能滚动居中，视口外的边点不到）
   const edgeInfo = await evalJs(`(() => {
+    const cw = document.getElementById('canvasWrap').getBoundingClientRect()
     const edges = [...document.querySelectorAll('path[data-edge]')]
     for (const p of edges) {
       const d = p.getAttribute('d')
@@ -47,6 +49,7 @@ async function main() {
       if (spread > 60) { // 有实际折角
         const pt = p.getPointAtLength(p.getTotalLength() * 0.3) // 路径 30% 处（避开中间折点）
         const sp = pt.matrixTransform(p.getScreenCTM())
+        if (sp.x < cw.left + 15 || sp.x > cw.right - 15 || sp.y < cw.top + 15 || sp.y > cw.bottom - 15) continue // 视口外跳过
         return { x: sp.x, y: sp.y, eidx: p.getAttribute('data-eidx'), d: d.slice(0, 60) }
       }
     }

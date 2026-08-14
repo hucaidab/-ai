@@ -1100,9 +1100,15 @@ export function fitToView() {
   const vw = cw.clientWidth, vh = cw.clientHeight
   const sw = parseFloat(svg.getAttribute('width') || 0), sh = parseFloat(svg.getAttribute('height') || 0)
   if (!vw || !vh || !sw || !sh) return
+  // 最小可读 scale 0.55：图再大也不缩到文字不可读（13px 文字 ×0.55 ≈ 7px 可读）。
+  // 超出视口部分靠滚动查看（draw.io/ProcessOn 惯例）；此前下限 0.1 会把大图缩成
+  // 4px 文字 → 视觉上"画布没内容"（用户反馈）
   const s = Math.min(vw / sw, vh / sh, 1.2)
-  S.scale = Math.round(Math.max(0.1, s) * 100) / 100
+  S.scale = Math.round(Math.max(0.55, s) * 100) / 100
   _applyScale()
+  // 初始滚动居中内容（内容中心对齐视口中心）：图大时保证打开即看到内容而非空白边角
+  cw.scrollLeft = Math.max(0, sw / 2 * S.scale - vw / 2)
+  cw.scrollTop = Math.max(0, sh / 2 * S.scale - vh / 2)
   _updateStatus()
 }
 
