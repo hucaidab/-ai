@@ -7,7 +7,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { parseFlow } from './parse-flow.mjs'
-import { layout, routeEdgePoints, rerouteEdges } from './layout-grid.mjs'
+import { layout, routeEdgePoints, rerouteEdges, edgeOffsets } from './layout-grid.mjs'
 import { selfCheck, autoFix, repairSchema } from './llm-model.mjs'
 import { modelFromText } from './nlp-model.mjs'
 import { findTemplate } from './template-finder.mjs'
@@ -56,6 +56,19 @@ test('routeEdgePoints: 障碍绕行——中段穿障时偏移避开（不穿其
   // 排除端点：A/B 自身不作为障碍
   const pts2 = routeEdgePoints(A, B, [A, B])
   assert.equal(pts2[1][0], expMid, 'A/B 自身不参与避障')
+})
+
+test('edgeOffsets/routeEdgePoints: 双向边平行偏移（提交/驳回不重叠）', () => {
+  const A = { id: 'A', x: 100, y: 100, w: 180, h: 50 }, B = { id: 'B', x: 500, y: 300, w: 180, h: 50 }
+  const edges = [{ from: 'A', to: 'B', label: '提交' }, { from: 'B', to: 'A', label: '驳回' }]
+  const offsets = edgeOffsets(edges)
+  assert.notEqual(offsets.get(edges[0]), offsets.get(edges[1]), '双向边 offset 不同')
+  const pAB = routeEdgePoints(A, B, [], offsets.get(edges[0]) || 0)
+  const pBA = routeEdgePoints(B, A, [], offsets.get(edges[1]) || 0)
+  const gap = Math.abs(pAB[1][0] - pBA[1][0])
+  assert.equal(gap, 24, 'mid 折点错开 24px（不重叠）')
+  // 单边无偏移（回归）
+  assert.equal(edgeOffsets([{ from: 'A', to: 'B' }]).size, 0, '单边不偏移')
 })
 
 test('rerouteEdges: pos 覆盖后边路由随节点新位置重算', () => {

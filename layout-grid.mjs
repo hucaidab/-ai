@@ -191,9 +191,28 @@ function dirFromVector(dx, dy) {
   return DIRS[Math.round(deg / 45) % 8]
 }
 
+// ---------- 同对边平行偏移（双向边/同向多边不重叠，对齐 draw.io/ProcessOn） ----------
+// 同一对节点（A↔B，方向无关）的多条边：mid 折点按序错开 ±24px，形成平行线
+export function edgeOffsets(edges) {
+  const groups = new Map()
+  edges.forEach(e => {
+    const key = [e.from, e.to].sort().join('↔')
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key).push(e)
+  })
+  const map = new Map()
+  groups.forEach(group => {
+    const n = group.length
+    if (n < 2) return
+    group.forEach((e, idx) => map.set(e, (idx - (n - 1) / 2) * 24))
+  })
+  return map
+}
+
 // A→B 正交路由：出口=A 方向锚点，入口=B 反向锚点，Z 型（2 折点）
 // obstacles：其他节点列表（自动过滤 A/B），Z 型中段碰撞时偏移绕行（避障）
-export function routeEdgePoints(A, B, obstacles = []) {
+// offset：同对边平行偏移量（mid 折点错开，多边不重叠）
+export function routeEdgePoints(A, B, obstacles = [], offset = 0) {
   const ax = nodeXY(A).x, ay = nodeXY(A).y
   const bx = nodeXY(B).x, by = nodeXY(B).y
   const acx = ax + A.w / 2, acy = ay + A.h / 2
@@ -212,7 +231,7 @@ export function routeEdgePoints(A, B, obstacles = []) {
     ? [[p1, p2, true], [p1, p2, false]]
     : [[p1, p2, false], [p1, p2, true]]
   for (const [a, b, isH] of builds) {
-    const mid = isH ? (a.x + b.x) / 2 : (a.y + b.y) / 2
+    const mid = (isH ? (a.x + b.x) / 2 : (a.y + b.y) / 2) + offset
     let pts = isH
       ? [[a.x, a.y], [mid, a.y], [mid, b.y], [b.x, b.y]]
       : [[a.x, a.y], [a.x, mid], [b.x, mid], [b.x, b.y]]
@@ -220,7 +239,7 @@ export function routeEdgePoints(A, B, obstacles = []) {
     if (!routeHits(pts, obsBoxes)) return pts
   }
   // 双主轴都避不开：返回主轴原始路由（保底）
-  const mid = horizontal ? (p1.x + p2.x) / 2 : (p1.y + p2.y) / 2
+  const mid = (horizontal ? (p1.x + p2.x) / 2 : (p1.y + p2.y) / 2) + offset
   return horizontal
     ? [[p1.x, p1.y], [mid, p1.y], [mid, p2.y], [p2.x, p2.y]]
     : [[p1.x, p1.y], [p1.x, mid], [p2.x, mid], [p2.x, p2.y]]
@@ -305,6 +324,8 @@ export function rerouteEdges(lay, reqEdges) {
   // req 边 → wp 映射（from→to+label 键）
   const wpMap = new Map()
   if (reqEdges) reqEdges.forEach(e => { if (e.wp && e.wp.length) wpMap.set(e.from + '→' + e.to + '|' + (e.label || ''), e.wp) })
+  // 同对边平行偏移（双向/同向多边不重叠）
+  const offsets = edgeOffsets(lay.edges)
   lay.edges.forEach(e => {
     const a = byId.get(e.from), b = byId.get(e.to)
     if (!a || !b) return
@@ -313,7 +334,7 @@ export function rerouteEdges(lay, reqEdges) {
       e.points = routeWithWaypoints(anchorPoint(a, dirFromVector(b.x - a.x, b.y - a.y)), anchorPoint(b, dirFromVector(a.x - b.x, a.y - b.y)), wp)
       return
     }
-    e.points = routeEdgePoints(a, b, lay.nodes)
+    e.points = routeEdgePoints(a, b, lay.nodes, offsets.get(e) || 0)
   })
   return lay
 }

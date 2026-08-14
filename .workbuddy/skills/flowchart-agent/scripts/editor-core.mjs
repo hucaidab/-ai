@@ -8,7 +8,7 @@
 // 注：锚点连边（拖出新连线）为 backlog 项，尚未实现
 // ============================================================
 import { parseFlow } from './parse-flow.mjs'
-import { layout, rerouteEdges, routeEdgePoints, routeWithWaypoints } from './layout-grid.mjs'
+import { layout, rerouteEdges, routeEdgePoints, routeWithWaypoints, edgeOffsets } from './layout-grid.mjs'
 import { renderSVG } from './render-svg.mjs'
 import { reqToMermaid } from './req-util.mjs'
 
@@ -352,6 +352,8 @@ function _rerouteEdges(dragId) {
   }
   // 全部节点（含 id，供避障按 id 排除端点）
   const allNodes = S.req.nodes.map(n => nodeObj(n.id)).filter(Boolean)
+  // 同对边平行偏移（拖动中双向/多边不重叠）
+  const offsets = edgeOffsets(S.req.edges)
   S.req.edges.forEach((e, i) => {
     if (e.from !== dragId && e.to !== dragId) return
     const domIdx = S._edgeMap.indexOf(i)
@@ -360,7 +362,7 @@ function _rerouteEdges(dragId) {
     if (!p) return
     const a = allNodes.find(n => n.id === e.from), b = allNodes.find(n => n.id === e.to)
     if (!a || !b) return
-    const pts = routeEdgePoints(a, b, allNodes)
+    const pts = routeEdgePoints(a, b, allNodes, offsets.get(e) || 0)
     p.setAttribute('d', 'M ' + pts.map(pt => pt[0] + ' ' + pt[1]).join(' L '))
   })
 }
