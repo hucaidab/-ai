@@ -266,14 +266,46 @@ function avoidMiddle(pts, isH, boxes) {
   return out
 }
 
+// ---------- 航点路由（draw.io waypoints：用户手拖的必经折点） ----------
+// 两点间正交连接（单折点 L 型：水平优先或垂直优先取较短侧）
+function orthoLink(ax, ay, bx, by) {
+  const dx = Math.abs(bx - ax), dy = Math.abs(by - ay)
+  if (dx >= dy) return [[ax, ay], [(ax + bx) / 2, ay], [(ax + bx) / 2, by], [bx, by]]
+  return [[ax, ay], [ax, (ay + by) / 2], [bx, (ay + by) / 2], [bx, by]]
+}
+
+// 带航点路由：出口 → wp1 → wp2 → … → 入口（逐段正交连接）
+export function routeWithWaypoints(p1, p2, wp) {
+  if (!wp || !wp.length) return orthoLink(p1.x, p1.y, p2.x, p2.y)
+  const pts = [[p1.x, p1.y]]
+  let prev = [p1.x, p1.y]
+  for (const w of wp) {
+    const seg = orthoLink(prev[0], prev[1], w[0], w[1])
+    pts.push(...seg.slice(1)) // 跳过重复起点
+    prev = [w[0], w[1]]
+  }
+  const tail = orthoLink(prev[0], prev[1], p2.x, p2.y)
+  pts.push(...tail.slice(1))
+  return pts
+}
+
 // 基于 lay.nodes 当前坐标（已含 pos 覆盖）重算全部边路由——
 // 节点被拖拽/pos 覆盖后边必须跟随，否则节点在 pos 边连旧位置（视觉断线）
-// 其余节点作为障碍参与避障（不穿其他节点）
-export function rerouteEdges(lay) {
+// reqEdges：原始 req.edges（wp 航点数据源，lay.edges 是解析产物无 wp）
+// 带 wp 的边走航点路由（wp 绝对坐标必经），其余走锚点+避障路由
+export function rerouteEdges(lay, reqEdges) {
   const byId = new Map(lay.nodes.map(n => [n.id, n]))
+  // req 边 → wp 映射（from→to+label 键）
+  const wpMap = new Map()
+  if (reqEdges) reqEdges.forEach(e => { if (e.wp && e.wp.length) wpMap.set(e.from + '→' + e.to + '|' + (e.label || ''), e.wp) })
   lay.edges.forEach(e => {
     const a = byId.get(e.from), b = byId.get(e.to)
     if (!a || !b) return
+    const wp = wpMap.get(e.from + '→' + e.to + '|' + (e.label || ''))
+    if (wp && wp.length) {
+      e.points = routeWithWaypoints(anchorPoint(a, dirFromVector(b.x - a.x, b.y - a.y)), anchorPoint(b, dirFromVector(a.x - b.x, a.y - b.y)), wp)
+      return
+    }
     e.points = routeEdgePoints(a, b, lay.nodes)
   })
   return lay

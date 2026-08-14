@@ -111,13 +111,17 @@ export function renderOne(req, outBase, autoOnly = false, maxFixRounds = 3, them
       ? layoutAuto(graph.nodes, graph.edges)
       : layout(graph.nodes, graph.edges, graph.groups, graph.declaredOrder, 'auto')
     // 手动布局优先：req 中节点带 pos → 覆盖自动布局位置（编辑器保存/渲染一致性）
-    if (curReq.nodes) {
-      lay.nodes.forEach(n => {
-        const rn = curReq.nodes.find(x => x.id === n.id)
-        if (rn && rn.pos) n.pos = rn.pos
-      })
-      // pos 覆盖后重算边路由（否则边连旧位置，视觉断线）
-      rerouteEdges(lay)
+    // 有 pos 或任一边带 wp（航点）时重算边路由（否则 wp 不生效/边连旧位置）
+    const hasPos = (curReq.nodes || []).some(n => n.pos)
+    const hasWp = (curReq.edges || []).some(e => e.wp && e.wp.length)
+    if (hasPos || hasWp) {
+      if (curReq.nodes) {
+        lay.nodes.forEach(n => {
+          const rn = curReq.nodes.find(x => x.id === n.id)
+          if (rn && rn.pos) n.pos = rn.pos
+        })
+      }
+      rerouteEdges(lay, curReq.edges)
     }
     const svg = renderSVG(lay, { classDefs: graph.classDefs, title: curReq.title || '', theme })
     const expectText = autoOnly
