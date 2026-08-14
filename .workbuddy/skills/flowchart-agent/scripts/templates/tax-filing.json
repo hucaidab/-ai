@@ -1,0 +1,138 @@
+{
+  "type": "flowchart",
+  "title": "纳税申报流程",
+  "lanes": [
+    {
+      "dept": "财务部",
+      "roles": [
+        "税务会计",
+        "财务经理"
+      ]
+    },
+    {
+      "dept": "管理层",
+      "roles": [
+        "财务总监"
+      ]
+    },
+    {
+      "dept": "税务局",
+      "roles": [
+        "税务机关"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "财务部",
+      "role": "税务会计",
+      "action": "收集申报数据",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "财务部",
+      "role": "税务会计",
+      "action": "编制纳税申报表",
+      "shape": "rect"
+    },
+    {
+      "id": "N3",
+      "dept": "财务部",
+      "role": "财务经理",
+      "action": "申报复核通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N4",
+      "dept": "管理层",
+      "role": "财务总监",
+      "action": "重大事项会签通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N5",
+      "dept": "财务部",
+      "role": "税务会计",
+      "action": "电子申报",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "税务局",
+      "role": "税务机关",
+      "action": "税务受理",
+      "shape": "rect"
+    },
+    {
+      "id": "N7",
+      "dept": "财务部",
+      "role": "税务会计",
+      "action": "申报归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N2",
+      "label": "退回",
+      "reverse": true
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N2",
+      "label": "不通过",
+      "reverse": true
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "纳税",
+      "报税",
+      "税务申报",
+      "tax"
+    ],
+    "tags": [
+      "财务",
+      "税务"
+    ]
+  }
+}

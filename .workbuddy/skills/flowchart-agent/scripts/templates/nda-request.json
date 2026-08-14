@@ -1,0 +1,167 @@
+{
+  "type": "flowchart",
+  "title": "保密协议签署流程",
+  "lanes": [
+    {
+      "dept": "申请人",
+      "roles": [
+        "申请人"
+      ]
+    },
+    {
+      "dept": "法务部",
+      "roles": [
+        "法务专员"
+      ]
+    },
+    {
+      "dept": "部门",
+      "roles": [
+        "部门经理"
+      ]
+    },
+    {
+      "dept": "外部方",
+      "roles": [
+        "外部方"
+      ]
+    },
+    {
+      "dept": "管理层",
+      "roles": [
+        "审批人"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "申请人",
+      "role": "申请人",
+      "action": "提交 NDA 申请",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "法务部",
+      "role": "法务专员",
+      "action": "NDA 模板适用?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "法务部",
+      "role": "法务专员",
+      "action": "条款审核与修订",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "部门",
+      "role": "部门经理",
+      "action": "业务必要性确认?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N5",
+      "dept": "管理层",
+      "role": "审批人",
+      "action": "涉密等级审批通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N6",
+      "dept": "外部方",
+      "role": "外部方",
+      "action": "签署 NDA",
+      "shape": "rect"
+    },
+    {
+      "id": "N7",
+      "dept": "法务部",
+      "role": "法务专员",
+      "action": "存档并登记",
+      "shape": "rect"
+    },
+    {
+      "id": "N8",
+      "dept": "法务部",
+      "role": "法务专员",
+      "action": "NDA 生效",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N4",
+      "label": "适用",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "特殊",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "必要",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N1",
+      "label": "不必要",
+      "reverse": true
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N1",
+      "label": "不通过",
+      "reverse": true
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N7",
+      "to": "N8",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "保密",
+      "nda",
+      "保密协议"
+    ],
+    "tags": [
+      "法务",
+      "安全"
+    ]
+  }
+}

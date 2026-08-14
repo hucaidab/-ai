@@ -1,0 +1,136 @@
+{
+  "type": "flowchart",
+  "title": "物料报废处理流程",
+  "lanes": [
+    {
+      "dept": "车间",
+      "roles": [
+        "报废申请人"
+      ]
+    },
+    {
+      "dept": "品质部",
+      "roles": [
+        "质检员"
+      ]
+    },
+    {
+      "dept": "仓储部",
+      "roles": [
+        "仓管员"
+      ]
+    },
+    {
+      "dept": "财务部",
+      "roles": [
+        "成本会计"
+      ]
+    },
+    {
+      "dept": "管理层",
+      "roles": [
+        "审批人"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "车间",
+      "role": "报废申请人",
+      "action": "提交物料报废申请",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "品质部",
+      "role": "质检员",
+      "action": "报废鉴定通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "管理层",
+      "role": "审批人",
+      "action": "报废审批通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N4",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "报废物料出库",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "财务部",
+      "role": "成本会计",
+      "action": "报废损失入账",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "报废台账更新",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N1",
+      "label": "不通过·返修",
+      "reverse": true
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N1",
+      "label": "不通过",
+      "reverse": true
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "报废",
+      "呆滞料",
+      "废品",
+      "scrap"
+    ],
+    "tags": [
+      "制造",
+      "品质"
+    ]
+  }
+}

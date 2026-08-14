@@ -1,0 +1,139 @@
+{
+  "type": "flowchart",
+  "title": "IT 服务请求流程",
+  "lanes": [
+    {
+      "dept": "员工",
+      "roles": [
+        "申请人"
+      ]
+    },
+    {
+      "dept": "IT",
+      "roles": [
+        "IT 服务台",
+        "IT 工程师"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "员工",
+      "role": "申请人",
+      "action": "提交 IT 服务请求",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "IT",
+      "role": "IT 服务台",
+      "action": "工单受理与分派",
+      "shape": "rect"
+    },
+    {
+      "id": "N3",
+      "dept": "IT",
+      "role": "IT 工程师",
+      "action": "可远程解决?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N4",
+      "dept": "IT",
+      "role": "IT 工程师",
+      "action": "远程处理",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "IT",
+      "role": "IT 工程师",
+      "action": "现场处理",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "员工",
+      "role": "申请人",
+      "action": "处理结果满意?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N7",
+      "dept": "IT",
+      "role": "IT 服务台",
+      "action": "工单关闭",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "是",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N3",
+      "to": "N5",
+      "label": "否",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "满意",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N2",
+      "label": "不满意",
+      "reverse": true
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "it",
+      "工单",
+      "电脑",
+      "权限",
+      "it服务"
+    ],
+    "tags": [
+      "IT",
+      "运维"
+    ]
+  }
+}

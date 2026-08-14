@@ -1,0 +1,118 @@
+{
+  "type": "flowchart",
+  "title": "访客接待管理流程",
+  "lanes": [
+    {
+      "dept": "访客",
+      "roles": [
+        "访客"
+      ]
+    },
+    {
+      "dept": "被访员工",
+      "roles": [
+        "被访人"
+      ]
+    },
+    {
+      "dept": "行政部",
+      "roles": [
+        "前台"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "访客",
+      "role": "访客",
+      "action": "预约来访",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "被访员工",
+      "role": "被访人",
+      "action": "确认接待?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "行政部",
+      "role": "前台",
+      "action": "访客登记与门禁发放",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "访客",
+      "role": "访客",
+      "action": "访客进入并拜访",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "行政部",
+      "role": "前台",
+      "action": "访客离开登记",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "行政部",
+      "role": "前台",
+      "action": "访客记录归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "确认",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N1",
+      "label": "婉拒",
+      "reverse": true
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "访客",
+      "来访",
+      "接待",
+      "visitor"
+    ],
+    "tags": [
+      "行政",
+      "安保"
+    ]
+  }
+}

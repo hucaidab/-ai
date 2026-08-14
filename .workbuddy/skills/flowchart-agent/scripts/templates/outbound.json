@@ -1,0 +1,143 @@
+{
+  "type": "flowchart",
+  "title": "销售出库发货流程",
+  "lanes": [
+    {
+      "dept": "销售部",
+      "roles": [
+        "销售员"
+      ]
+    },
+    {
+      "dept": "财务部",
+      "roles": [
+        "应收会计"
+      ]
+    },
+    {
+      "dept": "仓储部",
+      "roles": [
+        "仓管员"
+      ]
+    },
+    {
+      "dept": "物流",
+      "roles": [
+        "物流员"
+      ]
+    },
+    {
+      "dept": "客户",
+      "roles": [
+        "客户"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "N1",
+      "dept": "销售部",
+      "role": "销售员",
+      "action": "提交出库发货申请",
+      "shape": "start"
+    },
+    {
+      "id": "N2",
+      "dept": "财务部",
+      "role": "应收会计",
+      "action": "货款或信用确认通过?",
+      "shape": "diamond"
+    },
+    {
+      "id": "N3",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "拣货与复核",
+      "shape": "rect"
+    },
+    {
+      "id": "N4",
+      "dept": "仓储部",
+      "role": "仓管员",
+      "action": "出库过账",
+      "shape": "rect"
+    },
+    {
+      "id": "N5",
+      "dept": "物流",
+      "role": "物流员",
+      "action": "安排物流发货",
+      "shape": "rect"
+    },
+    {
+      "id": "N6",
+      "dept": "客户",
+      "role": "客户",
+      "action": "签收确认",
+      "shape": "rect"
+    },
+    {
+      "id": "N7",
+      "dept": "销售部",
+      "role": "销售员",
+      "action": "发货完成归档",
+      "shape": "end"
+    }
+  ],
+  "edges": [
+    {
+      "from": "N1",
+      "to": "N2",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N3",
+      "label": "通过",
+      "reverse": false
+    },
+    {
+      "from": "N2",
+      "to": "N1",
+      "label": "未回款",
+      "reverse": true
+    },
+    {
+      "from": "N3",
+      "to": "N4",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N4",
+      "to": "N5",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N5",
+      "to": "N6",
+      "label": "",
+      "reverse": false
+    },
+    {
+      "from": "N6",
+      "to": "N7",
+      "label": "",
+      "reverse": false
+    }
+  ],
+  "meta": {
+    "triggers": [
+      "出库",
+      "发货",
+      "物流发货",
+      "outbound"
+    ],
+    "tags": [
+      "仓储",
+      "销售"
+    ]
+  }
+}

@@ -14,5 +14,6 @@ tmp/
 .tmp/
 
 # ============ 本地环境（个人/可再生成，不进团队仓库） ============
-.workbuddy/
+# 个人工作记忆不进仓库；项目级技能 .workbuddy/skills/ 需要进仓库（团队 WorkBuddy 共享）
+.workbuddy/memory/
 llm-verify-out/
