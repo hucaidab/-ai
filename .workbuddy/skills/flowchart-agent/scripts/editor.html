@@ -105,8 +105,8 @@
   else {
     document.getElementById('fileLabel').textContent = file
     await editor.init(file)
-    window.__diag('✅ 编辑器已就绪（模块+渲染+交互均正常）——可拖动节点、双击改字、保存')
-    diag.classList.add('ok')
+    // 顶部就绪提示去掉：初始化完成后自动移除诊断条（加载中/出错状态仍短暂可见，供排查）
+    setTimeout(() => { if (diag.parentNode) diag.remove() }, 800)
   }
 </script>
 </body>
