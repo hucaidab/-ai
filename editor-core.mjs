@@ -270,7 +270,7 @@ export function bindInteractions() {
     if (g) { _onNodeDown(e, g); return }
     // 边：优先命中层（12px 命中区，选中灵敏度），其次原细 path
     const p = e.target.closest ? (e.target.closest('path.edge-hit') || e.target.closest('path[data-edge]')) : null
-    if (p) { e.stopPropagation(); _selectEdge(p) }
+    if (p) { e.stopPropagation(); _onEdgeDown(e, p) }
   })
   cv.addEventListener('dblclick', e => {
     const h = e.target.closest ? e.target.closest('.wp-handle') : null
@@ -407,6 +407,68 @@ function _onCanvasDown(e) {
       return p.x < wx + ww && p.x + sz.w > wx && p.y < wy + wh && p.y + sz.h > wy
     })
     if (hit.length) { selectNode(hit[hit.length - 1].id) }
+  }
+  window.addEventListener('pointermove', move)
+  window.addEventListener('pointerup', up)
+}
+
+// ---------- 选择与属性 ----------
+// 按下边本体：选中 + 拖边 = 整条边平移（端点钉在节点锚点，中间折点整体移动；
+// 对齐 draw.io 拖线行为，避免"按下边不动、像穿透到背景"）
+function _onEdgeDown(e, p) {
+  e.stopPropagation()
+  const eidx = parseInt(p.getAttribute('data-eidx') || '0', 10)
+  const realIdx = S._edgeMap && S._edgeMap[eidx] >= 0 ? S._edgeMap[eidx] : eidx
+  const edge = S.req.edges[realIdx]
+  if (!edge) return
+  // 轻量选中（不 render，避免重建打断拖拽起点）
+  S.selected = { kind: 'edge', idx: realIdx, key: edge.from + '→' + edge.to + '|' + (edge.label || '') }
+  _updatePanel()
+  const domIdx = eidx
+  const cvRect = document.getElementById('cv').getBoundingClientRect()
+  const startX = e.clientX, startY = e.clientY
+  let moved = false, origPts = null // origPts: 原始路径端点（节点锚点，拖拽中保持不变）
+  const move = ev => {
+    if (!moved) {
+      // 首次移动：给当前 DOM 边加高亮，并记录原始折点/端点
+      const pathEl = _svgHost.querySelector('path[data-eidx="' + domIdx + '"]')
+      if (!pathEl) return
+      pathEl.setAttribute('data-sel', '1')
+      const pts = parsePathPts(pathEl.getAttribute('d'))
+      origPts = { p1: pts[0], p2: pts[pts.length - 1] }
+      // 无 wp 先接管当前中间折点（拖动即固化形状，保存后保持）
+      if (!edge.wp || !edge.wp.length) edge.wp = pts.slice(1, -1).map(p => [p[0], p[1]])
+      moved = true
+    }
+    const dx = (ev.clientX - startX) / S.scale
+    const dy = (ev.clientY - startY) / S.scale
+    // 平移 wp（端点锚点不动，中间折点整体偏移）
+    edge.wp.forEach((w, i) => { edge.wp[i] = [w[0] + dx, w[1] + dy] })
+    // 重绘路径（端点保持原始锚点，中间过平移后的 wp）
+    const pathEl = _svgHost.querySelector('path[data-eidx="' + domIdx + '"]')
+    if (!pathEl) return
+    const np = routeWithWaypoints({ x: origPts.p1[0], y: origPts.p1[1] }, { x: origPts.p2[0], y: origPts.p2[1] }, edge.wp)
+    pathEl.setAttribute('d', pathFromPts(np))
+    // 命中层同步
+    const hitEl = _svgHost.querySelector('path.edge-hit[data-eidx="' + domIdx + '"]')
+    if (hitEl) hitEl.setAttribute('d', pathFromPts(np))
+  }
+  const up = () => {
+    window.removeEventListener('pointermove', move)
+    window.removeEventListener('pointerup', up)
+    if (moved) {
+      S.dirty = true
+      pushHistory()
+      render() // 全量重建（手柄/命中层统一刷新）
+    } else {
+      // 未拖动（单击选中）：轻量高亮 + 只加手柄，**不重建整图**——
+      // 重建会替换 DOM 导致双击第二击 target 不同，双击加航点失效
+      const pathEl = _svgHost.querySelector('path[data-eidx="' + domIdx + '"]')
+      if (pathEl) {
+        pathEl.setAttribute('data-sel', '1')
+        _renderHandles(_svgHost, domIdx, pathEl)
+      }
+    }
   }
   window.addEventListener('pointermove', move)
   window.addEventListener('pointerup', up)
