@@ -119,7 +119,10 @@ async function callLLM(text, cfg) {
 export function repairSchema(req) {
   if (!req || typeof req !== 'object') return null
   if (!Array.isArray(req.nodes) || !Array.isArray(req.edges)) return null
-  const SHAPES = ['start', 'end', 'rect', 'diamond', 'data', 'subroutine']
+  // 形状白名单必须与编辑器/渲染层完全一致（缺失=静默降级 rect）：
+  // 缺 'stadium' 曾导致保存时起止胶囊降级 rect → 验收缺 start/end → autoFix 补重复
+  // START/END → 每次保存节点膨胀（链路验证抓出）；'cylinder' 同理（数据圆柱降级）
+  const SHAPES = ['start', 'end', 'rect', 'diamond', 'data', 'subroutine', 'stadium', 'cylinder']
   const seen = new Set()
   const lanes = Array.isArray(req.lanes) ? req.lanes : []
   req.nodes.forEach((n, i) => {
@@ -159,8 +162,8 @@ export function repairSchema(req) {
 export function selfCheck(req) {
   const errors = [], warnings = []
   if (!req || !Array.isArray(req.nodes)) return { ok: false, errors: ['结构无效'], warnings: [] }
-  if (!req.nodes.some(n => n.shape === 'start')) errors.push('缺少开始节点')
-  if (!req.nodes.some(n => n.shape === 'end')) errors.push('缺少结束节点')
+  if (!req.nodes.some(n => n.shape === 'start' || n.shape === 'stadium')) errors.push('缺少开始节点')
+  if (!req.nodes.some(n => n.shape === 'end' || n.shape === 'stadium')) errors.push('缺少结束节点')
   if (req.nodes.length < 4) warnings.push('节点数过少（' + req.nodes.length + '），需求可能描述不完整')
   if (req.nodes.length > 30) warnings.push('节点数 ' + req.nodes.length + ' > 30，建议拆图（已自动处理）')
   const idSet = new Set(req.nodes.map(n => n.id))
@@ -171,7 +174,7 @@ export function selfCheck(req) {
   })
   const connected = new Set()
   req.edges.forEach(e => { connected.add(e.from); connected.add(e.to) })
-  req.nodes.filter(n => n.shape !== 'start' && n.shape !== 'end').forEach(n => {
+  req.nodes.filter(n => n.shape !== 'start' && n.shape !== 'end' && n.shape !== 'stadium').forEach(n => {
     if (!connected.has(n.id)) warnings.push('节点「' + n.action + '」未与任何节点相连')
   })
   return { ok: errors.length === 0, errors, warnings }
@@ -182,15 +185,15 @@ export function selfCheck(req) {
 export function autoFix(req) {
   const fixed = []
   const idSet = new Set(req.nodes.map(n => n.id))
-  const hasStart = req.nodes.some(n => n.shape === 'start')
-  const hasEnd = req.nodes.some(n => n.shape === 'end')
+  const hasStart = req.nodes.some(n => n.shape === 'start' || n.shape === 'stadium')
+  const hasEnd = req.nodes.some(n => n.shape === 'end' || n.shape === 'stadium')
   const inDeg = {}, outDeg = {}
   req.nodes.forEach(n => { inDeg[n.id] = 0; outDeg[n.id] = 0 })
   req.edges.forEach(e => {
     if (idSet.has(e.from) && idSet.has(e.to)) { outDeg[e.from]++; inDeg[e.to]++ }
   })
-  const firstNode = req.nodes.find(n => inDeg[n.id] === 0 && n.shape !== 'start' && n.shape !== 'end') || req.nodes[0]
-  const lastNode = req.nodes.find(n => outDeg[n.id] === 0 && n.shape !== 'start' && n.shape !== 'end') || req.nodes[req.nodes.length - 1]
+  const firstNode = req.nodes.find(n => inDeg[n.id] === 0 && n.shape !== 'start' && n.shape !== 'end' && n.shape !== 'stadium') || req.nodes[0]
+  const lastNode = req.nodes.find(n => outDeg[n.id] === 0 && n.shape !== 'start' && n.shape !== 'end' && n.shape !== 'stadium') || req.nodes[req.nodes.length - 1]
   if (!hasStart && firstNode) {
     const sn = { id: 'START', dept: firstNode.dept, role: firstNode.role, action: '开始：' + (req.title || '').replace(/流程$/, '') + '启动', shape: 'start' }
     req.nodes.unshift(sn)
@@ -219,9 +222,9 @@ export function autoFix(req) {
   // 孤立节点串联
   const connected = new Set()
   req.edges.forEach(e => { connected.add(e.from); connected.add(e.to) })
-  let prev = req.nodes.find(n => n.shape === 'start')?.id || req.nodes[0]?.id
+  let prev = req.nodes.find(n => n.shape === 'start' || n.shape === 'stadium')?.id || req.nodes[0]?.id
   req.nodes.forEach(n => {
-    if (n.shape === 'start') { prev = n.id; return }
+    if (n.shape === 'start' || n.shape === 'stadium') { prev = n.id; return }
     if (n.id === 'END') return
     if (!connected.has(n.id)) {
       if (prev) req.edges.push({ from: prev, to: n.id, label: '', reverse: false })
