@@ -10,9 +10,44 @@
 // 依赖: llm-model（LLM/DSL/模板降级链）→ split-graph（>30 自动拆图）→ lib-export（mmd/pdf）
 // ============================================================
 import fs from 'node:fs'
+import { spawn, exec } from 'node:child_process'
+import http from 'node:http'
 import { llmModel } from './llm-model.mjs'
 import { splitAndRender, renderOne } from './split-graph.mjs'
 import { exportMermaid, svgToPdf } from './lib-export.mjs'
+
+// ---------- 生成后自动打开在线编辑器（生成即编辑，一步到位） ----------
+// 用户反馈：生成后只给提示很多人不知道还能在线编辑 → 自动拉起服务 + 打开浏览器到编辑器
+async function openEditor(file) {
+  const url = 'http://localhost:8080/editor?file=' + encodeURIComponent(file)
+  const alive = await new Promise(res => {
+    const p = http.get({ host: '127.0.0.1', port: 8080, path: '/', timeout: 1500 }, r => { r.destroy(); res(true) })
+    p.on('error', () => res(false))
+    p.on('timeout', () => { p.destroy(); res(false) })
+  })
+  if (!alive) {
+    console.log('  🚀 启动本地预览服务...')
+    try {
+      const child = spawn(process.execPath, ['preview-server.mjs', '8080', '.'], { detached: true, stdio: 'ignore' })
+      child.unref()
+    } catch (e) { console.warn('  ⚠️ 服务启动失败（可手动执行 node preview-server.mjs 8080 .）：' + (e.message || e)) }
+    for (let i = 0; i < 20; i++) {
+      await new Promise(r => setTimeout(r, 400))
+      const ok = await new Promise(res => {
+        const q = http.get({ host: '127.0.0.1', port: 8080, path: '/', timeout: 800 }, r2 => { r2.destroy(); res(true) })
+        q.on('error', () => res(false))
+        q.on('timeout', () => { q.destroy(); res(false) })
+      })
+      if (ok) break
+    }
+  }
+  const cmd = process.platform === 'win32' ? `start "" "${url}"`
+    : process.platform === 'darwin' ? `open "${url}"`
+    : `xdg-open "${url}"`
+  exec(cmd, () => {}) // 打开系统默认浏览器
+  console.log(`  🖥 已自动打开在线编辑器 → ${url}`)
+  console.log(`  💡 定稿方式：在编辑器里调整后点「💾 保存」→ 覆盖更新 ${file}（自动 12 项验收）`)
+}
 
 // ---------- P2：全局错误兜底（未捕获异常 → 友好提示而非崩溃堆栈） ----------
 process.on('uncaughtException', e => {
@@ -117,5 +152,10 @@ if (result.subs.length === 0) {
 }
 console.log(`  💡 在线预览: node preview-server.mjs 8080 .  →  http://localhost:8080`)
 console.log(`  🔄 继续修改: node agent-flow.mjs --edit "${outBase}.req.json" "想改什么"`)
+
+// 生成成功 → 自动打开在线编辑器（定稿闭环：调整 → 保存 → 覆盖更新 req.json）
+if (result.pass && !args.includes('--no-open')) {
+  await openEditor(outBase + '.req.json')
+}
 
 if (!result.pass) process.exit(2)

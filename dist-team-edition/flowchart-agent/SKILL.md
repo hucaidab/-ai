@@ -29,8 +29,9 @@ agent_created: true
   ↓ ② 渲染  split-graph.mjs（≤30 直接渲染；>30 自动拆图；验收失败自动修复循环 ≤3 轮）
   ↓ ③ 验收  validate.mjs（10 项自动检查）
   ↓ ④ 交付  SVG + 验收报告 + 源码（req.json/mmd）
-  ↓ ⑤ 迭代  agent-flow --edit [req.json] "修改描述"（自动接续最新一版，多轮对话式改图）
-  ↓ ⑥ 预览  preview-server.mjs（在线预览 + 历史记录改一版 + PNG/PDF/Mermaid 导出）
+  ↓ ⑤ 打开  自动拉起本地服务并打开浏览器 → 在线编辑器（生成即编辑，一步到位）
+  ↓ ⑥ 定稿  编辑器里调整 → 「💾 保存」→ 覆盖更新 req.json（自动 12 项验收）→ PNG/PDF 导出
+  ↓ ⑦ 迭代  agent-flow --edit [req.json] "修改描述"（自动接续最新一版，多轮对话式改图）
 ```
 
 **P0 交互原则**：需求不完整先引导补齐（不猜）；改图自动接续上一版（多轮）；验收失败自动修复循环（每轮输出修复说明）。
