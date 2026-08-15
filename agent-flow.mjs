@@ -19,6 +19,13 @@ import { exportMermaid, svgToPdf } from './lib-export.mjs'
 // ---------- 生成后自动打开在线编辑器（生成即编辑，一步到位） ----------
 // 用户反馈：生成后只给提示很多人不知道还能在线编辑 → 自动拉起服务 + 打开浏览器到编辑器
 async function openEditor(file) {
+  // 绝对路径（--out /tmp/xxx）不在服务目录内，编辑器 /file/ 路由会 404——提示而非打开无效 URL
+  if (file.includes('/') || file.includes('\\')) {
+    console.log(`  ⚠️ 输出文件 ${file} 在服务目录外，无法直接打开编辑器`)
+    console.log(`  💡 请把 ${file.split(/[/\\]/).pop()} 复制到脚本目录后访问：`)
+    console.log(`     http://localhost:8080/editor?file=${encodeURIComponent(file.split(/[/\\]/).pop())}`)
+    return
+  }
   const url = 'http://localhost:8080/editor?file=' + encodeURIComponent(file)
   const alive = await new Promise(res => {
     const p = http.get({ host: '127.0.0.1', port: 8080, path: '/', timeout: 1500 }, r => { r.destroy(); res(true) })
@@ -63,13 +70,14 @@ process.on('unhandledRejection', e => {
 
 const args = process.argv.slice(2)
 const getOpt = (name, def) => { const i = args.indexOf(name); return i >= 0 && args[i + 1] ? args[i + 1] : def }
-const outBase = getOpt('--out', 'flow')
-const maxNodes = parseInt(getOpt('--max', '30'), 10)
-const theme = getOpt('--theme', 'github-light')
-const reqFile = getOpt('--req', '')
 const editIdx = args.indexOf('--edit')
 const editNext = editIdx >= 0 ? args[editIdx + 1] : ''
 const editFile = editIdx >= 0 && editNext && editNext.endsWith('.json') ? editNext : ''
+// 编辑模式默认沿用原文件名（outBase = 原 req.json 去后缀），避免编辑结果另存为 flow.req.json 丢失原文件
+const outBase = getOpt('--out', editFile ? editFile.replace(/\.req\.json$/, '') : 'flow')
+const maxNodes = parseInt(getOpt('--max', '30'), 10)
+const theme = getOpt('--theme', 'github-light')
+const reqFile = getOpt('--req', '')
 const editText = editIdx >= 0 ? args[editIdx + (editFile ? 2 : 1)] || '' : ''
 const wantMmd = args.includes('--mmd')
 const wantPdf = args.includes('--pdf')

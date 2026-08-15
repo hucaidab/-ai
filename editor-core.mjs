@@ -72,11 +72,13 @@ export function render() {
   const src = reqToMermaid(S.req)
   const graph = parseFlow(src)
   const lay = layout(graph.nodes, graph.edges, graph.groups, graph.declaredOrder, 'auto', S.req.lanes, S.req.nodes)
-  // 编辑器自动布局结果固化 pos（首次打开），之后 pos 由拖拽维护
+  // 编辑器自动布局结果固化 pos（首次打开）：仅无 pos 的节点用自动布局兜底。
+  // 文件里已有保存 pos（编辑器保存过/生成时固化）必须尊重——否则重开时已保存的
+  // 手动位置被自动布局覆盖，'定稿'没定住（质检② 重开持久化抓出）
   if (S._firstLayout) {
     lay.nodes.forEach(n => {
       const rn = S.req.nodes.find(x => x.id === n.id)
-      if (rn) rn.pos = { x: n.x, y: n.y }
+      if (rn && !rn.pos) rn.pos = { x: n.x, y: n.y }
     })
     S._firstLayout = false
   }
