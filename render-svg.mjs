@@ -213,6 +213,11 @@ export function renderSVG(layout, { classDefs = {}, title = '', subtitle = '', t
         s += `<rect x="${rc.x}" y="${rc.y}" width="${rc.w}" height="${rc.h}" fill="transparent" stroke="${theme.edge}" stroke-width="0.8" stroke-dasharray="4 3" opacity="0.45" data-lane-role="${esc(rc.label)}"/>`
         s += `<text x="${rc.x + rc.w / 2}" y="${rc.y + 15}" text-anchor="middle" font-size="10.5" font-weight="600" fill="${theme.muted}">${esc(rc.label)}</text>`
       })
+      // 空泳道引导水印（竞品对齐 draw.io/ProcessOn：无节点泳道提示"拖拽节点到此处"）
+      const emptyLane = !lane.roleCols.some(rc => rc.nodeIds.length) && !lane.children.length
+      if (emptyLane) {
+        s += `<text x="${lane.x + lane.w / 2}" y="${lane.y + lane.h / 2}" text-anchor="middle" font-size="12" fill="${theme.muted}" opacity="0.5" pointer-events="none">拖拽节点到此处</text>`
+      }
       // 子泳道递归（多层）
       lane.children.forEach((c, j) => renderLane(c, depth + 1, j))
       s += `</g>`

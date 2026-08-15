@@ -370,12 +370,15 @@ export function bindInteractions() {
     if (port) { _onPortDown(e, port); return }
     const h = e.target.closest ? e.target.closest('.wp-handle') : null
     if (h) { _onHandleDown(e, h); return }
-    // 泳道容器（头部/背景）→ 选中泳道（编辑 dept/roles/子泳道）
+    // 泳道容器（头部/背景）→ 点击选中 / 拖动排序（竞品对齐：draw.io 拖泳道头重排）
+    // 仅泳道头部区域响应（内容区交给节点/边/空白——closest 会从节点向上命中泳道 g，必须按世界坐标
+    // 判定头部 y 范围，否则节点被泳道分支吞掉）
     const laneEl = e.target.closest ? e.target.closest('[data-lane]') : null
     if (laneEl) {
-      // 泳道头部（y < lane.y + HEAD_H 区域）才选中；内容区空白留给节点/空白处理
-      const dept = laneEl.getAttribute('data-lane')
-      if (dept && _findLane(S.req.lanes, dept)) { e.stopPropagation(); selectLane(dept); return }
+      const cvRect = cv.getBoundingClientRect()
+      const wx = (e.clientX - cvRect.left) / S.scale, wy = (e.clientY - cvRect.top) / S.scale
+      const dept = _laneHeadAt(wx, wy)
+      if (dept) { e.stopPropagation(); _onLaneDown(e, dept); return }
     }
     const g = e.target.closest ? e.target.closest('g[data-id]') : null
     if (g) { _onNodeDown(e, g); return }
@@ -386,6 +389,9 @@ export function bindInteractions() {
   cv.addEventListener('dblclick', e => {
     const h = e.target.closest ? e.target.closest('.wp-handle') : null
     if (h) { _onHandleDbl(e, h); return }
+    // 双击泳道头 → 直接改名（竞品对齐：draw.io 双击泳道头改名）
+    const laneEl = e.target.closest ? e.target.closest('[data-lane]') : null
+    if (laneEl) { const d = laneEl.getAttribute('data-lane'); if (d && _findLane(S.req.lanes, d)) { e.stopPropagation(); _onLaneDbl(e, d); return } }
     const g = e.target.closest ? e.target.closest('g[data-id]') : null
     if (g) { _onDblClick(e, g); return }
     // 边路径双击 → 编辑线标签备注（命中层 .edge-hit 或原 path）
@@ -780,6 +786,91 @@ export function selectNode(id) {
   render()
   _updatePanel()
 }
+// 世界坐标命中泳道头部（递归取最深；返回 dept 或 null；LANE_HEAD=44 与布局/渲染一致）
+function _laneHeadAt(wx, wy) {
+  const find = lanes => {
+    for (const l of lanes || []) {
+      if (wx >= l.x && wx <= l.x + l.w && wy >= l.y && wy <= l.y + 44) {
+        const c = find(l.children)
+        return c || l.label
+      }
+    }
+    return null
+  }
+  return find(S._laneTree)
+}
+
+// 泳道头部按下：点击=选中，拖动（x 位移>5px）=排序（竞品对齐 draw.io 拖泳道头重排）
+function _onLaneDown(e, dept) {
+  e.preventDefault()
+  const startX = e.clientX
+  let moved = false
+  const move = ev => { if (!moved && Math.abs(ev.clientX - startX) > 5) moved = true }
+  const up = ev => {
+    window.removeEventListener('pointermove', move)
+    window.removeEventListener('pointerup', up)
+    if (moved) _reorderLaneByX(dept, ev.clientX)
+    else selectLane(dept)
+  }
+  window.addEventListener('pointermove', move)
+  window.addEventListener('pointerup', up)
+}
+
+// 按鼠标 x 位置重排顶层泳道（竞品对齐：拖泳道头左右调整顺序）
+function _reorderLaneByX(dept, clientX) {
+  const lanes = S.req.lanes
+  const idx = lanes.findIndex(l => l.dept === dept)
+  if (idx < 0) return // 子泳道暂不支持拖排序（保持原顺序）
+  const tree = S._laneTree
+  if (!tree || tree.length < 2) return
+  const cv = document.getElementById('cv').getBoundingClientRect()
+  // 各泳道屏幕中心 x → 目标插入位置（拖到某泳道中心之前；全在右侧=末尾追加）
+  let target = lanes.length
+  for (let i = 0; i < tree.length; i++) {
+    if (clientX < cv.left + (tree[i].x + tree[i].w / 2) * S.scale) { target = i; break }
+  }
+  if (idx < target) target-- // splice 先删后插的位置修正
+  if (target === idx || target < 0) return
+  const [lane] = lanes.splice(idx, 1)
+  lanes.splice(target, 0, lane)
+  S.dirty = true
+  pushHistory()
+  render()
+  fitToView()
+}
+
+// 双击泳道头 → 直接改名（竞品对齐；同步该泳道下所有节点 dept）
+function _onLaneDbl(e, dept) {
+  const lane = _findLane(S.req.lanes, dept)
+  if (!lane) return
+  const input = document.createElement('input')
+  input.value = lane.dept
+  input.placeholder = '输入泳道名称（部门）'
+  input.style.cssText = `position:fixed;left:${e.clientX + 8}px;top:${e.clientY + 8}px;width:180px;font-size:13px;border:2px solid #0969da;border-radius:6px;padding:4px 8px;z-index:99;box-sizing:border-box`
+  document.body.appendChild(input)
+  input.focus(); input.select()
+  let cancelled = false, committed = false
+  const commit = () => {
+    if (committed) return
+    committed = true
+    const v = input.value.trim()
+    if (!cancelled && v && v !== lane.dept) {
+      const old = lane.dept
+      lane.dept = v
+      S.req.nodes.forEach(n => { if (n.dept === old) n.dept = v }) // 同步节点归位
+      S.dirty = true
+      pushHistory()
+      render()
+    }
+    if (input.isConnected) input.remove()
+  }
+  input.addEventListener('keydown', ev => {
+    if (ev.key === 'Enter') commit()
+    if (ev.key === 'Escape') { cancelled = true; input.remove() }
+  })
+  input.addEventListener('blur', () => { if (!cancelled) commit() })
+}
+
 // 选中泳道（点击泳道头部）→ 面板编辑 dept/roles/子泳道
 export function selectLane(dept) {
   S.selected = { kind: 'lane', dept }
@@ -824,6 +915,11 @@ function _updatePanel() {
       <button onclick="window.__editor.addLaneRole('${escHtml(S.selected.dept)}')">＋ 添加角色</button>
       ${lane.children && lane.children.length ? `<label>子泳道（多层）</label>${childList}` : ''}
       <button onclick="window.__editor.addChildLane('${escHtml(S.selected.dept)}')">⧉ 添加子泳道</button>
+      <div style="display:flex;gap:6px;margin-top:2px">
+        <button onclick="window.__editor.addLane('left')" style="flex:1">◀ 左侧插入</button>
+        <button onclick="window.__editor.addLane('right')" style="flex:1">▶ 右侧插入</button>
+      </div>
+      <button class="danger" onclick="window.__editor.delLane('${escHtml(S.selected.dept)}')">🗑 删除此泳道</button>
       <button onclick="window.__editor.applyLane()">应用</button>`
     document.getElementById('lName').oninput = e => { lane._newDept = e.target.value; S.dirty = true }
     ;(lane.roles || []).forEach((_, i) => {
@@ -926,8 +1022,14 @@ export function delLane(dept) {
     }
     return false
   }
-  if (!_isChildLane(dept)) { alert('顶层泳道不能直接删除（请先删除其中节点）'); return }
-  S.req.nodes = S.req.nodes.filter(n => n.dept !== dept)
+  const target = _findLane(S.req.lanes, dept)
+  if (!target) return
+  // 竞品对齐：顶层泳道也可删除（带确认，含子泳道与全部节点）
+  const delDepts = []
+  const collectLane = l => { delDepts.push(l.dept); (l.children || []).forEach(collectLane) }
+  collectLane(target)
+  if (!confirm(`删除泳道「${dept}」及其全部节点？`)) return
+  S.req.nodes = S.req.nodes.filter(n => !delDepts.includes(n.dept))
   remove(S.req.lanes, dept)
   S.selected = null
   S.dirty = true
@@ -988,10 +1090,18 @@ function _findLane(lanes, dept) {
   return null
 }
 // 新增泳道（顶层）
-export function addLane() {
+export function addLane(side) {
   if (!S.req.lanes) S.req.lanes = []
   const name = '新泳道' + (S.req.lanes.length + 1)
-  S.req.lanes.push({ dept: name, roles: ['角色'] })
+  const lane = { dept: name, roles: ['角色'] }
+  // 竞品对齐：支持基于选中泳道左右插入（默认尾部追加）
+  if (side === 'left' || side === 'right') {
+    const sel = S.selected && S.selected.kind === 'lane' ? _findLane(S.req.lanes, S.selected.dept) : null
+    if (sel) {
+      const idx = S.req.lanes.indexOf(sel)
+      S.req.lanes.splice(side === 'left' ? idx : idx + 1, 0, lane)
+    } else S.req.lanes.push(lane)
+  } else S.req.lanes.push(lane)
   S.dirty = true
   pushHistory()
   render()
@@ -1108,9 +1218,11 @@ export function fitToView() {
   const s = Math.min(vw / sw, vh / sh, 1.2)
   S.scale = Math.round(Math.max(0.55, s) * 100) / 100
   _applyScale()
-  // 初始滚动居中内容（内容中心对齐视口中心）：图大时保证打开即看到内容而非空白边角
-  cw.scrollLeft = Math.max(0, sw / 2 * S.scale - vw / 2)
-  cw.scrollTop = Math.max(0, sh / 2 * S.scale - vh / 2)
+  // 滚动到内容左上角（图顶部=泳道头必须可见可点）。
+  // 此前用滚动居中：图高度超出视口时顶部被滚出 → 泳道头落在 canvasWrap 可视区上方、
+  // 被顶部工具栏遮挡 → 点不到/看不见（泳道对标质检抓出）；左上角才是 draw.io 行为
+  cw.scrollLeft = 0
+  cw.scrollTop = 0
   _updateStatus()
 }
 
