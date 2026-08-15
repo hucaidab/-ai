@@ -69,6 +69,8 @@ function _reselect() {
 
 // ---------- 渲染（复用核心管线：req → mmd → parse → layout → svg） ----------
 export function render() {
+  // 数据自愈：过滤悬空边（引用不存在节点——delLane 历史版本漏删/旧数据残留会渲染幽灵节点）
+  S.req.edges = (S.req.edges || []).filter(e => e && S.req.nodes.some(n => n.id === e.from) && S.req.nodes.some(n => n.id === e.to))
   const src = reqToMermaid(S.req)
   const graph = parseFlow(src)
   const lay = layout(graph.nodes, graph.edges, graph.groups, graph.declaredOrder, 'auto', S.req.lanes, S.req.nodes)
@@ -387,11 +389,23 @@ export function bindInteractions() {
     if (p) { e.stopPropagation(); _onEdgeDown(e, p) }
   })
   cv.addEventListener('dblclick', e => {
+    // 手柄双击 = 删航点：仅手柄中心 ±4px 精确命中才算（选边后手柄覆盖边路径，
+    // 若不限制中心，双击边任意位置都会被手柄拦截 → 编辑标签失效——全面质检抓出回归）
     const h = e.target.closest ? e.target.closest('.wp-handle') : null
-    if (h) { _onHandleDbl(e, h); return }
-    // 双击泳道头 → 直接改名（竞品对齐：draw.io 双击泳道头改名）
+    if (h) {
+      const r = h.getBoundingClientRect()
+      const cx = r.x + r.width / 2, cy = r.y + r.height / 2
+      if (Math.abs(e.clientX - cx) <= 4 && Math.abs(e.clientY - cy) <= 4) { _onHandleDbl(e, h); return }
+    }
+    // 双击泳道头 → 直接改名（仅头部区域；内容区的边/节点会被 closest 命中泳道 g，
+    // 必须按世界坐标判定头部 y 范围，否则双击线/节点被泳道分支拦截——全面质检抓出回归）
     const laneEl = e.target.closest ? e.target.closest('[data-lane]') : null
-    if (laneEl) { const d = laneEl.getAttribute('data-lane'); if (d && _findLane(S.req.lanes, d)) { e.stopPropagation(); _onLaneDbl(e, d); return } }
+    if (laneEl) {
+      const cvRect = cv.getBoundingClientRect()
+      const wx = (e.clientX - cvRect.left) / S.scale, wy = (e.clientY - cvRect.top) / S.scale
+      const dept = _laneHeadAt(wx, wy)
+      if (dept) { e.stopPropagation(); _onLaneDbl(e, dept); return }
+    }
     const g = e.target.closest ? e.target.closest('g[data-id]') : null
     if (g) { _onDblClick(e, g); return }
     // 边路径双击 → 编辑线标签备注（命中层 .edge-hit 或原 path）
@@ -1029,7 +1043,11 @@ export function delLane(dept) {
   const collectLane = l => { delDepts.push(l.dept); (l.children || []).forEach(collectLane) }
   collectLane(target)
   if (!confirm(`删除泳道「${dept}」及其全部节点？`)) return
+  const delNodes = S.req.nodes.filter(n => delDepts.includes(n.dept))
+  const delIds = new Set(delNodes.map(n => n.id))
   S.req.nodes = S.req.nodes.filter(n => !delDepts.includes(n.dept))
+  // 连带删除引用被删节点的边（漏删 = 悬空边 → 渲染幽灵节点 undefined 坐标——全面质检抓出）
+  S.req.edges = S.req.edges.filter(e => !delIds.has(e.from) && !delIds.has(e.to))
   remove(S.req.lanes, dept)
   S.selected = null
   S.dirty = true

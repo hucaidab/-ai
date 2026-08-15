@@ -246,6 +246,8 @@ export function renderSVG(layout, { classDefs = {}, title = '', subtitle = '', t
 
   // 节点（编辑器模式：pos 覆盖自动布局位置）
   nodes.forEach(n => {
+    // 防御：无有效坐标的节点跳过（悬空节点/布局缺失——防 undefined 坐标幽灵渲染）
+    if (n == null || n.x === undefined || n.y === undefined || isNaN(n.x) || isNaN(n.y)) return
     const st = resolveStyle(n, classDefs, nodeCol, mode === 'swimlane', theme)
     const dashAttr = st.dash ? ` stroke-dasharray="${st.dash}"` : ''
     // 位置承载在 g transform，形状/文字用**本地坐标**（原点 0,0）——
