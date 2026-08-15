@@ -1194,6 +1194,7 @@ export async function save() {
       st.textContent = d.pass ? `✅ 已保存 · 验收通过（${d.summary}）` : `⚠️ 已保存 · 验收 ${d.summary}`
       st.className = d.pass ? 'ok' : 'warn'
       if (d.fixed && d.fixLog && d.fixLog.length) st.textContent += ' · 自动修复：' + d.fixLog.join('、')
+      if (d.warnings && d.warnings.length) st.textContent += ' · 提示：' + d.warnings.join('、')
     } else {
       st.textContent = '❌ ' + (d.error || '保存失败')
       st.className = 'err'

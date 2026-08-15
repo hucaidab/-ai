@@ -100,10 +100,12 @@ function buildSubReq(req, entry, ids) {
 }
 
 // ---------- 单图渲染 + 验收（P0-3：失败自动修复循环 ≤3 轮） ----------
-export function renderOne(req, outBase, autoOnly = false, maxFixRounds = 3, theme = 'github-light') {
+// strict=false（编辑器保存）：质量规则降级提示 + 跳过 autoFix 修复循环（保存不篡改用户数据）
+export function renderOne(req, outBase, autoOnly = false, maxFixRounds = 3, theme = 'github-light', strict = true) {
   let curReq = req
   let fixLog = []
-  for (let round = 0; round <= maxFixRounds; round++) {
+  const maxRounds = strict ? maxFixRounds : 0
+  for (let round = 0; round <= maxRounds; round++) {
     const src = reqToMermaid(curReq)
     const graph = parseFlow(src)
     // 拆分后的主图/子图强制 auto 线性布局（不保留泳道分组）
@@ -135,19 +137,19 @@ export function renderOne(req, outBase, autoOnly = false, maxFixRounds = 3, them
       diamondCount: graph.nodes.filter(n => n.shape === 'diamond').length,
       diamondLabeledCount: graph.edges.filter(e => graph.nodes.find(n => n.id === e.from && n.shape === 'diamond') && e.label).length,
       reverseCount: curReq.edges.filter(e => e.reverse).length,
-      expectText, expectColors: [], mode: lay.mode,
+      expectText, expectColors: [], mode: lay.mode, strict,
     })
-    if (report.pass || round === maxFixRounds) {
+    if (report.pass || round === maxRounds) {
       fs.writeFileSync(outBase + '.svg', svg, 'utf-8')
       fs.writeFileSync(outBase + '.req.json', JSON.stringify(curReq, null, 2), 'utf-8')
       let fixNote = fixLog.length ? '\n- 自动修复：' + fixLog.join('；') : ''
       fs.writeFileSync(outBase + '.report.md', `# ${curReq.title}\n\n- 模式：${lay.mode}，节点 ${graph.nodes.length}，边 ${graph.edges.length}\n- 结论：${report.pass ? '✅ 通过' : '❌ ' + report.summary}${fixNote}\n`, 'utf-8')
       const fixed = fixLog.length > 0
       if (fixed) console.log(`🔧 自动修复 ${fixLog.length} 处后通过：${fixLog.join('、')}`)
-      return { title: curReq.title, pass: report.pass, summary: report.summary, nodes: graph.nodes.length, file: path.basename(outBase) + '.svg', fixed, fixLog }
+      return { title: curReq.title, pass: report.pass, summary: report.summary, warnings: report.warnings || [], nodes: graph.nodes.length, file: path.basename(outBase) + '.svg', fixed, fixLog }
     }
-    // 失败 → 按失败项针对性修复
-    if (round < maxFixRounds) {
+    // 失败 → 按失败项针对性修复（仅 strict 模式；编辑器保存不篡改用户数据）
+    if (round < maxRounds) {
       const failedNames = report.checks.filter(c => !c.pass).map(c => c.name)
       const { req: nextReq, fixes } = applyReportFix(curReq, failedNames)
       if (!fixes.length) break // 无法继续修复

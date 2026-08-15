@@ -6,8 +6,20 @@
 // ============================================================
 
 export function validateSVG(svg, ctx = {}) {
+  // strict=false（编辑器保存）：质量规则降级为提示（pass=true + warning 记录），
+  // 仅数据完整性（画布/比例/泳道/箭头/闭合）为硬门槛——对标 draw.io：保存永远成功，质量是提示。
+  // strict=true（生成侧默认，agent-flow/batch/模板）：全部为硬门槛。
+  const strict = ctx.strict !== false
+  const warnings = []
   const checks = []
   const add = (name, pass, detail) => checks.push({ name, pass: !!pass, detail: detail || (pass ? '通过' : '未通过') })
+  // 质量规则：宽松模式下不阻塞保存（记录 warning 供前端展示）
+  const soft = (name, pass, detail) => {
+    if (pass) return add(name, true, detail)
+    if (strict) return add(name, false, detail)
+    warnings.push(name)
+    add(name, true, detail + '（提示，不阻塞保存）')
+  }
 
   // 1. 尺寸合理（viewBox 有效）
   const vb = svg.match(/viewBox="([\d.]+) ([\d.]+) ([\d.]+) ([\d.]+)"/)
@@ -16,24 +28,24 @@ export function validateSVG(svg, ctx = {}) {
   add('画布尺寸有效', w > 0 && h > 0, `viewBox=${w}×${h}`)
   add('尺寸比例合理', w > 0 && h > 0 && w / h > 0.03 && w / h < 33, `宽高比 ${(w / h).toFixed(2)}`)
 
-  // 2. 复杂度：实体节点（不含子流程引用）≤ 30
+  // 2. 复杂度：实体节点（不含子流程引用）≤ 30（质量规则：宽松降级）
   const nodeCount = ctx.nodeCount ?? -1
   const entityCount = ctx.entityNodeCount ?? nodeCount
-  add('节点数 ≤ 30', entityCount > 0 && entityCount <= 30, `实体节点 ${entityCount}`)
+  soft('节点数 ≤ 30', entityCount > 0 && entityCount <= 30, `实体节点 ${entityCount}`)
 
-  // 3. 开始/结束节点存在（起止形状：rx≥24 的体育场形 + <ellipse）
+  // 3. 开始/结束节点存在（起止形状：rx≥24 的体育场形 + <ellipse）（质量规则：宽松降级）
   const stadiums = [...svg.matchAll(/<rect[^>]*rx="(\d+(?:\.\d+)?)"/g)].filter(m => parseFloat(m[1]) >= 24).length
   const ellipseLike = stadiums + (svg.match(/<ellipse/g) || []).length
-  add('起止节点存在', ellipseLike >= 2, `起止形状 ${ellipseLike} 个`)
+  soft('起止节点存在', ellipseLike >= 2, `起止形状 ${ellipseLike} 个`)
   const hasStart = /开始/.test(svg), hasEnd = /结束/.test(svg)
   // 起止形状已存在（≥2）即视为满足；文本检查宽松匹配
-  add('开始/结束文本', hasStart || ellipseLike >= 2, hasStart || ellipseLike >= 2
+  soft('开始/结束文本', hasStart || ellipseLike >= 2, hasStart || ellipseLike >= 2
     ? (hasStart && hasEnd ? '均有' : '起止形状存在') : `文本缺失（开始=${hasStart} 结束=${hasEnd}）`)
 
-  // 4. 判断节点带分支标签（菱形出边 ≥2 且带标签）
+  // 4. 判断节点带分支标签（菱形出边 ≥2 且带标签）（质量规则：宽松降级）
   const diamondCount = ctx.diamondCount ?? -1
   const diamondLabeled = ctx.diamondLabeledCount ?? -1
-  add('判断节点有带标签分支', diamondCount >= 0 && diamondLabeled >= diamondCount * 2,
+  soft('判断节点有带标签分支', diamondCount >= 0 && diamondLabeled >= diamondCount * 2,
     `菱形 ${diamondCount} 个，带标签出边 ${diamondLabeled} 条`)
 
   // 5. 泳道不重叠（泳道模式：组头 rect 的 x 区间互不重叠；单泳道图合法）
@@ -56,16 +68,16 @@ export function validateSVG(svg, ctx = {}) {
   add('逆向边为虚线', expectedReverse < 0 || dashCount >= expectedReverse,
     `虚线 ${dashCount} 条 / 预期逆向 ${expectedReverse}`)
 
-  // 7. 关键文本标签渲染
+  // 7. 关键文本标签渲染（质量规则：宽松降级）
   const expectText = ctx.expectText || []
   const missing = expectText.filter(t => !svg.includes(t))
-  add('关键文本标签渲染', missing.length === 0, missing.length === 0
+  soft('关键文本标签渲染', missing.length === 0, missing.length === 0
     ? `全部命中（${expectText.length} 项）` : `缺失：${missing.join('、')}`)
 
-  // 8. 配色生效
+  // 8. 配色生效（质量规则：宽松降级）
   const colors = ctx.expectColors || []
   const missC = colors.filter(c => !svg.toLowerCase().includes(c.toLowerCase()))
-  add('配色生效', missC.length === 0, missC.length === 0
+  soft('配色生效', missC.length === 0, missC.length === 0
     ? `全部命中（${colors.length} 色）` : `缺失：${missC.join('、')}`)
 
   // 9. 箭头齐全
@@ -80,6 +92,7 @@ export function validateSVG(svg, ctx = {}) {
   return {
     pass: failed.length === 0,
     checks,
-    summary: `✓ ${checks.length - failed.length}/${checks.length} 项通过` + (failed.length ? `，✗ ${failed.map(c => c.name).join('、')}` : ''),
+    warnings,
+    summary: `✓ ${checks.length - failed.length}/${checks.length} 项通过` + (failed.length ? `，✗ ${failed.map(c => c.name).join('、')}` : '') + (warnings.length ? `；提示 ${warnings.join('、')}` : ''),
   }
 }

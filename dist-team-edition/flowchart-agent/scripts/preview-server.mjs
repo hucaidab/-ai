@@ -544,12 +544,13 @@ const server = http.createServer(async (req, res) => {
       const THEMES = ['github-light', 'github-dark', 'enterprise-blue', 'bpmn']
       const theme = THEMES.includes(payload.theme) ? payload.theme : 'github-light'
       fs.writeFileSync(fp, JSON.stringify(fixed, null, 2), 'utf-8')
-      // 重新渲染 + 验收（复用管线）
+      // 重新渲染 + 验收（复用管线；strict=false：质量规则降级提示 + 跳过 autoFix，
+      // 保存=数据持久化不篡改用户数据——对标 draw.io，只有数据完整性失败才报错）
       const { renderOne } = await import('./split-graph.mjs')
       const base = fp.replace(/\.req\.json$/, '')
-      const r = renderOne(fixed, base, false, 3, theme)
+      const r = renderOne(fixed, base, false, 3, theme, false)
       // svgFile 回传（前端导出不再自行推导文件名）
-      return send(200, JSON.stringify({ ok: true, pass: r.pass, summary: r.summary, fixed: r.fixed, fixLog: r.fixLog || [], svgFile: path.basename(base + '.svg') }), 'application/json')
+      return send(200, JSON.stringify({ ok: true, pass: r.pass, summary: r.summary, warnings: r.warnings || [], fixed: r.fixed, fixLog: r.fixLog || [], svgFile: path.basename(base + '.svg') }), 'application/json')
     } catch (e) {
       return send(500, JSON.stringify({ ok: false, error: '保存失败：' + e.message.slice(0, 120) }))
     }
